@@ -1,8 +1,20 @@
 # Backend
 
-Java + Spring Boot backend for Mealio.
+Java 25 + Spring Boot 4 backend for Mealio.
 
-## Planned structure
+## Build
+
+```bash
+mvn test
+```
+
+## Run with Docker
+
+```bash
+docker compose up --build
+```
+
+## Structure
 
 ```text
 src/main/java/com/mealio/
@@ -12,5 +24,3 @@ src/main/java/com/mealio/
   infrastructure/
   shared/
 ```
-
-This backend will be initialized next with the actual Spring Boot project files.

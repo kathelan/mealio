@@ -7,7 +7,7 @@ hexagonal architecture and prepared for deployment on OpenShift.
 ## Current focus
 
 - backend-first initialization
-- Spring Boot API on Java
+- Spring Boot API on Java 25
 - PostgreSQL persistence
 - Dockerized development
 - OpenShift-friendly health probes
@@ -18,7 +18,22 @@ hexagonal architecture and prepared for deployment on OpenShift.
 backend/
 docs/
 infra/
+docker-compose.yml
+README.md
 ```
+
+## Local development
+
+```bash
+docker compose up --build
+```
+
+The app exposes:
+
+- `GET /api/v1/health`
+- `GET /actuator/health`
+- `GET /actuator/health/liveness`
+- `GET /actuator/health/readiness`
 
 ## Documentation
 

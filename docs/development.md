@@ -14,6 +14,17 @@
 4. add the first recipe and category use cases
 5. add tests before growing the model
 
+## Commands
+
+```bash
+cd backend
+mvn test
+```
+
+```bash
+docker compose up --build
+```
+
 ## Notes on token usage
 
 Keep this repository documentation concise. Update the same files rather than creating many

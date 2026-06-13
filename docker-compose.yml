@@ -1,0 +1,35 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: mealio-postgres
+    environment:
+      POSTGRES_DB: mealio
+      POSTGRES_USER: mealio
+      POSTGRES_PASSWORD: mealio
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mealio -d mealio"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+
+  app:
+    build:
+      context: ./backend
+    container_name: mealio-app
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/mealio
+      SPRING_DATASOURCE_USERNAME: mealio
+      SPRING_DATASOURCE_PASSWORD: mealio
+      MEALIO_APPLICATION_NAME: Mealio
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/actuator/health >/dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 12

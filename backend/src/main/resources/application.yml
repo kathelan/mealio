@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: mealio
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/mealio}
+    username: ${SPRING_DATASOURCE_USERNAME:mealio}
+    password: ${SPRING_DATASOURCE_PASSWORD:mealio}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+mealio:
+  application-name: Mealio

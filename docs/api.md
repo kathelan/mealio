@@ -4,6 +4,7 @@ The API starts with a very small surface.
 
 ## Health
 
+- `GET /api/v1/health`
 - `GET /actuator/health`
 - `GET /actuator/health/liveness`
 - `GET /actuator/health/readiness`
