@@ -33,3 +33,19 @@ services:
       interval: 10s
       timeout: 5s
       retries: 12
+
+  asr:
+    build:
+      context: ./asr
+    container_name: mealio-asr
+    environment:
+      MEALIO_ASR_PROVIDER: ${MEALIO_ASR_PROVIDER:-mock}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      MEALIO_ASR_OPENAI_MODEL: ${MEALIO_ASR_OPENAI_MODEL:-gpt-4o-mini-transcribe}
+    ports:
+      - "8081:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/actuator/health >/dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 12

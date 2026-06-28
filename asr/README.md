@@ -45,10 +45,22 @@ OpenAI mode:
 MEALIO_ASR_PROVIDER=openai OPENAI_API_KEY=... mvn spring-boot:run
 ```
 
-Smoke test with a local audio file:
+Docker Compose:
 
 ```bash
-curl -X POST http://localhost:8080/api/v1/transcriptions \
+docker compose up --build asr
+```
+
+OpenAI mode with Docker Compose:
+
+```bash
+MEALIO_ASR_PROVIDER=openai OPENAI_API_KEY=... docker compose up --build asr
+```
+
+Docker Compose smoke test with a local audio file:
+
+```bash
+curl -X POST http://localhost:8081/api/v1/transcriptions \
   -F "file=@records/Wilczak.m4a;type=audio/mp4" \
   -F "language=pl"
 ```
@@ -68,7 +80,7 @@ language=pl
 prompt=<optional ASR provider hint>
 ```
 
-Example:
+Local Maven example:
 
 ```bash
 curl -X POST http://localhost:8080/api/v1/transcriptions \

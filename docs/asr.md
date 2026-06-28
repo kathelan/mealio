@@ -88,10 +88,16 @@ cd asr
 MEALIO_ASR_PROVIDER=openai OPENAI_API_KEY=... mvn spring-boot:run
 ```
 
+Docker Compose:
+
+```bash
+MEALIO_ASR_PROVIDER=openai OPENAI_API_KEY=... docker compose up --build asr
+```
+
 Smoke request:
 
 ```bash
-curl -X POST http://localhost:8080/api/v1/transcriptions \
+curl -X POST http://localhost:8081/api/v1/transcriptions \
   -F "file=@records/Wilczak.m4a;type=audio/mp4" \
   -F "language=pl"
 ```
