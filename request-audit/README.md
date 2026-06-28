@@ -6,9 +6,10 @@ It provides:
 
 - inbound servlet request/response audit logging,
 - outbound `RestClient` request/response audit logging,
-- `X-Request-Id` correlation across inbound logs, outbound logs, and propagated calls,
+- `X-Correlation-Id`, `X-Request-Id`, and W3C `traceparent` propagation,
+- structured JSON audit events,
 - sensitive header redaction,
-- body previews only for text-like content,
+- body previews only when explicitly enabled and only for text-like content,
 - binary body omission for uploads such as audio.
 
 The library is packaged as a jar and consumed by service modules such as `asr` and
@@ -34,9 +35,38 @@ mvn -pl asr -am test
 mealio:
   audit:
     http:
+      service-name: mealio-asr
+      environment: local
       enabled: true
-      include-bodies: true
+      include-bodies: false
       max-body-bytes: 2048
       request-id-header-name: X-Request-Id
+      correlation-id-header-name: X-Correlation-Id
       propagate-request-id: true
+      propagate-correlation-id: true
+      propagate-trace-context: true
+      include-query-string: false
 ```
+
+## Event Model
+
+Each audit event is logged as JSON with stable correlation fields:
+
+- `correlationId` identifies the whole flow across services.
+- `traceId`, `spanId`, and `parentSpanId` describe the call tree.
+- `requestId` identifies a single HTTP exchange.
+- `serviceName`, `environment`, `direction`, and `eventType` describe the source.
+- `http.statusCode`, `http.durationMs`, and `outcome` describe the result.
+
+Inbound requests use an existing safe `X-Correlation-Id`/`X-Request-Id` when present
+or generate missing IDs. Outbound `RestClient` calls create a new local `requestId`
+and child `spanId`, while propagating the flow-wide correlation and trace context.
+
+Body logging is disabled by default. In production prefer metadata such as content
+type and body size over payload content. Query values are redacted by default; when
+query logging is enabled, sensitive parameters such as tokens, keys, email, and
+password are still redacted.
+
+Current context propagation is designed for synchronous Spring MVC flows using
+`ThreadLocal` and MDC. Add an executor `TaskDecorator` before using this context
+through `@Async`, custom executors, schedulers, or reactive/WebFlux flows.

@@ -25,3 +25,7 @@ management:
 
 mealio:
   application-name: Mealio
+  audit:
+    http:
+      service-name: ${MEALIO_SERVICE_NAME:mealio-backend}
+      environment: ${MEALIO_ENVIRONMENT:local}

@@ -6,9 +6,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -19,14 +16,15 @@ import org.springframework.web.util.ContentCachingResponseWrapper;
 
 public class InboundHttpAuditFilter extends OncePerRequestFilter {
 
-    private static final Logger log = LoggerFactory.getLogger(InboundHttpAuditFilter.class);
-
     private final HttpAuditProperties properties;
-    private final HttpAuditSanitizer sanitizer;
+    private final HttpAuditEventLogger eventLogger;
 
-    public InboundHttpAuditFilter(HttpAuditProperties properties, HttpAuditSanitizer sanitizer) {
+    public InboundHttpAuditFilter(
+            HttpAuditProperties properties,
+            HttpAuditEventLogger eventLogger
+    ) {
         this.properties = properties;
-        this.sanitizer = sanitizer;
+        this.eventLogger = eventLogger;
     }
 
     @Override
@@ -42,45 +40,72 @@ public class InboundHttpAuditFilter extends OncePerRequestFilter {
 
         var wrappedRequest = new ContentCachingRequestWrapper(request, properties.getMaxBodyBytes());
         var wrappedResponse = new ContentCachingResponseWrapper(response);
-        var requestId = requestId(request);
+        var context = context(request);
         var startedAt = System.nanoTime();
-        HttpAuditContext.setRequestId(requestId);
-        MDC.put("requestId", requestId);
-        response.setHeader(properties.getRequestIdHeaderName(), requestId);
+        HttpAuditContext.set(context);
+        putMdc(context);
+        response.setHeader(properties.getRequestIdHeaderName(), context.requestId());
+        response.setHeader(properties.getCorrelationIdHeaderName(), context.correlationId());
 
         try {
             filterChain.doFilter(wrappedRequest, wrappedResponse);
         } finally {
             try {
                 var elapsedMs = (System.nanoTime() - startedAt) / 1_000_000;
-                log.info(
-                        "http.inbound.exchange requestId={} method={} uri={} status={} durationMs={} requestHeaders={} requestBody={} responseHeaders={} responseBody={}",
-                        requestId,
+                eventLogger.inboundExchange(new HttpAuditEventLogger.InboundHttpAuditEvent(
+                        context,
                         request.getMethod(),
-                        requestUri(request),
+                        request.getRequestURI(),
+                        request.getQueryString(),
                         wrappedResponse.getStatus(),
                         elapsedMs,
-                        sanitizer.headers(requestHeaders(wrappedRequest)),
-                        sanitizer.body(wrappedRequest.getContentAsByteArray(), mediaType(request.getContentType())),
-                        sanitizer.headers(responseHeaders(wrappedResponse)),
-                        sanitizer.body(wrappedResponse.getContentAsByteArray(), mediaType(response.getContentType()))
-                );
+                        requestHeaders(wrappedRequest),
+                        wrappedRequest.getContentAsByteArray(),
+                        mediaType(request.getContentType()),
+                        responseHeaders(wrappedResponse),
+                        wrappedResponse.getContentAsByteArray(),
+                        mediaType(response.getContentType())
+                ));
                 wrappedResponse.copyBodyToResponse();
             } finally {
-                MDC.remove("requestId");
+                clearMdc();
                 HttpAuditContext.clear();
             }
         }
     }
 
-    private String requestId(HttpServletRequest request) {
-        var requestId = request.getHeader(properties.getRequestIdHeaderName());
-        return StringUtils.hasText(requestId) ? requestId : UUID.randomUUID().toString();
+    private HttpAuditContextSnapshot context(HttpServletRequest request) {
+        var traceParent = HttpAuditIds.traceParent(request.getHeader(HttpAuditIds.TRACEPARENT_HEADER));
+        var traceId = HttpAuditIds.traceId(traceParent.traceId());
+        var correlationId = HttpAuditIds.correlationId(
+                request.getHeader(properties.getCorrelationIdHeaderName()),
+                traceId
+        );
+        return new HttpAuditContextSnapshot(
+                correlationId,
+                traceId,
+                HttpAuditIds.randomSpanId(),
+                traceParent.parentSpanId(),
+                HttpAuditIds.requestId(request.getHeader(properties.getRequestIdHeaderName()))
+        );
     }
 
-    private String requestUri(HttpServletRequest request) {
-        var queryString = request.getQueryString();
-        return queryString == null ? request.getRequestURI() : request.getRequestURI() + "?" + queryString;
+    private void putMdc(HttpAuditContextSnapshot context) {
+        MDC.put("correlationId", context.correlationId());
+        MDC.put("traceId", context.traceId());
+        MDC.put("spanId", context.spanId());
+        if (StringUtils.hasText(context.parentSpanId())) {
+            MDC.put("parentSpanId", context.parentSpanId());
+        }
+        MDC.put("requestId", context.requestId());
+    }
+
+    private void clearMdc() {
+        MDC.remove("correlationId");
+        MDC.remove("traceId");
+        MDC.remove("spanId");
+        MDC.remove("parentSpanId");
+        MDC.remove("requestId");
     }
 
     private HttpHeaders requestHeaders(HttpServletRequest request) {

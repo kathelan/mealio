@@ -3,10 +3,12 @@ package com.mealio.audit;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.util.StringUtils;
+import org.springframework.web.util.UriComponentsBuilder;
 
 public class HttpAuditSanitizer {
 
@@ -23,12 +25,37 @@ public class HttpAuditSanitizer {
     public Map<String, List<String>> headers(HttpHeaders headers) {
         var sanitized = new LinkedHashMap<String, List<String>>();
         headers.forEach((name, values) -> {
-            if (properties.getRedactedHeaders().contains(name.toLowerCase())) {
+            if (properties.getRedactedHeaders().contains(name.toLowerCase(Locale.ROOT))) {
                 sanitized.put(name, List.of(REDACTED));
             } else {
                 sanitized.put(name, values);
             }
         });
+        return sanitized;
+    }
+
+    public Map<String, List<String>> query(String queryString) {
+        var sanitized = new LinkedHashMap<String, List<String>>();
+        if (!StringUtils.hasText(queryString)) {
+            return sanitized;
+        }
+
+        try {
+            UriComponentsBuilder.fromUriString("/?" + queryString)
+                    .build()
+                    .getQueryParams()
+                    .forEach((name, values) -> {
+                        if (!properties.isIncludeQueryString()) {
+                            sanitized.put(name, List.of(REDACTED));
+                        } else if (properties.getRedactedQueryParameters().contains(name.toLowerCase(Locale.ROOT))) {
+                            sanitized.put(name, List.of(REDACTED));
+                        } else {
+                            sanitized.put(name, values);
+                        }
+                    });
+        } catch (RuntimeException exception) {
+            sanitized.put("<invalid-query>", List.of(REDACTED));
+        }
         return sanitized;
     }
 
@@ -43,6 +70,26 @@ public class HttpAuditSanitizer {
         var length = Math.min(body.length, properties.getMaxBodyBytes());
         var preview = new String(body, 0, length, StandardCharsets.UTF_8);
         return body.length > length ? preview + "...<truncated>" : preview;
+    }
+
+    public boolean bodyLogged(byte[] body, MediaType contentType) {
+        return properties.isIncludeBodies() && body != null && body.length > 0 && isTextLike(contentType);
+    }
+
+    public String bodyOmittedReason(byte[] body, MediaType contentType) {
+        if (!properties.isIncludeBodies() && body == null) {
+            return "disabled";
+        }
+        if (body == null || body.length == 0 || bodyLogged(body, contentType)) {
+            return null;
+        }
+        if (!properties.isIncludeBodies()) {
+            return "disabled";
+        }
+        if (!isTextLike(contentType)) {
+            return "binary_or_unsupported_content_type";
+        }
+        return null;
     }
 
     private boolean isTextLike(MediaType contentType) {

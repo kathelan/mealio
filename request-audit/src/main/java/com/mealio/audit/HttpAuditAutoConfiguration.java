@@ -1,5 +1,6 @@
 package com.mealio.audit;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -19,18 +20,37 @@ public class HttpAuditAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(name = "outboundHttpAuditInterceptor")
-    ClientHttpRequestInterceptor outboundHttpAuditInterceptor(
+    @ConditionalOnMissingBean
+    ObjectMapper httpAuditObjectMapper() {
+        return new ObjectMapper();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    HttpAuditEventLogger httpAuditEventLogger(
+            ObjectMapper objectMapper,
             HttpAuditProperties properties,
             HttpAuditSanitizer sanitizer
     ) {
-        return new OutboundHttpAuditInterceptor(properties, sanitizer);
+        return new HttpAuditEventLogger(objectMapper, properties, sanitizer);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(name = "outboundHttpAuditInterceptor")
+    ClientHttpRequestInterceptor outboundHttpAuditInterceptor(
+            HttpAuditProperties properties,
+            HttpAuditEventLogger eventLogger
+    ) {
+        return new OutboundHttpAuditInterceptor(properties, eventLogger);
     }
 
     @Bean
     @ConditionalOnClass(OncePerRequestFilter.class)
     @ConditionalOnMissingBean
-    InboundHttpAuditFilter inboundHttpAuditFilter(HttpAuditProperties properties, HttpAuditSanitizer sanitizer) {
-        return new InboundHttpAuditFilter(properties, sanitizer);
+    InboundHttpAuditFilter inboundHttpAuditFilter(
+            HttpAuditProperties properties,
+            HttpAuditEventLogger eventLogger
+    ) {
+        return new InboundHttpAuditFilter(properties, eventLogger);
     }
 }

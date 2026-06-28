@@ -6,8 +6,6 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.Map;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpRequest;
@@ -18,14 +16,12 @@ import org.springframework.http.client.ClientHttpResponse;
 
 public class OutboundHttpAuditInterceptor implements ClientHttpRequestInterceptor {
 
-    private static final Logger log = LoggerFactory.getLogger(OutboundHttpAuditInterceptor.class);
-
     private final HttpAuditProperties properties;
-    private final HttpAuditSanitizer sanitizer;
+    private final HttpAuditEventLogger eventLogger;
 
-    public OutboundHttpAuditInterceptor(HttpAuditProperties properties, HttpAuditSanitizer sanitizer) {
+    public OutboundHttpAuditInterceptor(HttpAuditProperties properties, HttpAuditEventLogger eventLogger) {
         this.properties = properties;
-        this.sanitizer = sanitizer;
+        this.eventLogger = eventLogger;
     }
 
     @Override
@@ -38,41 +34,75 @@ public class OutboundHttpAuditInterceptor implements ClientHttpRequestIntercepto
             return execution.execute(request, body);
         }
 
-        var requestId = HttpAuditContext.requestId().orElseGet(() -> UUID.randomUUID().toString());
-        var auditedRequest = requestWithRequestId(request, requestId);
+        var context = outboundContext();
+        var auditedRequest = requestWithContext(request, context);
         var startedAt = System.nanoTime();
-        log.info(
-                "http.outbound.request requestId={} method={} uri={} headers={} body={}",
-                requestId,
+        eventLogger.outboundRequest(new HttpAuditEventLogger.OutboundHttpAuditRequestEvent(
+                context,
                 auditedRequest.getMethod(),
                 auditedRequest.getURI(),
-                sanitizer.headers(auditedRequest.getHeaders()),
-                sanitizer.body(body, auditedRequest.getHeaders().getContentType())
-        );
+                auditedRequest.getHeaders(),
+                body,
+                auditedRequest.getHeaders().getContentType()
+        ));
 
-        var response = new BufferedClientHttpResponse(execution.execute(auditedRequest, body));
-        var elapsedMs = (System.nanoTime() - startedAt) / 1_000_000;
-        log.info(
-                "http.outbound.response requestId={} method={} uri={} status={} durationMs={} headers={} body={}",
-                requestId,
-                auditedRequest.getMethod(),
-                auditedRequest.getURI(),
-                response.getStatusCode(),
-                elapsedMs,
-                sanitizer.headers(response.getHeaders()),
-                sanitizer.body(response.body(), response.getHeaders().getContentType())
-        );
-        return response;
+        try {
+            var response = execution.execute(auditedRequest, body);
+            var elapsedMs = (System.nanoTime() - startedAt) / 1_000_000;
+            byte[] responseBody = null;
+            var responseToReturn = response;
+            if (properties.isIncludeBodies()) {
+                var bufferedResponse = new BufferedClientHttpResponse(response);
+                responseBody = bufferedResponse.body();
+                responseToReturn = bufferedResponse;
+            }
+            eventLogger.outboundResponse(new HttpAuditEventLogger.OutboundHttpAuditResponseEvent(
+                    context,
+                    auditedRequest.getMethod(),
+                    auditedRequest.getURI(),
+                    responseToReturn.getStatusCode(),
+                    elapsedMs,
+                    responseToReturn.getHeaders(),
+                    responseBody,
+                    responseToReturn.getHeaders().getContentType()
+            ));
+            return responseToReturn;
+        } catch (IOException exception) {
+            var elapsedMs = (System.nanoTime() - startedAt) / 1_000_000;
+            eventLogger.outboundError(new HttpAuditEventLogger.OutboundHttpAuditErrorEvent(
+                    context,
+                    auditedRequest.getMethod(),
+                    auditedRequest.getURI(),
+                    elapsedMs,
+                    exception
+            ));
+            throw exception;
+        }
     }
 
-    private HttpRequest requestWithRequestId(HttpRequest request, String requestId) {
-        if (!properties.isPropagateRequestId()
-                || request.getHeaders().containsHeader(properties.getRequestIdHeaderName())) {
-            return request;
-        }
+    private HttpAuditContextSnapshot outboundContext() {
+        var current = HttpAuditContext.current();
+        return new HttpAuditContextSnapshot(
+                current.map(HttpAuditContextSnapshot::correlationId).orElseGet(() -> UUID.randomUUID().toString()),
+                current.map(HttpAuditContextSnapshot::traceId).orElseGet(() -> HttpAuditIds.traceId(null)),
+                HttpAuditIds.randomSpanId(),
+                current.map(HttpAuditContextSnapshot::spanId).orElse(null),
+                UUID.randomUUID().toString()
+        );
+    }
+
+    private HttpRequest requestWithContext(HttpRequest request, HttpAuditContextSnapshot context) {
         var headers = new HttpHeaders();
         headers.putAll(request.getHeaders());
-        headers.set(properties.getRequestIdHeaderName(), requestId);
+        if (properties.isPropagateRequestId()) {
+            HttpAuditIds.putIfAbsent(headers, properties.getRequestIdHeaderName(), context.requestId());
+        }
+        if (properties.isPropagateCorrelationId()) {
+            HttpAuditIds.putIfAbsent(headers, properties.getCorrelationIdHeaderName(), context.correlationId());
+        }
+        if (properties.isPropagateTraceContext()) {
+            HttpAuditIds.putIfAbsent(headers, HttpAuditIds.TRACEPARENT_HEADER, HttpAuditIds.traceParentHeader(context));
+        }
 
         return new HttpRequest() {
             @Override

@@ -13,6 +13,10 @@ management:
         enabled: true
 
 mealio:
+  audit:
+    http:
+      service-name: ${MEALIO_SERVICE_NAME:mealio-asr}
+      environment: ${MEALIO_ENVIRONMENT:local}
   asr:
     provider: ${MEALIO_ASR_PROVIDER:mock}
     openai:

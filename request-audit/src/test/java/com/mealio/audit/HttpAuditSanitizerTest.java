@@ -34,13 +34,26 @@ class HttpAuditSanitizerTest {
     }
 
     @Test
+    void omitsBodyByDefault() {
+        assertThat(sanitizer.body("secret transcript".getBytes(), MediaType.TEXT_PLAIN))
+                .isEmpty();
+        assertThat(sanitizer.bodyLogged("secret transcript".getBytes(), MediaType.TEXT_PLAIN))
+                .isFalse();
+        assertThat(sanitizer.bodyOmittedReason("secret transcript".getBytes(), MediaType.TEXT_PLAIN))
+                .isEqualTo("disabled");
+    }
+
+    @Test
     void includesTextBodyPreview() {
+        properties.setIncludeBodies(true);
+
         assertThat(sanitizer.body("hello".getBytes(), MediaType.TEXT_PLAIN))
                 .isEqualTo("hello");
     }
 
     @Test
     void truncatesLongTextBody() {
+        properties.setIncludeBodies(true);
         properties.setMaxBodyBytes(5);
 
         assertThat(sanitizer.body("hello world".getBytes(), MediaType.TEXT_PLAIN))
@@ -49,7 +62,26 @@ class HttpAuditSanitizerTest {
 
     @Test
     void omitsBinaryBody() {
+        properties.setIncludeBodies(true);
+
         assertThat(sanitizer.body(new byte[] {1, 2, 3}, MediaType.APPLICATION_OCTET_STREAM))
                 .isEqualTo("<binary body omitted>");
+    }
+
+    @Test
+    void redactsQueryParametersByDefault() {
+        assertThat(sanitizer.query("token=secret&lang=pl"))
+                .containsEntry("token", java.util.List.of("<redacted>"))
+                .containsEntry("lang", java.util.List.of("<redacted>"));
+    }
+
+    @Test
+    void redactsSensitiveQueryParametersWhenQueryLoggingIsEnabled() {
+        properties.setIncludeQueryString(true);
+
+        assertThat(sanitizer.query("token=secret&lang=pl&email=user@example.com"))
+                .containsEntry("token", java.util.List.of("<redacted>"))
+                .containsEntry("lang", java.util.List.of("pl"))
+                .containsEntry("email", java.util.List.of("<redacted>"));
     }
 }

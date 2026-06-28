@@ -4,20 +4,28 @@ import java.util.Optional;
 
 public final class HttpAuditContext {
 
-    private static final ThreadLocal<String> REQUEST_ID = new ThreadLocal<>();
+    private static final ThreadLocal<HttpAuditContextSnapshot> CONTEXT = new ThreadLocal<>();
 
     private HttpAuditContext() {
     }
 
-    public static Optional<String> requestId() {
-        return Optional.ofNullable(REQUEST_ID.get());
+    public static Optional<HttpAuditContextSnapshot> current() {
+        return Optional.ofNullable(CONTEXT.get());
     }
 
-    static void setRequestId(String requestId) {
-        REQUEST_ID.set(requestId);
+    public static Optional<String> correlationId() {
+        return current().map(HttpAuditContextSnapshot::correlationId);
+    }
+
+    public static Optional<String> requestId() {
+        return current().map(HttpAuditContextSnapshot::requestId);
+    }
+
+    static void set(HttpAuditContextSnapshot context) {
+        CONTEXT.set(context);
     }
 
     static void clear() {
-        REQUEST_ID.remove();
+        CONTEXT.remove();
     }
 }

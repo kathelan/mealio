@@ -2,6 +2,7 @@ package com.mealio.audit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -21,6 +22,7 @@ class HttpAuditRequestIdTest {
 
     private final HttpAuditProperties properties = new HttpAuditProperties();
     private final HttpAuditSanitizer sanitizer = new HttpAuditSanitizer(properties);
+    private final HttpAuditEventLogger eventLogger = new HttpAuditEventLogger(new ObjectMapper(), properties, sanitizer);
 
     @AfterEach
     void clearContext() {
@@ -28,35 +30,64 @@ class HttpAuditRequestIdTest {
     }
 
     @Test
-    void inboundRequestUsesExistingRequestIdAndReturnsItInResponse() throws Exception {
-        var filter = new InboundHttpAuditFilter(properties, sanitizer);
+    void inboundRequestUsesExistingCorrelationAndRequestIds() throws Exception {
+        var filter = new InboundHttpAuditFilter(properties, eventLogger);
         var request = new MockHttpServletRequest("GET", "/api/test");
         var response = new MockHttpServletResponse();
-        var requestIdInFlow = new AtomicReference<String>();
-        request.addHeader(properties.getRequestIdHeaderName(), "flow-1");
+        var contextInFlow = new AtomicReference<HttpAuditContextSnapshot>();
+        request.addHeader(properties.getCorrelationIdHeaderName(), "flow-1");
+        request.addHeader(properties.getRequestIdHeaderName(), "request-1");
 
         filter.doFilter(request, response, (servletRequest, servletResponse) -> {
-            requestIdInFlow.set(HttpAuditContext.requestId().orElse(null));
+            contextInFlow.set(HttpAuditContext.current().orElse(null));
             ((HttpServletResponse) servletResponse).getWriter().write("{\"ok\":true}");
         });
 
-        assertThat(requestIdInFlow).hasValue("flow-1");
-        assertThat(response.getHeader(properties.getRequestIdHeaderName())).isEqualTo("flow-1");
+        assertThat(contextInFlow.get().correlationId()).isEqualTo("flow-1");
+        assertThat(contextInFlow.get().requestId()).isEqualTo("request-1");
+        assertThat(response.getHeader(properties.getCorrelationIdHeaderName())).isEqualTo("flow-1");
+        assertThat(response.getHeader(properties.getRequestIdHeaderName())).isEqualTo("request-1");
         assertThat(HttpAuditContext.requestId()).isEmpty();
     }
 
     @Test
-    void outboundRequestPropagatesRequestIdFromCurrentFlow() throws Exception {
-        var interceptor = new OutboundHttpAuditInterceptor(properties, sanitizer);
+    void inboundRequestRegeneratesUnsafeExternalRequestId() throws Exception {
+        var filter = new InboundHttpAuditFilter(properties, eventLogger);
+        var request = new MockHttpServletRequest("GET", "/api/test");
+        var response = new MockHttpServletResponse();
+        var contextInFlow = new AtomicReference<HttpAuditContextSnapshot>();
+        request.addHeader(properties.getRequestIdHeaderName(), "bad id with spaces");
+
+        filter.doFilter(request, response, (servletRequest, servletResponse) ->
+                contextInFlow.set(HttpAuditContext.current().orElse(null)));
+
+        assertThat(contextInFlow.get().requestId()).isNotEqualTo("bad id with spaces");
+        assertThat(response.getHeader(properties.getRequestIdHeaderName())).isEqualTo(contextInFlow.get().requestId());
+    }
+
+    @Test
+    void outboundRequestPropagatesCorrelationAndTraceContext() throws Exception {
+        var interceptor = new OutboundHttpAuditInterceptor(properties, eventLogger);
         var propagatedHeaders = new AtomicReference<HttpHeaders>();
-        HttpAuditContext.setRequestId("flow-2");
+        HttpAuditContext.set(new HttpAuditContextSnapshot(
+                "flow-2",
+                "1234567890abcdef1234567890abcdef",
+                "1234567890abcdef",
+                null,
+                "inbound-request"
+        ));
 
         interceptor.intercept(new TestHttpRequest(), new byte[0], (request, body) -> {
             propagatedHeaders.set(request.getHeaders());
             return new MockClientHttpResponse("{}".getBytes(StandardCharsets.UTF_8), HttpStatus.OK);
         });
 
-        assertThat(propagatedHeaders.get().getFirst(properties.getRequestIdHeaderName())).isEqualTo("flow-2");
+        assertThat(propagatedHeaders.get().getFirst(properties.getCorrelationIdHeaderName())).isEqualTo("flow-2");
+        assertThat(propagatedHeaders.get().getFirst(properties.getRequestIdHeaderName()))
+                .isNotBlank()
+                .isNotEqualTo("inbound-request");
+        assertThat(propagatedHeaders.get().getFirst("traceparent"))
+                .startsWith("00-1234567890abcdef1234567890abcdef-");
     }
 
     private static class TestHttpRequest implements HttpRequest {
