@@ -45,7 +45,7 @@ Content-Type: multipart/form-data
 
 file=<audio file>
 language=pl
-prompt=Meal logging in Polish
+prompt=<optional ASR provider hint>
 ```
 
 Example response:
@@ -81,9 +81,30 @@ mealio:
       model: gpt-4o-mini-transcribe
 ```
 
+Local run:
+
+```bash
+cd asr
+MEALIO_ASR_PROVIDER=openai OPENAI_API_KEY=... mvn spring-boot:run
+```
+
+Smoke request:
+
+```bash
+curl -X POST http://localhost:8080/api/v1/transcriptions \
+  -F "file=@records/Wilczak.m4a;type=audio/mp4" \
+  -F "language=pl"
+```
+
+Sample recordings used for local manual testing live in `asr/records/`, not in
+`src/main/resources`, so they are not packaged into the Spring Boot artifact.
+
+`prompt` remains available as an optional provider hint, but the default ASR path does
+not use domain-specific prompts. Meal interpretation should happen after
+transcription.
+
 ## Next work
 
-- Add an integration test for the web endpoint.
 - Add provider-level timeout and retry policy.
 - Persist original audio metadata and transcript audit data.
 - Add a meal parser module that converts transcript text into structured food items.

@@ -70,7 +70,6 @@ class TranscriptionControllerIntegrationTest {
         var boundary = "MealioAsrBoundary";
         var output = new ByteArrayOutputStream();
         writePart(output, boundary, "language", "pl");
-        writePart(output, boundary, "prompt", "Meal logging in Polish");
         writeFilePart(output, boundary, "file", filename, contentType, content);
         output.write(("--" + boundary + "--\r\n").getBytes(StandardCharsets.UTF_8));
 

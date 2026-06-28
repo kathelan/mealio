@@ -33,7 +33,14 @@ public class AsrExceptionHandler {
     @ExceptionHandler(AsrProviderException.class)
     @ResponseStatus(HttpStatus.BAD_GATEWAY)
     ApiErrorResponse handleProviderFailure(AsrProviderException exception) {
-        return error("ASR_PROVIDER_ERROR", exception.getMessage());
+        if (exception.providerStatusCode() == null) {
+            return error("ASR_PROVIDER_ERROR", exception.getMessage());
+        }
+        return error(
+                "ASR_PROVIDER_ERROR",
+                "%s (provider=%s, status=%d)"
+                        .formatted(exception.getMessage(), exception.providerName(), exception.providerStatusCode())
+        );
     }
 
     private ApiErrorResponse error(String code, String message) {

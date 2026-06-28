@@ -45,6 +45,18 @@ OpenAI mode:
 MEALIO_ASR_PROVIDER=openai OPENAI_API_KEY=... mvn spring-boot:run
 ```
 
+Smoke test with a local audio file:
+
+```bash
+curl -X POST http://localhost:8080/api/v1/transcriptions \
+  -F "file=@records/Wilczak.m4a;type=audio/mp4" \
+  -F "language=pl"
+```
+
+The repository includes one local sample recording under `records/` for manual smoke
+tests. Do not put sample recordings under `src/main/resources`, because files from
+that directory are packaged into the application artifact.
+
 ## API
 
 ```http
@@ -53,23 +65,22 @@ Content-Type: multipart/form-data
 
 file=<audio file>
 language=pl
-prompt=Meal logging in Polish
+prompt=<optional ASR provider hint>
 ```
 
 Example:
 
 ```bash
 curl -X POST http://localhost:8080/api/v1/transcriptions \
-  -F "file=@meal.wav" \
-  -F "language=pl" \
-  -F "prompt=Meal logging in Polish"
+  -F "file=@records/Wilczak.m4a;type=audio/mp4" \
+  -F "language=pl"
 ```
 
 Response:
 
 ```json
 {
-  "transcript": "na sniadanie zjadlem trzy jajka",
+  "transcript": "Raz, dwa, trzy.",
   "language": "pl",
   "provider": "openai",
   "confidence": null,
@@ -89,9 +100,22 @@ mealio:
       model: gpt-4o-mini-transcribe
 ```
 
+Environment variables:
+
+```bash
+MEALIO_ASR_PROVIDER=openai
+OPENAI_API_KEY=sk-...
+MEALIO_ASR_OPENAI_MODEL=gpt-4o-mini-transcribe
+```
+
+The OpenAI adapter calls `POST /audio/transcriptions` with multipart form data:
+`file`, `model`, `response_format`, `language`, and optional `prompt`.
+
+`prompt` is intentionally optional. Keep the ASR module focused on transcription;
+domain-specific interpretation, such as meal parsing, belongs in a separate module.
+
 ## Next steps
 
-- Add integration test for multipart upload.
 - Add timeout, retry, and fallback policies around providers.
 - Add transcript audit persistence.
 - Add a separate meal parser module that turns transcript text into structured food
