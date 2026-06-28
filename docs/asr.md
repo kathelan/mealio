@@ -84,8 +84,7 @@ mealio:
 Local run:
 
 ```bash
-cd asr
-MEALIO_ASR_PROVIDER=openai OPENAI_API_KEY=... mvn spring-boot:run
+MEALIO_ASR_PROVIDER=openai OPENAI_API_KEY=... mvn -pl asr -am spring-boot:run
 ```
 
 Docker Compose:
@@ -108,6 +107,10 @@ Sample recordings used for local manual testing live in `asr/records/`, not in
 `prompt` remains available as an optional provider hint, but the default ASR path does
 not use domain-specific prompts. Meal interpretation should happen after
 transcription.
+
+The ASR module uses the local `request-audit` jar for HTTP request/response audit
+logging. Run Maven commands from the repository root with `-pl asr -am` so Maven also
+builds the shared jar.
 
 ## Next work
 

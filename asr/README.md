@@ -36,13 +36,13 @@ external APIs stay behind outbound adapters.
 Default mode uses the mock provider:
 
 ```bash
-mvn spring-boot:run
+mvn -pl asr -am spring-boot:run
 ```
 
 OpenAI mode:
 
 ```bash
-MEALIO_ASR_PROVIDER=openai OPENAI_API_KEY=... mvn spring-boot:run
+MEALIO_ASR_PROVIDER=openai OPENAI_API_KEY=... mvn -pl asr -am spring-boot:run
 ```
 
 Docker Compose:
@@ -125,6 +125,10 @@ The OpenAI adapter calls `POST /audio/transcriptions` with multipart form data:
 
 `prompt` is intentionally optional. Keep the ASR module focused on transcription;
 domain-specific interpretation, such as meal parsing, belongs in a separate module.
+
+The module depends on the local `request-audit` jar for inbound and outbound HTTP
+request/response audit logging, so Maven commands should be run from the repository
+root with `-pl asr -am`.
 
 ## Next steps
 

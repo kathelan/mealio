@@ -16,7 +16,8 @@ services:
 
   app:
     build:
-      context: ./backend
+      context: .
+      dockerfile: backend/Dockerfile
     container_name: mealio-app
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/mealio
@@ -36,7 +37,8 @@ services:
 
   asr:
     build:
-      context: ./asr
+      context: .
+      dockerfile: asr/Dockerfile
     container_name: mealio-asr
     environment:
       MEALIO_ASR_PROVIDER: ${MEALIO_ASR_PROVIDER:-mock}

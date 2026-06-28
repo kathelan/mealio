@@ -17,6 +17,7 @@ hexagonal architecture and prepared for deployment on OpenShift.
 ```text
 asr/
 backend/
+request-audit/
 docs/
 infra/
 docker-compose.yml
@@ -39,9 +40,11 @@ The app exposes:
 The standalone ASR module is in `asr/`:
 
 ```bash
-cd asr
-mvn spring-boot:run
+mvn -pl asr -am spring-boot:run
 ```
+
+Because service modules depend on local shared jars, prefer running Maven from the
+repository root with `-pl <module> -am`.
 
 ## Documentation
 
