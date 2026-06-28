@@ -15,6 +15,7 @@ hexagonal architecture and prepared for deployment on OpenShift.
 ## Repository layout
 
 ```text
+asr/
 backend/
 docs/
 infra/
@@ -35,12 +36,20 @@ The app exposes:
 - `GET /actuator/health/liveness`
 - `GET /actuator/health/readiness`
 
+The standalone ASR module is in `asr/`:
+
+```bash
+cd asr
+mvn spring-boot:run
+```
+
 ## Documentation
 
 - [Architecture](docs/architecture.md)
 - [MVP](docs/mvp.md)
 - [Domain model](docs/domain.md)
 - [API](docs/api.md)
+- [ASR module](docs/asr.md)
 - [Development notes](docs/development.md)
 
 ## Next step

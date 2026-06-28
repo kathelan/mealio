@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: mealio-asr
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+mealio:
+  asr:
+    provider: ${MEALIO_ASR_PROVIDER:mock}
+    openai:
+      api-key: ${OPENAI_API_KEY:}
+      base-url: ${MEALIO_ASR_OPENAI_BASE_URL:https://api.openai.com/v1}
+      model: ${MEALIO_ASR_OPENAI_MODEL:gpt-4o-mini-transcribe}
