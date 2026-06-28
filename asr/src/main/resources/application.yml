@@ -1,9 +1,6 @@
 spring:
   application:
     name: mealio-asr
-  jackson:
-    serialization:
-      write-dates-as-timestamps: false
 
 management:
   endpoints:
