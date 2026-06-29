@@ -1,15 +1,12 @@
 package com.mealio.audit;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpRequest;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
@@ -49,24 +46,17 @@ public class OutboundHttpAuditInterceptor implements ClientHttpRequestIntercepto
         try {
             var response = execution.execute(auditedRequest, body);
             var elapsedMs = (System.nanoTime() - startedAt) / 1_000_000;
-            byte[] responseBody = null;
-            var responseToReturn = response;
-            if (properties.isIncludeBodies()) {
-                var bufferedResponse = new BufferedClientHttpResponse(response);
-                responseBody = bufferedResponse.body();
-                responseToReturn = bufferedResponse;
-            }
             eventLogger.outboundResponse(new HttpAuditEventLogger.OutboundHttpAuditResponseEvent(
                     context,
                     auditedRequest.getMethod(),
                     auditedRequest.getURI(),
-                    responseToReturn.getStatusCode(),
+                    response.getStatusCode(),
                     elapsedMs,
-                    responseToReturn.getHeaders(),
-                    responseBody,
-                    responseToReturn.getHeaders().getContentType()
+                    response.getHeaders(),
+                    null,
+                    response.getHeaders().getContentType()
             ));
-            return responseToReturn;
+            return response;
         } catch (IOException exception) {
             var elapsedMs = (System.nanoTime() - startedAt) / 1_000_000;
             eventLogger.outboundError(new HttpAuditEventLogger.OutboundHttpAuditErrorEvent(
@@ -87,7 +77,8 @@ public class OutboundHttpAuditInterceptor implements ClientHttpRequestIntercepto
                 current.map(HttpAuditContextSnapshot::traceId).orElseGet(() -> HttpAuditIds.traceId(null)),
                 HttpAuditIds.randomSpanId(),
                 current.map(HttpAuditContextSnapshot::spanId).orElse(null),
-                UUID.randomUUID().toString()
+                UUID.randomUUID().toString(),
+                current.map(HttpAuditContextSnapshot::traceFlags).orElse(HttpAuditIds.DEFAULT_TRACE_FLAGS)
         );
     }
 
@@ -101,7 +92,7 @@ public class OutboundHttpAuditInterceptor implements ClientHttpRequestIntercepto
             HttpAuditIds.putIfAbsent(headers, properties.getCorrelationIdHeaderName(), context.correlationId());
         }
         if (properties.isPropagateTraceContext()) {
-            HttpAuditIds.putIfAbsent(headers, HttpAuditIds.TRACEPARENT_HEADER, HttpAuditIds.traceParentHeader(context));
+            headers.set(HttpAuditIds.TRACEPARENT_HEADER, HttpAuditIds.traceParentHeader(context));
         }
 
         return new HttpRequest() {
@@ -125,45 +116,5 @@ public class OutboundHttpAuditInterceptor implements ClientHttpRequestIntercepto
                 return request.getAttributes();
             }
         };
-    }
-
-    private static class BufferedClientHttpResponse implements ClientHttpResponse {
-
-        private final ClientHttpResponse delegate;
-        private final byte[] body;
-
-        BufferedClientHttpResponse(ClientHttpResponse delegate) throws IOException {
-            this.delegate = delegate;
-            this.body = delegate.getBody().readAllBytes();
-        }
-
-        byte[] body() {
-            return body;
-        }
-
-        @Override
-        public HttpStatusCode getStatusCode() throws IOException {
-            return delegate.getStatusCode();
-        }
-
-        @Override
-        public String getStatusText() throws IOException {
-            return delegate.getStatusText();
-        }
-
-        @Override
-        public void close() {
-            delegate.close();
-        }
-
-        @Override
-        public InputStream getBody() {
-            return new ByteArrayInputStream(body);
-        }
-
-        @Override
-        public HttpHeaders getHeaders() {
-            return delegate.getHeaders();
-        }
     }
 }

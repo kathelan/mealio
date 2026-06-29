@@ -39,6 +39,9 @@ Default mode uses the mock provider:
 mvn -pl asr -am spring-boot:run
 ```
 
+Run Maven from the repository root. The ASR module depends on sibling local modules,
+so root reactor commands rebuild the required shared jars automatically.
+
 OpenAI mode:
 
 ```bash
@@ -129,6 +132,15 @@ domain-specific interpretation, such as meal parsing, belongs in a separate modu
 The module depends on the local `request-audit` jar for inbound and outbound HTTP
 request/response audit logging, so Maven commands should be run from the repository
 root with `-pl asr -am`.
+
+If you run Maven directly from `asr/`, install local shared jars first:
+
+```bash
+cd ..
+mvn -pl request-audit install -DskipTests
+cd asr
+mvn test
+```
 
 ## Next steps
 

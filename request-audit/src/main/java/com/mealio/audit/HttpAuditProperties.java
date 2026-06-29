@@ -9,6 +9,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class HttpAuditProperties {
 
     private boolean enabled = true;
+    private boolean includeHeaders = false;
     private boolean includeBodies = false;
     private boolean propagateRequestId = true;
     private boolean propagateCorrelationId = true;
@@ -27,6 +28,8 @@ public class HttpAuditProperties {
             "api-key",
             "x-api-key",
             "openai-api-key",
+            "openai-organization",
+            "openai-project",
             "x-openai-api-key",
             "x-auth-token",
             "x-access-token",
@@ -58,6 +61,14 @@ public class HttpAuditProperties {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public boolean isIncludeHeaders() {
+        return includeHeaders;
+    }
+
+    public void setIncludeHeaders(boolean includeHeaders) {
+        this.includeHeaders = includeHeaders;
     }
 
     public boolean isIncludeBodies() {

@@ -5,6 +5,7 @@ public record HttpAuditContextSnapshot(
         String traceId,
         String spanId,
         String parentSpanId,
-        String requestId
+        String requestId,
+        String traceFlags
 ) {
 }

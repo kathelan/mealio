@@ -80,6 +80,9 @@ public class HttpAuditSanitizer {
         if (!properties.isIncludeBodies() && body == null) {
             return "disabled";
         }
+        if (properties.isIncludeBodies() && body == null) {
+            return "not_captured";
+        }
         if (body == null || body.length == 0 || bodyLogged(body, contentType)) {
             return null;
         }

@@ -6,6 +6,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import org.slf4j.MDC;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -38,17 +40,22 @@ public class InboundHttpAuditFilter extends OncePerRequestFilter {
             return;
         }
 
-        var wrappedRequest = new ContentCachingRequestWrapper(request, properties.getMaxBodyBytes());
-        var wrappedResponse = new ContentCachingResponseWrapper(response);
+        var wrappedRequest = properties.isIncludeBodies()
+                ? new ContentCachingRequestWrapper(request, properties.getMaxBodyBytes())
+                : null;
+        var wrappedResponse = properties.isIncludeBodies() ? new ContentCachingResponseWrapper(response) : null;
+        var requestForChain = wrappedRequest == null ? request : wrappedRequest;
+        var responseForChain = wrappedResponse == null ? response : wrappedResponse;
         var context = context(request);
         var startedAt = System.nanoTime();
+        var previousMdc = mdcSnapshot();
         HttpAuditContext.set(context);
         putMdc(context);
         response.setHeader(properties.getRequestIdHeaderName(), context.requestId());
         response.setHeader(properties.getCorrelationIdHeaderName(), context.correlationId());
 
         try {
-            filterChain.doFilter(wrappedRequest, wrappedResponse);
+            filterChain.doFilter(requestForChain, responseForChain);
         } finally {
             try {
                 var elapsedMs = (System.nanoTime() - startedAt) / 1_000_000;
@@ -57,21 +64,35 @@ public class InboundHttpAuditFilter extends OncePerRequestFilter {
                         request.getMethod(),
                         request.getRequestURI(),
                         request.getQueryString(),
-                        wrappedResponse.getStatus(),
+                        responseStatus(responseForChain),
                         elapsedMs,
-                        requestHeaders(wrappedRequest),
-                        wrappedRequest.getContentAsByteArray(),
+                        requestHeaders(requestForChain),
+                        requestBody(wrappedRequest),
                         mediaType(request.getContentType()),
-                        responseHeaders(wrappedResponse),
-                        wrappedResponse.getContentAsByteArray(),
+                        responseHeaders(responseForChain),
+                        responseBody(wrappedResponse),
                         mediaType(response.getContentType())
                 ));
-                wrappedResponse.copyBodyToResponse();
+                if (wrappedResponse != null) {
+                    wrappedResponse.copyBodyToResponse();
+                }
             } finally {
-                clearMdc();
+                restoreMdc(previousMdc);
                 HttpAuditContext.clear();
             }
         }
+    }
+
+    private int responseStatus(HttpServletResponse response) {
+        return response.getStatus();
+    }
+
+    private byte[] requestBody(ContentCachingRequestWrapper request) {
+        return request == null ? null : request.getContentAsByteArray();
+    }
+
+    private byte[] responseBody(ContentCachingResponseWrapper response) {
+        return response == null ? null : response.getContentAsByteArray();
     }
 
     private HttpAuditContextSnapshot context(HttpServletRequest request) {
@@ -86,8 +107,17 @@ public class InboundHttpAuditFilter extends OncePerRequestFilter {
                 traceId,
                 HttpAuditIds.randomSpanId(),
                 traceParent.parentSpanId(),
-                HttpAuditIds.requestId(request.getHeader(properties.getRequestIdHeaderName()))
+                HttpAuditIds.requestId(request.getHeader(properties.getRequestIdHeaderName())),
+                traceParent.flags()
         );
+    }
+
+    private Map<String, String> mdcSnapshot() {
+        var snapshot = new HashMap<String, String>();
+        for (var key : mdcKeys()) {
+            snapshot.put(key, MDC.get(key));
+        }
+        return snapshot;
     }
 
     private void putMdc(HttpAuditContextSnapshot context) {
@@ -100,12 +130,19 @@ public class InboundHttpAuditFilter extends OncePerRequestFilter {
         MDC.put("requestId", context.requestId());
     }
 
-    private void clearMdc() {
-        MDC.remove("correlationId");
-        MDC.remove("traceId");
-        MDC.remove("spanId");
-        MDC.remove("parentSpanId");
-        MDC.remove("requestId");
+    private void restoreMdc(Map<String, String> previousMdc) {
+        for (var key : mdcKeys()) {
+            var previousValue = previousMdc.get(key);
+            if (previousValue == null) {
+                MDC.remove(key);
+            } else {
+                MDC.put(key, previousValue);
+            }
+        }
+    }
+
+    private java.util.List<String> mdcKeys() {
+        return java.util.List.of("correlationId", "traceId", "spanId", "parentSpanId", "requestId");
     }
 
     private HttpHeaders requestHeaders(HttpServletRequest request) {

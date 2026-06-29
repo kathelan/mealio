@@ -33,7 +33,7 @@ public class HttpAuditEventLogger {
     }
 
     public void inboundExchange(InboundHttpAuditEvent event) {
-        var payload = base("http.server.exchange", event.context(), "inbound");
+        var payload = base("http.exchange", event.context());
         payload.put("http", Map.of(
                 "method", event.method(),
                 "path", event.path(),
@@ -42,30 +42,30 @@ public class HttpAuditEventLogger {
                 "durationMs", event.durationMs()
         ));
         payload.put("outcome", outcome(event.statusCode()));
-        payload.put("request", httpPayload(event.requestHeaders(), event.requestBody(), event.requestContentType()));
-        payload.put("response", httpPayload(event.responseHeaders(), event.responseBody(), event.responseContentType()));
+        payload.put("request", httpPayload(event.requestHeaders(), event.requestBody(), event.requestContentType(), false));
+        payload.put("response", httpPayload(event.responseHeaders(), event.responseBody(), event.responseContentType(), false));
         write(payload);
     }
 
     public void outboundRequest(OutboundHttpAuditRequestEvent event) {
-        var payload = base("http.client.request", event.context(), "outbound");
+        var payload = base("http.call.request", event.context());
         payload.put("http", http(event.method(), event.uri(), null, null));
         payload.put("peer", peer(event.uri()));
-        payload.put("request", httpPayload(event.headers(), event.body(), event.contentType()));
+        payload.put("request", httpPayload(event.headers(), event.body(), event.contentType(), false));
         write(payload);
     }
 
     public void outboundResponse(OutboundHttpAuditResponseEvent event) {
-        var payload = base("http.client.response", event.context(), "outbound");
+        var payload = base("http.call.response", event.context());
         payload.put("http", http(event.method(), event.uri(), event.statusCode().value(), event.durationMs()));
         payload.put("peer", peer(event.uri()));
         payload.put("outcome", outcome(event.statusCode()));
-        payload.put("response", httpPayload(event.headers(), event.body(), event.contentType()));
+        payload.put("response", httpPayload(event.headers(), event.body(), event.contentType(), true));
         write(payload);
     }
 
     public void outboundError(OutboundHttpAuditErrorEvent event) {
-        var payload = base("http.client.error", event.context(), "outbound");
+        var payload = base("http.call.error", event.context());
         payload.put("http", http(event.method(), event.uri(), null, event.durationMs()));
         payload.put("peer", peer(event.uri()));
         payload.put("outcome", "network_error");
@@ -76,7 +76,7 @@ public class HttpAuditEventLogger {
         write(payload);
     }
 
-    private Map<String, Object> base(String eventType, HttpAuditContextSnapshot context, String direction) {
+    private Map<String, Object> base(String eventType, HttpAuditContextSnapshot context) {
         var payload = new LinkedHashMap<String, Object>();
         payload.put("timestamp", Instant.now().toString());
         payload.put("eventType", eventType);
@@ -87,7 +87,6 @@ public class HttpAuditEventLogger {
         payload.put("spanId", context.spanId());
         payload.put("parentSpanId", context.parentSpanId());
         payload.put("requestId", context.requestId());
-        payload.put("direction", direction);
         return payload;
     }
 
@@ -131,15 +130,45 @@ public class HttpAuditEventLogger {
         return host;
     }
 
-    private Map<String, Object> httpPayload(HttpHeaders headers, byte[] body, MediaType contentType) {
+    private Map<String, Object> httpPayload(
+            HttpHeaders headers,
+            byte[] body,
+            MediaType contentType,
+            boolean includeProviderRequestId
+    ) {
         var payload = new LinkedHashMap<String, Object>();
-        payload.put("headers", sanitizer.headers(headers));
         payload.put("contentType", contentType == null ? null : contentType.toString());
+        payload.put("contentLength", contentLength(headers));
         payload.put("bodyBytes", body == null ? null : body.length);
         payload.put("bodyLogged", sanitizer.bodyLogged(body, contentType));
-        payload.put("bodyOmittedReason", sanitizer.bodyOmittedReason(body, contentType));
-        payload.put("body", sanitizer.body(body, contentType));
+        var bodyOmittedReason = sanitizer.bodyOmittedReason(body, contentType);
+        if (bodyOmittedReason != null) {
+            payload.put("bodyOmittedReason", bodyOmittedReason);
+        }
+        var providerRequestId = includeProviderRequestId ? providerRequestId(headers) : null;
+        if (providerRequestId != null) {
+            payload.put("providerRequestId", providerRequestId);
+        }
+        if (properties.isIncludeHeaders()) {
+            payload.put("headers", sanitizer.headers(headers));
+        }
+        if (sanitizer.bodyLogged(body, contentType)) {
+            payload.put("body", sanitizer.body(body, contentType));
+        }
         return payload;
+    }
+
+    private Long contentLength(HttpHeaders headers) {
+        var contentLength = headers.getContentLength();
+        return contentLength >= 0 ? contentLength : null;
+    }
+
+    private String providerRequestId(HttpHeaders headers) {
+        var openAiRequestId = headers.getFirst("x-request-id");
+        if (openAiRequestId != null) {
+            return openAiRequestId;
+        }
+        return headers.getFirst("X-Request-ID");
     }
 
     private String outcome(HttpStatusCode statusCode) {

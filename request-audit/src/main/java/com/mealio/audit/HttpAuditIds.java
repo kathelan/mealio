@@ -10,10 +10,12 @@ import org.springframework.util.StringUtils;
 final class HttpAuditIds {
 
     static final String TRACEPARENT_HEADER = "traceparent";
+    static final String DEFAULT_TRACE_FLAGS = "01";
 
     private static final Pattern SAFE_EXTERNAL_ID = Pattern.compile("[A-Za-z0-9._:-]{1,128}");
     private static final Pattern TRACE_ID = Pattern.compile("[0-9a-f]{32}");
     private static final Pattern SPAN_ID = Pattern.compile("[0-9a-f]{16}");
+    private static final Pattern TRACE_FLAGS = Pattern.compile("[0-9a-f]{2}");
     private static final SecureRandom RANDOM = new SecureRandom();
 
     private HttpAuditIds() {
@@ -54,15 +56,22 @@ final class HttpAuditIds {
         if (parts.length != 4 || !"00".equals(parts[0])) {
             return TraceParent.empty();
         }
+        var traceId = validTraceId(parts[1]) ? parts[1] : null;
+        var parentSpanId = validSpanId(parts[2]) ? parts[2] : null;
+        if (!StringUtils.hasText(traceId) || !StringUtils.hasText(parentSpanId)) {
+            return TraceParent.empty();
+        }
+        var flags = TRACE_FLAGS.matcher(parts[3]).matches() ? parts[3] : DEFAULT_TRACE_FLAGS;
         return new TraceParent(
-                TRACE_ID.matcher(parts[1]).matches() ? parts[1] : null,
-                SPAN_ID.matcher(parts[2]).matches() ? parts[2] : null,
-                parts[3]
+                traceId,
+                parentSpanId,
+                flags
         );
     }
 
     static String traceParentHeader(HttpAuditContextSnapshot context) {
-        return "00-%s-%s-01".formatted(context.traceId(), context.spanId());
+        var flags = StringUtils.hasText(context.traceFlags()) ? context.traceFlags() : DEFAULT_TRACE_FLAGS;
+        return "00-%s-%s-%s".formatted(context.traceId(), context.spanId(), flags);
     }
 
     static void putIfAbsent(HttpHeaders headers, String name, String value) {
@@ -73,6 +82,16 @@ final class HttpAuditIds {
 
     private static boolean safeExternalId(String value) {
         return SAFE_EXTERNAL_ID.matcher(nullToEmpty(value)).matches();
+    }
+
+    private static boolean validTraceId(String value) {
+        return TRACE_ID.matcher(nullToEmpty(value)).matches()
+                && !"00000000000000000000000000000000".equals(value);
+    }
+
+    private static boolean validSpanId(String value) {
+        return SPAN_ID.matcher(nullToEmpty(value)).matches()
+                && !"0000000000000000".equals(value);
     }
 
     private static String randomHex(int bytes) {

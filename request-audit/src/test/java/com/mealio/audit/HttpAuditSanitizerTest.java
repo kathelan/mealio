@@ -17,9 +17,11 @@ class HttpAuditSanitizerTest {
         var headers = new HttpHeaders();
         headers.setBearerAuth("secret-token");
         headers.add("X-Request-Id", "request-1");
+        headers.add("openai-project", "proj_secret");
 
         assertThat(sanitizer.headers(headers))
                 .containsEntry("Authorization", java.util.List.of("<redacted>"))
+                .containsEntry("openai-project", java.util.List.of("<redacted>"))
                 .containsEntry("X-Request-Id", java.util.List.of("request-1"));
     }
 

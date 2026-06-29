@@ -74,7 +74,8 @@ class HttpAuditRequestIdTest {
                 "1234567890abcdef1234567890abcdef",
                 "1234567890abcdef",
                 null,
-                "inbound-request"
+                "inbound-request",
+                "00"
         ));
 
         interceptor.intercept(new TestHttpRequest(), new byte[0], (request, body) -> {
@@ -87,7 +88,8 @@ class HttpAuditRequestIdTest {
                 .isNotBlank()
                 .isNotEqualTo("inbound-request");
         assertThat(propagatedHeaders.get().getFirst("traceparent"))
-                .startsWith("00-1234567890abcdef1234567890abcdef-");
+                .startsWith("00-1234567890abcdef1234567890abcdef-")
+                .endsWith("-00");
     }
 
     private static class TestHttpRequest implements HttpRequest {
