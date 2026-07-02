@@ -1,10 +1,14 @@
 package com.mealio.asr.application.service;
 
 import com.mealio.asr.domain.exception.InvalidTranscriptionRequestException;
+import com.mealio.asr.domain.model.AudioMetadata;
+import com.mealio.asr.domain.model.TranscriptionRecord;
 import com.mealio.asr.domain.model.TranscriptionRequest;
 import com.mealio.asr.domain.model.TranscriptionResult;
+import com.mealio.asr.domain.model.TranscriptionStatus;
 import com.mealio.asr.domain.port.in.TranscribeAudioUseCase;
 import com.mealio.asr.domain.port.out.AsrProviderPort;
+import com.mealio.asr.domain.port.out.TranscriptionRecordRepository;
 import java.time.Clock;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +20,7 @@ import org.springframework.util.StringUtils;
 public class TranscriptionService implements TranscribeAudioUseCase {
 
     private final AsrProviderPort asrProviderPort;
+    private final TranscriptionRecordRepository transcriptionRecordRepository;
     private final Clock clock;
 
     @Override
@@ -23,12 +28,33 @@ public class TranscriptionService implements TranscribeAudioUseCase {
         validate(request);
 
         var transcript = asrProviderPort.transcribe(request);
-        return new TranscriptionResult(
+        var transcribedAt = Instant.now(clock);
+        var savedRecord = transcriptionRecordRepository.create(new TranscriptionRecord(
+                null,
                 transcript,
                 request.language(),
                 asrProviderPort.providerName(),
                 null,
-                Instant.now(clock)
+                null,
+                new AudioMetadata(
+                        request.audio().filename(),
+                        request.audio().contentType(),
+                        (long) request.audio().bytes().length
+                ),
+                TranscriptionStatus.COMPLETED,
+                null,
+                null,
+                null,
+                transcribedAt
+        ));
+
+        return new TranscriptionResult(
+                savedRecord.id(),
+                transcript,
+                request.language(),
+                asrProviderPort.providerName(),
+                null,
+                transcribedAt
         );
     }
 

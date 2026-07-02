@@ -14,7 +14,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Table(name = "transcriptions")
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
 public class TranscriptionEntity extends BaseEntity {
 
     @Column(nullable = false, columnDefinition = "text")

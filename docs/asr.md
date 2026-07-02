@@ -52,6 +52,7 @@ Example response:
 
 ```json
 {
+  "id": "7ec72754-c2a3-4db8-a6d8-081780fe755a",
   "transcript": "na sniadanie zjadlem trzy jajka i dwie kromki chleba",
   "language": "pl",
   "provider": "openai",

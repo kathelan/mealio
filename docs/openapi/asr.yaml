@@ -1,0 +1,92 @@
+openapi: 3.0.3
+info:
+  title: Mealio ASR API
+  version: 0.0.1
+paths:
+  /api/v1/transcriptions:
+    post:
+      summary: Transcribe uploaded meal audio
+      operationId: createTranscription
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                language:
+                  type: string
+                  default: pl
+                prompt:
+                  type: string
+      responses:
+        "200":
+          description: Audio was transcribed and the transcript record was stored.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TranscriptionResponse"
+        "400":
+          description: Uploaded audio or transcription request is invalid.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorResponse"
+        "502":
+          description: ASR provider request failed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorResponse"
+        "500":
+          description: Transcription could not be persisted.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorResponse"
+components:
+  schemas:
+    TranscriptionResponse:
+      type: object
+      required:
+        - id
+        - transcript
+        - language
+        - provider
+        - transcribedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        transcript:
+          type: string
+        language:
+          type: string
+        provider:
+          type: string
+        confidence:
+          type: number
+          format: double
+          nullable: true
+        transcribedAt:
+          type: string
+          format: date-time
+    ApiErrorResponse:
+      type: object
+      required:
+        - code
+        - message
+        - timestamp
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time

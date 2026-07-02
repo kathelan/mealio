@@ -4,10 +4,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.mealio.asr.adapter.in.web.dto.ApiErrorResponse;
 import com.mealio.asr.adapter.in.web.dto.TranscriptionResponse;
+import com.mealio.asr.infrastructure.persistence.repository.TranscriptionJpaRepository;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
@@ -18,15 +21,26 @@ import org.springframework.web.client.RestClient;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource(properties = {
         "mealio.asr.provider=mock",
-        "spring.datasource.url=jdbc:h2:mem:mealio_asr_test;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH",
+        "spring.datasource.url=jdbc:h2:mem:mealio_asr_test;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;INIT=CREATE SCHEMA IF NOT EXISTS asr",
         "spring.datasource.username=sa",
         "spring.datasource.password=",
-        "spring.liquibase.enabled=false"
+        "spring.liquibase.enabled=true",
+        "spring.liquibase.change-log=classpath:/db/changelog/db.changelog-master.yaml",
+        "spring.liquibase.default-schema=asr",
+        "spring.jpa.hibernate.ddl-auto=none"
 })
 class TranscriptionControllerIntegrationTest {
 
     @LocalServerPort
     private int port;
+
+    @Autowired
+    private TranscriptionJpaRepository transcriptionJpaRepository;
+
+    @BeforeEach
+    void setUp() {
+        transcriptionJpaRepository.deleteAll();
+    }
 
     @Test
     void transcribesMultipartTextFileThroughMockProvider() throws IOException {
@@ -45,11 +59,23 @@ class TranscriptionControllerIntegrationTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().id()).isNotNull();
         assertThat(response.getBody().transcript()).isEqualTo("zjadlem trzy jajka");
         assertThat(response.getBody().language()).isEqualTo("pl");
         assertThat(response.getBody().provider()).isEqualTo("mock");
         assertThat(response.getBody().confidence()).isNull();
         assertThat(response.getBody().transcribedAt()).isNotNull();
+
+        var savedRecord = transcriptionJpaRepository.findById(response.getBody().id());
+        assertThat(savedRecord).isPresent();
+        assertThat(savedRecord.get().getTranscript()).isEqualTo("zjadlem trzy jajka");
+        assertThat(savedRecord.get().getLanguage()).isEqualTo("pl");
+        assertThat(savedRecord.get().getProvider()).isEqualTo("mock");
+        assertThat(savedRecord.get().getAudioFilename()).isEqualTo("meal.txt");
+        assertThat(savedRecord.get().getAudioContentType()).isEqualTo(MediaType.TEXT_PLAIN_VALUE);
+        assertThat(savedRecord.get().getAudioSizeBytes()).isEqualTo(18L);
+        assertThat(savedRecord.get().getStatus()).isEqualTo("COMPLETED");
+        assertThat(savedRecord.get().getTranscribedAt()).isEqualTo(response.getBody().transcribedAt());
     }
 
     @Test
@@ -70,6 +96,7 @@ class TranscriptionControllerIntegrationTest {
         assertThat(response.getBody().code()).isEqualTo("INVALID_TRANSCRIPTION_REQUEST");
         assertThat(response.getBody().message()).isEqualTo("Audio file is required");
         assertThat(response.getBody().timestamp()).isNotNull();
+        assertThat(transcriptionJpaRepository.findAll()).isEmpty();
     }
 
     private MultipartRequest multipartRequest(String filename, String contentType, byte[] content) throws IOException {

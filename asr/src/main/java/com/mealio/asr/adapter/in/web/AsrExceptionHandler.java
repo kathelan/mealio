@@ -4,6 +4,7 @@ import com.mealio.asr.adapter.in.web.dto.ApiErrorResponse;
 import com.mealio.asr.domain.exception.AsrProviderConfigurationException;
 import com.mealio.asr.domain.exception.AsrProviderException;
 import com.mealio.asr.domain.exception.InvalidTranscriptionRequestException;
+import com.mealio.asr.domain.exception.TranscriptionPersistenceException;
 import java.time.Clock;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +42,12 @@ public class AsrExceptionHandler {
                 "%s (provider=%s, status=%d)"
                         .formatted(exception.getMessage(), exception.providerName(), exception.providerStatusCode())
         );
+    }
+
+    @ExceptionHandler(TranscriptionPersistenceException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    ApiErrorResponse handlePersistenceFailure(TranscriptionPersistenceException exception) {
+        return error("TRANSCRIPTION_PERSISTENCE_ERROR", exception.getMessage());
     }
 
     private ApiErrorResponse error(String code, String message) {

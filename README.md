@@ -69,6 +69,7 @@ cd asr && mvn test
 - [MVP](docs/mvp.md)
 - [Domain model](docs/domain.md)
 - [API](docs/api.md)
+- [ASR OpenAPI](docs/openapi/asr.yaml)
 - [Database](docs/database.md)
 - [ASR module](docs/asr.md)
 - [Development notes](docs/development.md)
