@@ -8,6 +8,9 @@ services:
       POSTGRES_PASSWORD: mealio
     ports:
       - "5432:5432"
+    volumes:
+      - mealio_postgres_data:/var/lib/postgresql/data
+      - ./infra/postgres/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U mealio -d mealio"]
       interval: 5s
@@ -20,9 +23,10 @@ services:
       dockerfile: backend/Dockerfile
     container_name: mealio-app
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/mealio
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/mealio?currentSchema=backend
       SPRING_DATASOURCE_USERNAME: mealio
       SPRING_DATASOURCE_PASSWORD: mealio
+      MEALIO_DB_SCHEMA: backend
       MEALIO_APPLICATION_NAME: Mealio
     ports:
       - "8080:8080"
@@ -41,13 +45,23 @@ services:
       dockerfile: asr/Dockerfile
     container_name: mealio-asr
     environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/mealio?currentSchema=asr
+      SPRING_DATASOURCE_USERNAME: mealio
+      SPRING_DATASOURCE_PASSWORD: mealio
+      MEALIO_DB_SCHEMA: asr
       MEALIO_ASR_PROVIDER: ${MEALIO_ASR_PROVIDER:-mock}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       MEALIO_ASR_OPENAI_MODEL: ${MEALIO_ASR_OPENAI_MODEL:-gpt-4o-mini-transcribe}
     ports:
       - "8081:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://localhost:8080/actuator/health >/dev/null"]
       interval: 10s
       timeout: 5s
       retries: 12
+
+volumes:
+  mealio_postgres_data:

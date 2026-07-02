@@ -16,7 +16,13 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.web.client.RestClient;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@TestPropertySource(properties = "mealio.asr.provider=mock")
+@TestPropertySource(properties = {
+        "mealio.asr.provider=mock",
+        "spring.datasource.url=jdbc:h2:mem:mealio_asr_test;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH",
+        "spring.datasource.username=sa",
+        "spring.datasource.password=",
+        "spring.liquibase.enabled=false"
+})
 class TranscriptionControllerIntegrationTest {
 
     @LocalServerPort

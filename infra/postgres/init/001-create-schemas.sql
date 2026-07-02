@@ -1,0 +1,4 @@
+CREATE SCHEMA IF NOT EXISTS backend AUTHORIZATION mealio;
+CREATE SCHEMA IF NOT EXISTS asr AUTHORIZATION mealio;
+
+ALTER ROLE mealio SET search_path TO backend, public;

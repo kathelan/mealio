@@ -2,13 +2,19 @@ spring:
   application:
     name: mealio
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/mealio}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/mealio?currentSchema=backend}
     username: ${SPRING_DATASOURCE_USERNAME:mealio}
     password: ${SPRING_DATASOURCE_PASSWORD:mealio}
   jpa:
     open-in-view: false
     hibernate:
       ddl-auto: none
+    properties:
+      hibernate:
+        default_schema: ${MEALIO_DB_SCHEMA:backend}
+  liquibase:
+    change-log: classpath:/db/changelog/db.changelog-master.yaml
+    default-schema: ${MEALIO_DB_SCHEMA:backend}
   jackson:
     serialization:
       write-dates-as-timestamps: false
