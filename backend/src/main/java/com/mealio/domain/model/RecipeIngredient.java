@@ -9,6 +9,6 @@ public record RecipeIngredient(
         String name,
         BigDecimal quantity,
         MeasurementUnit unit,
-        Integer calories
+        BigDecimal calories
 ) {
 }

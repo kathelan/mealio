@@ -9,7 +9,8 @@
 
 ## MealCategory
 
-Represents a generic grouping for recipes or meals.
+Represents a generic grouping for recipes or meals. Categories are user-configurable
+and can be nested under another category.
 
 Examples:
 
@@ -18,6 +19,25 @@ Examples:
 - dinner
 - sweet
 - savory
+
+Expected fields:
+
+- id
+- parentId
+- name
+- slug
+- path
+- type
+- sortOrder
+
+Example tree:
+
+- breakfast
+- breakfast / sweet
+- breakfast / savory
+- dinner
+- dinner / soup
+- dinner / pasta
 
 ## Recipe
 
@@ -30,7 +50,7 @@ Expected fields:
 - description
 - createdAt
 - photoUrl
-- categoryId
+- categoryIds
 
 ## RecipeIngredient
 

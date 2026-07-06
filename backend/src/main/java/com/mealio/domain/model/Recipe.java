@@ -1,6 +1,7 @@
 package com.mealio.domain.model;
 
 import java.time.LocalDate;
+import java.util.Set;
 import java.util.UUID;
 
 public record Recipe(
@@ -9,6 +10,6 @@ public record Recipe(
         String description,
         LocalDate createdOn,
         String imageUrl,
-        UUID mealCategoryId
+        Set<UUID> categoryIds
 ) {
 }

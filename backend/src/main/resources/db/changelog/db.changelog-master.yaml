@@ -1,1 +1,231 @@
-databaseChangeLog: []
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-recipes-and-categories
+      author: mealio
+      changes:
+        - createTable:
+            tableName: meal_categories
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: parent_id
+                  type: uuid
+              - column:
+                  name: name
+                  type: varchar(160)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: slug
+                  type: varchar(180)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: path
+                  type: varchar(512)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: type
+                  type: varchar(32)
+                  defaultValue: CUSTOM
+                  constraints:
+                    nullable: false
+              - column:
+                  name: sort_order
+                  type: integer
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamp with time zone
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamp with time zone
+        - addForeignKeyConstraint:
+            baseTableName: meal_categories
+            baseColumnNames: parent_id
+            constraintName: fk_meal_categories_parent
+            referencedTableName: meal_categories
+            referencedColumnNames: id
+            onDelete: SET NULL
+        - addUniqueConstraint:
+            tableName: meal_categories
+            columnNames: parent_id, slug
+            constraintName: uk_meal_categories_parent_slug
+        - addUniqueConstraint:
+            tableName: meal_categories
+            columnNames: path
+            constraintName: uk_meal_categories_path
+        - sql:
+            sql: >
+              ALTER TABLE backend.meal_categories
+              ADD CONSTRAINT chk_meal_categories_path_slug
+              CHECK (
+                (parent_id IS NULL AND path = slug)
+                OR (parent_id IS NOT NULL AND path LIKE CONCAT('%/', slug))
+              )
+        - sql:
+            sql: >
+              ALTER TABLE backend.meal_categories
+              ADD CONSTRAINT chk_meal_categories_type
+              CHECK (type IN ('MEAL', 'TASTE', 'CUSTOM'))
+        - createIndex:
+            tableName: meal_categories
+            indexName: idx_meal_categories_parent
+            columns:
+              - column:
+                  name: parent_id
+        - createIndex:
+            tableName: meal_categories
+            indexName: idx_meal_categories_type
+            columns:
+              - column:
+                  name: type
+
+        - createTable:
+            tableName: recipes
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(220)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: varchar(2048)
+              - column:
+                  name: created_on
+                  type: date
+              - column:
+                  name: image_url
+                  type: varchar(1024)
+              - column:
+                  name: created_at
+                  type: timestamp with time zone
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamp with time zone
+        - createIndex:
+            tableName: recipes
+            indexName: idx_recipes_created_on
+            columns:
+              - column:
+                  name: created_on
+
+        - createTable:
+            tableName: recipe_categories
+            columns:
+              - column:
+                  name: recipe_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: category_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamp with time zone
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+        - addPrimaryKey:
+            tableName: recipe_categories
+            columnNames: recipe_id, category_id
+            constraintName: pk_recipe_categories
+        - addForeignKeyConstraint:
+            baseTableName: recipe_categories
+            baseColumnNames: recipe_id
+            constraintName: fk_recipe_categories_recipe
+            referencedTableName: recipes
+            referencedColumnNames: id
+            onDelete: CASCADE
+        - addForeignKeyConstraint:
+            baseTableName: recipe_categories
+            baseColumnNames: category_id
+            constraintName: fk_recipe_categories_category
+            referencedTableName: meal_categories
+            referencedColumnNames: id
+            onDelete: CASCADE
+        - createIndex:
+            tableName: recipe_categories
+            indexName: idx_recipe_categories_category
+            columns:
+              - column:
+                  name: category_id
+
+        - createTable:
+            tableName: recipe_ingredients
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: recipe_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(220)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: quantity
+                  type: numeric(12, 3)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: unit
+                  type: varchar(32)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: calories
+                  type: numeric(10, 2)
+              - column:
+                  name: created_at
+                  type: timestamp with time zone
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamp with time zone
+        - addForeignKeyConstraint:
+            baseTableName: recipe_ingredients
+            baseColumnNames: recipe_id
+            constraintName: fk_recipe_ingredients_recipe
+            referencedTableName: recipes
+            referencedColumnNames: id
+            onDelete: CASCADE
+        - createIndex:
+            tableName: recipe_ingredients
+            indexName: idx_recipe_ingredients_recipe
+            columns:
+              - column:
+                  name: recipe_id
