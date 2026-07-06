@@ -76,5 +76,9 @@ cd asr && mvn test
 
 ## Next step
 
-Initialize the backend application, wire the health endpoints, and then add the first
-vertical slice for recipes and categories.
+Add the first hexagonal backend slice for configurable meal categories:
+
+- input ports and application use cases for creating root categories and child categories
+- persistence adapters that map domain models to the `backend` schema
+- REST endpoints for creating categories and listing the category tree
+- integration tests that cover validation, schema isolation, and parent-child behavior

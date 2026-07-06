@@ -11,8 +11,9 @@
 1. initialize the backend project
 2. add Docker and PostgreSQL locally
 3. expose health probes
-4. add the first recipe and category use cases
-5. add tests before growing the model
+4. add backend persistence for recipes and configurable category trees
+5. add the first category use cases, ports, adapters, and REST endpoints
+6. add recipe use cases once category management works end to end
 
 ## Commands
 
