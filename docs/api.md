@@ -38,10 +38,47 @@ Response:
 }
 ```
 
-## MVP endpoints to add next
+## Categories
+
+Categories are nested labels for recipes, such as breakfast, soup, sweet, and savory.
+They are addressed by UUID and expose a generated `slug` and slash-separated `path`.
 
 - `GET /api/v1/categories`
+- `GET /api/v1/categories/{id}`
 - `POST /api/v1/categories`
+- `PATCH /api/v1/categories/{id}`
+- `DELETE /api/v1/categories/{id}`
+
+Create request:
+
+```json
+{
+  "parentId": null,
+  "name": "Breakfast",
+  "type": "MEAL",
+  "sortOrder": 10
+}
+```
+
+Patch supports only `name`, `parentId`, `type`, and `sortOrder`. Unknown fields,
+empty payloads, non-integer `sortOrder` values, invalid parent moves, and invalid
+types return `400`.
+
+Deleting a category with children returns `409 CATEGORY_HAS_CHILDREN`; clients must
+move or delete children first.
+
+Category errors use:
+
+```json
+{
+  "code": "CATEGORY_NOT_FOUND",
+  "message": "Category not found: 7ec72754-c2a3-4db8-a6d8-081780fe755a",
+  "timestamp": "2026-07-13T12:00:00Z"
+}
+```
+
+## MVP endpoints to add next
+
 - `GET /api/v1/recipes`
 - `POST /api/v1/recipes`
 - `GET /api/v1/recipes/{id}`

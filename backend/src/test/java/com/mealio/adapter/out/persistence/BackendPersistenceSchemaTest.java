@@ -18,6 +18,7 @@ import org.springframework.test.context.TestPropertySource;
         "spring.liquibase.enabled=true",
         "spring.liquibase.change-log=classpath:/db/changelog/db.changelog-master.yaml",
         "spring.liquibase.default-schema=backend",
+        "spring.liquibase.parameters.mealioSchema=backend",
         "spring.jpa.hibernate.ddl-auto=validate",
         "spring.jpa.properties.hibernate.default_schema=backend"
 })

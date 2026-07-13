@@ -68,7 +68,7 @@ databaseChangeLog:
             constraintName: uk_meal_categories_path
         - sql:
             sql: >
-              ALTER TABLE backend.meal_categories
+              ALTER TABLE ${mealioSchema}.meal_categories
               ADD CONSTRAINT chk_meal_categories_path_slug
               CHECK (
                 (parent_id IS NULL AND path = slug)
@@ -76,7 +76,7 @@ databaseChangeLog:
               )
         - sql:
             sql: >
-              ALTER TABLE backend.meal_categories
+              ALTER TABLE ${mealioSchema}.meal_categories
               ADD CONSTRAINT chk_meal_categories_type
               CHECK (type IN ('MEAL', 'TASTE', 'CUSTOM'))
         - createIndex:

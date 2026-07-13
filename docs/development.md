@@ -12,8 +12,8 @@
 2. add Docker and PostgreSQL locally
 3. expose health probes
 4. add backend persistence for recipes and configurable category trees
-5. add the first category use cases, ports, adapters, and REST endpoints
-6. add recipe use cases once category management works end to end
+5. add the first category use cases, ports, adapters, and REST endpoints - done
+6. add recipe use cases once category management works end to end - next
 
 ## Commands
 

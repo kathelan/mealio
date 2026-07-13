@@ -25,8 +25,9 @@ schema.
 
 ```text
 backend schema:
-  users later
-  generic categorization model later
+  meal categories
+  recipes and recipe ingredients
+  future users
   future products and meals
   future meal diary
 
@@ -40,11 +41,10 @@ Audio files are not stored durably in the MVP. The mobile app uploads audio, ASR
 it to the transcription provider, the service stores the transcript and metadata, and
 the audio bytes are discarded.
 
-Backend domain tables are intentionally not implemented yet. The current backend idea
-is a generic many-to-many categorization model, where a user can create broad groups
-such as breakfast and then attach nested or parallel labels such as soup, sweet, salty,
-and similar categories. We will design that model separately after the ASR slice is
-closed.
+The backend schema currently stores nested meal categories, recipes, recipe-category
+links, and recipe ingredients. Categories use a generated `slug` and slash-separated
+`path`; deleting a category that still has children is rejected by the application so
+the tree stays explicit and predictable.
 
 ## Migrations
 

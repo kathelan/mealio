@@ -1,0 +1,195 @@
+package com.mealio.category.application.service;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import com.mealio.category.domain.exception.CategoryHasChildrenException;
+import com.mealio.category.domain.exception.DuplicateCategoryException;
+import com.mealio.category.domain.exception.InvalidCategoryException;
+import com.mealio.category.domain.model.CategoryType;
+import com.mealio.category.domain.model.CreateCategoryCommand;
+import com.mealio.category.domain.model.FieldPatch;
+import com.mealio.category.domain.model.MealCategory;
+import com.mealio.category.domain.model.PatchCategoryCommand;
+import com.mealio.category.domain.port.out.CategoryRepository;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+class CategoryServiceTest {
+
+    private final InMemoryCategoryRepository repository = new InMemoryCategoryRepository();
+    private final Clock clock = Clock.fixed(Instant.parse("2026-07-07T10:00:00Z"), ZoneOffset.UTC);
+    private final CategoryService service = new CategoryService(repository, clock);
+
+    @BeforeEach
+    void setUp() {
+        repository.clear();
+    }
+
+    @Test
+    void createsCategoryWithGeneratedSlugAndDefaults() {
+        var category = service.create(new CreateCategoryCommand(null, "  Śniadanie  ", null, null));
+
+        assertThat(category.id()).isNotNull();
+        assertThat(category.name()).isEqualTo("Śniadanie");
+        assertThat(category.slug()).isEqualTo("sniadanie");
+        assertThat(category.path()).isEqualTo("sniadanie");
+        assertThat(category.type()).isEqualTo(CategoryType.CUSTOM);
+        assertThat(category.sortOrder()).isZero();
+    }
+
+    @Test
+    void rejectsDuplicatePath() {
+        service.create(new CreateCategoryCommand(null, "Breakfast", CategoryType.MEAL, 0));
+
+        assertThatThrownBy(() -> service.create(new CreateCategoryCommand(null, "Breakfast", CategoryType.MEAL, 1)))
+                .isInstanceOf(DuplicateCategoryException.class)
+                .hasMessageContaining("breakfast");
+    }
+
+    @Test
+    void patchesCategoryAndMovesDescendantPaths() {
+        var meal = service.create(new CreateCategoryCommand(null, "Meal", CategoryType.MEAL, 1));
+        var soup = service.create(new CreateCategoryCommand(meal.id(), "Soup", CategoryType.CUSTOM, 2));
+        var tomato = service.create(new CreateCategoryCommand(soup.id(), "Tomato", CategoryType.CUSTOM, 3));
+
+        var updated = service.patch(new PatchCategoryCommand(
+                soup.id(),
+                FieldPatch.of("Sweet Soup"),
+                FieldPatch.missing(),
+                FieldPatch.of(CategoryType.TASTE),
+                FieldPatch.of(7)
+        ));
+
+        assertThat(updated.path()).isEqualTo("meal/sweet-soup");
+        assertThat(updated.type()).isEqualTo(CategoryType.TASTE);
+        assertThat(updated.sortOrder()).isEqualTo(7);
+        assertThat(service.get(tomato.id()).path()).isEqualTo("meal/sweet-soup/tomato");
+    }
+
+    @Test
+    void patchCanMoveCategoryToRoot() {
+        var meal = service.create(new CreateCategoryCommand(null, "Meal", CategoryType.MEAL, 1));
+        var soup = service.create(new CreateCategoryCommand(meal.id(), "Soup", CategoryType.CUSTOM, 2));
+
+        var updated = service.patch(new PatchCategoryCommand(
+                soup.id(),
+                FieldPatch.missing(),
+                FieldPatch.of(null),
+                FieldPatch.missing(),
+                FieldPatch.missing()
+        ));
+
+        assertThat(updated.parentId()).isNull();
+        assertThat(updated.path()).isEqualTo("soup");
+    }
+
+    @Test
+    void rejectsMovingCategoryUnderDescendant() {
+        var meal = service.create(new CreateCategoryCommand(null, "Meal", CategoryType.MEAL, 1));
+        var soup = service.create(new CreateCategoryCommand(meal.id(), "Soup", CategoryType.CUSTOM, 2));
+
+        assertThatThrownBy(() -> service.patch(new PatchCategoryCommand(
+                meal.id(),
+                FieldPatch.missing(),
+                FieldPatch.of(soup.id()),
+                FieldPatch.missing(),
+                FieldPatch.missing()
+        ))).isInstanceOf(InvalidCategoryException.class)
+                .hasMessageContaining("descendant");
+    }
+
+    @Test
+    void rejectsEmptyPatch() {
+        var meal = service.create(new CreateCategoryCommand(null, "Meal", CategoryType.MEAL, 1));
+
+        assertThatThrownBy(() -> service.patch(new PatchCategoryCommand(
+                meal.id(),
+                FieldPatch.missing(),
+                FieldPatch.missing(),
+                FieldPatch.missing(),
+                FieldPatch.missing()
+        ))).isInstanceOf(InvalidCategoryException.class)
+                .hasMessageContaining("at least one");
+    }
+
+    @Test
+    void rejectsDeletingCategoryWithChildren() {
+        var meal = service.create(new CreateCategoryCommand(null, "Meal", CategoryType.MEAL, 1));
+        service.create(new CreateCategoryCommand(meal.id(), "Soup", CategoryType.CUSTOM, 2));
+
+        assertThatThrownBy(() -> service.delete(meal.id()))
+                .isInstanceOf(CategoryHasChildrenException.class);
+    }
+
+    private static final class InMemoryCategoryRepository implements CategoryRepository {
+
+        private final List<MealCategory> categories = new ArrayList<>();
+
+        @Override
+        public List<MealCategory> findAll() {
+            return List.copyOf(categories);
+        }
+
+        @Override
+        public Optional<MealCategory> findById(UUID id) {
+            return categories.stream().filter(category -> category.id().equals(id)).findFirst();
+        }
+
+        @Override
+        public Optional<MealCategory> findByPath(String path) {
+            return categories.stream().filter(category -> category.path().equals(path)).findFirst();
+        }
+
+        @Override
+        public List<MealCategory> findByPathPrefix(String pathPrefix) {
+            return categories.stream().filter(category -> category.path().startsWith(pathPrefix)).toList();
+        }
+
+        @Override
+        public boolean existsByParentId(UUID parentId) {
+            return categories.stream().anyMatch(category -> parentId.equals(category.parentId()));
+        }
+
+        @Override
+        public MealCategory save(MealCategory category) {
+            var saved = category.id() == null
+                    ? new MealCategory(
+                    UUID.randomUUID(),
+                    category.parentId(),
+                    category.name(),
+                    category.slug(),
+                    category.path(),
+                    category.type(),
+                    category.sortOrder(),
+                    category.createdAt(),
+                    category.updatedAt()
+            )
+                    : category;
+            deleteById(saved.id());
+            categories.add(saved);
+            return saved;
+        }
+
+        @Override
+        public List<MealCategory> saveAll(List<MealCategory> categoriesToSave) {
+            return categoriesToSave.stream().map(this::save).toList();
+        }
+
+        @Override
+        public void deleteById(UUID id) {
+            categories.removeIf(category -> category.id().equals(id));
+        }
+
+        void clear() {
+            categories.clear();
+        }
+    }
+}
