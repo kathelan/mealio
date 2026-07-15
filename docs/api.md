@@ -2,8 +2,8 @@
 
 The API starts with a very small surface.
 
-The ASR contract currently lives in [ASR OpenAPI](openapi/asr.yaml). The next contract
-task is to publish categories, recipes, and ingredients in `openapi/backend.yaml`.
+The service contracts live in [ASR OpenAPI](openapi/asr.yaml) and
+[Backend OpenAPI](openapi/backend.yaml).
 Future meal-parser and nutrition-resolver services will also own separate OpenAPI
 contracts and will be integrated through generated REST clients.
 

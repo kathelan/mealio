@@ -14,8 +14,8 @@
 4. add backend persistence for recipes and configurable category trees
 5. add the first category use cases, ports, adapters, and REST endpoints - done
 6. add recipe use cases, persistence adapters, REST endpoints, and tests - done
-7. publish the category, recipe, and ingredient API as `docs/openapi/backend.yaml` - next
-8. define the meal-parser and nutrition-resolver OpenAPI contracts
+7. publish the category, recipe, and ingredient API as `docs/openapi/backend.yaml` - done
+8. define the meal-parser and nutrition-resolver OpenAPI contracts - next
 9. implement transcript-to-meal proposals with calorie calculation and provenance
 10. generate REST clients and add service-to-service contract tests
 11. add user confirmation before proposed data is persisted by the backend

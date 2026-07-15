@@ -1,0 +1,485 @@
+openapi: 3.0.3
+info:
+  title: Mealio Backend API
+  version: 0.1.0
+  description: API for health checks, configurable categories, recipes, and ingredients.
+servers:
+  - url: http://localhost:8080
+    description: Local development
+tags:
+  - name: Health
+  - name: Categories
+  - name: Recipes
+paths:
+  /api/v1/health:
+    get:
+      tags: [Health]
+      summary: Check application health
+      operationId: getApplicationHealth
+      responses:
+        "200":
+          description: Application is healthy.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+  /api/v1/categories:
+    get:
+      tags: [Categories]
+      summary: List categories
+      operationId: listCategories
+      responses:
+        "200":
+          description: Categories ordered by path.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CategoryResponse"
+        "500":
+          $ref: "#/components/responses/CategoryPersistenceError"
+    post:
+      tags: [Categories]
+      summary: Create a category
+      operationId: createCategory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryCreateRequest"
+      responses:
+        "201":
+          description: Category created.
+          headers:
+            Location:
+              schema:
+                type: string
+                format: uri-reference
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CategoryResponse"
+        "400":
+          $ref: "#/components/responses/InvalidCategoryRequest"
+        "409":
+          description: A category with the generated path already exists.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorResponse"
+        "500":
+          $ref: "#/components/responses/CategoryPersistenceError"
+  /api/v1/categories/{id}:
+    parameters:
+      - $ref: "#/components/parameters/ResourceId"
+    get:
+      tags: [Categories]
+      summary: Get a category
+      operationId: getCategory
+      responses:
+        "200":
+          description: Category found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CategoryResponse"
+        "400":
+          $ref: "#/components/responses/InvalidCategoryRequest"
+        "404":
+          description: Category not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorResponse"
+        "500":
+          $ref: "#/components/responses/CategoryPersistenceError"
+    patch:
+      tags: [Categories]
+      summary: Update selected category fields
+      operationId: patchCategory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryPatchRequest"
+      responses:
+        "200":
+          description: Category updated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CategoryResponse"
+        "400":
+          $ref: "#/components/responses/InvalidCategoryRequest"
+        "404":
+          description: Category or requested parent not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorResponse"
+        "409":
+          description: Updated category path conflicts with another category.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorResponse"
+        "500":
+          $ref: "#/components/responses/CategoryPersistenceError"
+    delete:
+      tags: [Categories]
+      summary: Delete an empty category
+      operationId: deleteCategory
+      responses:
+        "204":
+          description: Category deleted.
+        "400":
+          $ref: "#/components/responses/InvalidCategoryRequest"
+        "404":
+          description: Category not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorResponse"
+        "409":
+          description: Category has children and cannot be deleted.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorResponse"
+        "500":
+          $ref: "#/components/responses/CategoryPersistenceError"
+  /api/v1/recipes:
+    get:
+      tags: [Recipes]
+      summary: List recipes
+      operationId: listRecipes
+      responses:
+        "200":
+          description: Recipes ordered by date descending and name.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RecipeResponse"
+        "500":
+          $ref: "#/components/responses/RecipePersistenceError"
+    post:
+      tags: [Recipes]
+      summary: Create a recipe
+      operationId: createRecipe
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecipeCreateRequest"
+      responses:
+        "201":
+          description: Recipe created.
+          headers:
+            Location:
+              schema:
+                type: string
+                format: uri-reference
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecipeResponse"
+        "400":
+          $ref: "#/components/responses/InvalidRecipeRequest"
+        "500":
+          $ref: "#/components/responses/RecipePersistenceError"
+  /api/v1/recipes/{id}:
+    parameters:
+      - $ref: "#/components/parameters/ResourceId"
+    get:
+      tags: [Recipes]
+      summary: Get a recipe with ingredients
+      operationId: getRecipe
+      responses:
+        "200":
+          description: Recipe found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecipeDetailsResponse"
+        "400":
+          $ref: "#/components/responses/InvalidRecipeRequest"
+        "404":
+          $ref: "#/components/responses/RecipeNotFound"
+        "500":
+          $ref: "#/components/responses/RecipePersistenceError"
+  /api/v1/recipes/{id}/ingredients:
+    parameters:
+      - $ref: "#/components/parameters/ResourceId"
+    post:
+      tags: [Recipes]
+      summary: Add an ingredient to a recipe
+      operationId: addRecipeIngredient
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IngredientCreateRequest"
+      responses:
+        "201":
+          description: Ingredient created.
+          headers:
+            Location:
+              schema:
+                type: string
+                format: uri-reference
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IngredientResponse"
+        "400":
+          $ref: "#/components/responses/InvalidRecipeRequest"
+        "404":
+          $ref: "#/components/responses/RecipeNotFound"
+        "500":
+          $ref: "#/components/responses/RecipePersistenceError"
+components:
+  parameters:
+    ResourceId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    InvalidCategoryRequest:
+      description: Category request is invalid.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiErrorResponse"
+    CategoryPersistenceError:
+      description: Category persistence failed.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiErrorResponse"
+    InvalidRecipeRequest:
+      description: Recipe or ingredient request is invalid.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiErrorResponse"
+    RecipeNotFound:
+      description: Recipe not found.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiErrorResponse"
+    RecipePersistenceError:
+      description: Recipe persistence failed.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiErrorResponse"
+  schemas:
+    HealthResponse:
+      type: object
+      required: [status, application, timestamp]
+      properties:
+        status:
+          type: string
+          example: UP
+        application:
+          type: string
+          example: mealio-backend
+        timestamp:
+          type: string
+          format: date-time
+    CategoryType:
+      type: string
+      enum: [MEAL, TASTE, CUSTOM]
+    CategoryCreateRequest:
+      type: object
+      required: [name]
+      additionalProperties: false
+      properties:
+        parentId:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+          maxLength: 160
+        type:
+          $ref: "#/components/schemas/CategoryType"
+        sortOrder:
+          type: integer
+          format: int32
+          default: 0
+    CategoryPatchRequest:
+      type: object
+      minProperties: 1
+      additionalProperties: false
+      properties:
+        parentId:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+          maxLength: 160
+        type:
+          allOf:
+            - $ref: "#/components/schemas/CategoryType"
+          nullable: true
+        sortOrder:
+          type: integer
+          format: int32
+          nullable: true
+    CategoryResponse:
+      type: object
+      required: [id, name, slug, path, type, sortOrder, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        parentId:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+        slug:
+          type: string
+        path:
+          type: string
+        type:
+          $ref: "#/components/schemas/CategoryType"
+        sortOrder:
+          type: integer
+          format: int32
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    RecipeCreateRequest:
+      type: object
+      required: [name]
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          maxLength: 220
+        description:
+          type: string
+          maxLength: 2048
+          nullable: true
+        createdOn:
+          type: string
+          format: date
+          nullable: true
+        imageUrl:
+          type: string
+          maxLength: 1024
+          nullable: true
+        categoryIds:
+          type: array
+          uniqueItems: true
+          default: []
+          items:
+            type: string
+            format: uuid
+    RecipeResponse:
+      type: object
+      required: [id, name, createdOn, categoryIds]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        createdOn:
+          type: string
+          format: date
+        imageUrl:
+          type: string
+          nullable: true
+        categoryIds:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+            format: uuid
+    RecipeDetailsResponse:
+      allOf:
+        - $ref: "#/components/schemas/RecipeResponse"
+        - type: object
+          required: [ingredients]
+          properties:
+            ingredients:
+              type: array
+              items:
+                $ref: "#/components/schemas/IngredientResponse"
+    MeasurementUnit:
+      type: string
+      description: Short unit code. Enum names are also accepted on input.
+      enum: [g, t, w, ml, pcs]
+    IngredientCreateRequest:
+      type: object
+      required: [name, quantity, unit]
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          maxLength: 220
+        quantity:
+          type: number
+          format: decimal
+          minimum: 0
+          exclusiveMinimum: true
+          multipleOf: 0.001
+          maximum: 999999999.999
+        unit:
+          $ref: "#/components/schemas/MeasurementUnit"
+        calories:
+          type: number
+          format: decimal
+          minimum: 0
+          multipleOf: 0.01
+          maximum: 99999999.99
+          nullable: true
+    IngredientResponse:
+      type: object
+      required: [id, name, quantity, unit]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        quantity:
+          type: number
+        unit:
+          $ref: "#/components/schemas/MeasurementUnit"
+        calories:
+          type: number
+          nullable: true
+    ApiErrorResponse:
+      type: object
+      required: [code, message, timestamp]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time

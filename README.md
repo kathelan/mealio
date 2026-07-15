@@ -70,6 +70,7 @@ cd asr && mvn test
 - [Domain model](docs/domain.md)
 - [API](docs/api.md)
 - [ASR OpenAPI](docs/openapi/asr.yaml)
+- [Backend OpenAPI](docs/openapi/backend.yaml)
 - [Database](docs/database.md)
 - [ASR module](docs/asr.md)
 - [Development notes](docs/development.md)
