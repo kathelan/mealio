@@ -76,9 +76,10 @@ cd asr && mvn test
 
 ## Next step
 
-Add the first hexagonal backend slice for configurable meal categories:
+Add structured meal interpretation on top of ASR transcripts:
 
-- input ports and application use cases for creating root categories and child categories
-- persistence adapters that map domain models to the `backend` schema
-- REST endpoints for creating categories and listing the category tree
-- integration tests that cover validation, schema isolation, and parent-child behavior
+- parse transcript text into proposed foods and quantities
+- resolve products and nutrition data without coupling the logic to the ASR provider
+- calculate calories and preserve confidence and provenance for each proposed item
+- require user confirmation before categories, recipes, or consumed meals are persisted
+- publish service OpenAPI contracts and integrate them through generated REST clients

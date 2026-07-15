@@ -2,6 +2,11 @@
 
 The API starts with a very small surface.
 
+The ASR contract currently lives in [ASR OpenAPI](openapi/asr.yaml). The next contract
+task is to publish categories, recipes, and ingredients in `openapi/backend.yaml`.
+Future meal-parser and nutrition-resolver services will also own separate OpenAPI
+contracts and will be integrated through generated REST clients.
+
 ## Health
 
 - `GET /api/v1/health`
@@ -77,9 +82,32 @@ Category errors use:
 }
 ```
 
-## MVP endpoints to add next
+## Recipes
 
 - `GET /api/v1/recipes`
 - `POST /api/v1/recipes`
 - `GET /api/v1/recipes/{id}`
 - `POST /api/v1/recipes/{id}/ingredients`
+
+Creating a recipe accepts `name`, optional `description`, `createdOn`, `imageUrl`, and
+`categoryIds`. Every category id must already exist. When `createdOn` is omitted, the
+backend uses the current date.
+
+Ingredients accept `name`, a positive `quantity`, `unit`, and optional non-negative
+`calories`. Units can be sent as their short codes (`g`, `t`, `w`, `ml`, `pcs`) or enum
+names. `GET /api/v1/recipes/{id}` returns the recipe together with its ingredients.
+
+Recipe errors use the same error envelope as categories, with codes such as
+`RECIPE_NOT_FOUND`, `INVALID_RECIPE_REQUEST`, and `RECIPE_PERSISTENCE_ERROR`.
+
+## Proposed voice meal APIs
+
+The meal parser will accept transcript text supplied by the workflow orchestrator and return
+proposed food items with quantities, units, suggested categories, and confidence. The
+nutrition resolver will enrich those items with calories, nutrition data provenance,
+and confidence.
+
+Neither service persists recipes, categories, or consumed meals. Its result remains a
+proposal until the user confirms it; the confirmed payload is then written through the
+backend API. Mutating calls should support idempotency so retries cannot create duplicate
+records.

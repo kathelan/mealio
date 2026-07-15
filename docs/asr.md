@@ -17,6 +17,11 @@ The first implementation exposes the ASR boundary and keeps the provider replace
 This lets us start with OpenAI and later add Deepgram, Google Speech-to-Text, or local
 Whisper without changing the public API.
 
+ASR is not responsible for category creation, food persistence, or calorie calculation.
+The workflow orchestrator passes the transcript returned by ASR to downstream meal-parser
+and nutrition-resolver services through versioned OpenAPI contracts. They return a proposal
+for user confirmation.
+
 ## Architecture
 
 The module should follow hexagonal architecture. Application code depends on ports,
@@ -116,6 +121,8 @@ builds the shared jar.
 ## Next work
 
 - Add provider-level timeout and retry policy.
-- Persist original audio metadata and transcript audit data.
-- Add a meal parser module that converts transcript text into structured food items.
+- Extend the persisted transcription audit data with original audio metadata where useful.
+- Add a meal parser module that converts transcript text into proposed food items and quantities.
+- Add a nutrition resolver that calculates calories and records the data source and confidence.
+- Add an explicit user-confirmation step before parsed results change backend data.
 - Add fallback provider support once we have traffic and cost data.
