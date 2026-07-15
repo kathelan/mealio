@@ -1,35 +1,34 @@
-# Request Audit
+# Audyt żądań
 
-Reusable HTTP request/response audit library for Mealio services.
+Biblioteka wielokrotnego użytku do audytu żądań i odpowiedzi HTTP usług Mealio.
 
-It provides:
+Zapewnia:
 
-- inbound servlet request/response audit logging,
-- outbound `RestClient` request/response audit logging,
-- `X-Correlation-Id`, `X-Request-Id`, and W3C `traceparent` propagation,
-- structured JSON audit events,
-- sensitive header redaction,
-- body previews only when explicitly enabled and only for text-like content,
-- binary body omission for uploads such as audio.
+- audyt przychodzących żądań i odpowiedzi servletowych
+- audyt wychodzących żądań i odpowiedzi `RestClient`
+- propagację `X-Correlation-Id`, `X-Request-Id` i W3C `traceparent`
+- ustrukturyzowane zdarzenia audytowe JSON
+- maskowanie wrażliwych nagłówków
+- podgląd treści tylko po jawnym włączeniu i wyłącznie dla danych tekstowych
+- pomijanie treści binarnej, np. przesyłanego audio
 
-The library is packaged as a jar and consumed by service modules such as `asr` and
-`backend`.
+Biblioteka jest pakowana jako JAR i używana przez moduły usług, m.in. `asr` i `backend`.
 
-## Build
+## Budowanie i testy
 
-From the repository root:
+Z katalogu głównego repozytorium:
 
 ```bash
 mvn -pl request-audit test
 ```
 
-Build a service together with the library:
+Budowanie usługi razem z biblioteką:
 
 ```bash
 mvn -pl asr -am test
 ```
 
-## Configuration
+## Konfiguracja
 
 ```yaml
 mealio:
@@ -49,28 +48,27 @@ mealio:
       include-query-string: false
 ```
 
-## Event Model
+## Model zdarzeń
 
-Each audit event is logged as JSON with stable correlation fields:
+Każde zdarzenie audytowe jest zapisywane jako JSON ze stabilnymi polami korelacji:
 
-- `correlationId` identifies the whole flow across services.
-- `traceId`, `spanId`, and `parentSpanId` describe the call tree.
-- `requestId` identifies a single HTTP exchange.
-- `serviceName`, `environment`, and `eventType` describe the source.
-- `http.statusCode`, `http.durationMs`, and `outcome` describe the result.
-- `peer.service` and `peer.host` describe external service calls.
+- `correlationId` identyfikuje cały przepływ między usługami
+- `traceId`, `spanId` i `parentSpanId` opisują drzewo wywołań
+- `requestId` identyfikuje pojedynczą wymianę HTTP
+- `serviceName`, `environment` i `eventType` opisują źródło
+- `http.statusCode`, `http.durationMs` i `outcome` opisują wynik
+- `peer.service` i `peer.host` opisują wywołania usług zewnętrznych
 
-Inbound requests use an existing safe `X-Correlation-Id`/`X-Request-Id` when present
-or generate missing IDs. Outbound `RestClient` calls create a new local `requestId`
-and child `spanId`, while propagating the flow-wide correlation and trace context.
+Żądania przychodzące używają bezpiecznych `X-Correlation-Id` i `X-Request-Id`, jeśli je
+otrzymały, albo generują brakujące identyfikatory. Wywołania `RestClient` tworzą lokalny
+`requestId` i potomny `spanId`, propagując kontekst korelacji i śledzenia.
 
-Header and body logging are disabled by default. Normal audit events keep compact
-metadata such as content type, content length, body size, status, duration, outcome,
-and provider request IDs such as OpenAI `x-request-id`. Enable full headers or body
-previews only for short-lived local diagnostics. Query values are redacted by default;
-when query logging is enabled, sensitive parameters such as tokens, keys, email, and
-password are still redacted.
+Logowanie nagłówków i treści jest domyślnie wyłączone. Zdarzenia zachowują zwarte metadane,
+np. typ i długość treści, rozmiar, status, czas trwania, wynik oraz identyfikatory dostawców,
+takie jak OpenAI `x-request-id`. Pełne nagłówki i podgląd treści włączaj tylko na czas lokalnej
+diagnostyki. Wartości zapytań są domyślnie maskowane, a parametry takie jak tokeny, klucze,
+e-mail i hasło pozostają zamaskowane także po włączeniu logowania zapytań.
 
-Current context propagation is designed for synchronous Spring MVC flows using
-`ThreadLocal` and MDC. Add an executor `TaskDecorator` before using this context
-through `@Async`, custom executors, schedulers, or reactive/WebFlux flows.
+Obecna propagacja kontekstu jest przeznaczona dla synchronicznych przepływów Spring MVC
+z `ThreadLocal` i MDC. Przed użyciem kontekstu przez `@Async`, własne executory, schedulery
+lub WebFlux dodaj `TaskDecorator` executora.

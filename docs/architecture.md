@@ -1,15 +1,15 @@
-# Architecture
+# Architektura
 
-Mealio starts as a backend-first mobile API with a hexagonal architecture.
+Mealio powstaje najpierw jako mobilne API backendowe w architekturze heksagonalnej.
 
-## Goals
+## Cele
 
-- keep the domain isolated from frameworks
-- keep the first MVP small and testable
-- make deployment on OpenShift straightforward
-- keep documentation compact so it stays usable
+- izolacja domeny od frameworków
+- małe i testowalne pierwsze MVP
+- proste wdrożenie na OpenShift
+- zwarta i użyteczna dokumentacja
 
-## Suggested backend shape
+## Proponowana struktura backendu
 
 ```text
 backend/src/main/java/com/mealio/
@@ -35,16 +35,16 @@ backend/src/main/java/com/mealio/
     validation/
 ```
 
-## Design rules
+## Zasady projektowe
 
-- domain code does not depend on Spring
-- application services orchestrate use cases
-- adapters translate between HTTP, persistence, and domain objects
-- OpenAPI and health probes live with the infrastructure layer
+- kod domenowy nie zależy od Springa
+- serwisy aplikacyjne koordynują przypadki użycia
+- adaptery tłumaczą dane między HTTP, persystencją i obiektami domenowymi
+- OpenAPI i sondy stanu należą do warstwy infrastruktury
 
-## Voice meal flow
+## Przepływ głosowego wprowadzania posiłku
 
-Voice input is split into small services with separate responsibilities:
+Obsługa głosu jest podzielona na małe usługi o osobnych odpowiedzialnościach:
 
 ```text
 audio
@@ -55,19 +55,20 @@ audio
   -> backend: persist accepted categories, recipes, ingredients, or meals
 ```
 
-ASR only converts speech to text. It must not create backend data or calculate
-nutrition. The meal parser and nutrition resolver return proposals; only an explicit
-confirmation request may persist their result.
+ASR wyłącznie zamienia mowę na tekst. Nie tworzy danych backendu ani nie oblicza wartości
+odżywczych. Parser posiłków i resolver żywieniowy zwracają propozycje; ich wynik może zostać
+zapisany dopiero po jawnym potwierdzeniu.
 
-## Service integration
+## Integracja usług
 
-REST integrations are contract-first. Each service owns an OpenAPI document for its
-public API, and consumers should use generated clients and DTOs where practical.
+Integracje REST są projektowane contract-first. Każda usługa posiada dokument OpenAPI
+swojego publicznego API, a konsumenci powinni w miarę możliwości używać generowanych
+klientów i DTO.
 
-- keep service-owned OpenAPI contracts in `docs/openapi/`
-- use stable operation ids and shared error-envelope semantics
-- propagate correlation and trace identifiers across every service call
-- define explicit connect and response timeouts
-- retry only operations that are safe or protected by idempotency keys
-- verify provider and consumer compatibility with contract tests
-- do not share persistence entities or service database tables across modules
+- przechowuj kontrakty OpenAPI usług w `docs/openapi/`
+- używaj stabilnych identyfikatorów operacji i wspólnej semantyki błędów
+- propaguj identyfikatory korelacji i śledzenia przez wszystkie wywołania usług
+- definiuj jawne limity czasu połączenia i odpowiedzi
+- ponawiaj tylko operacje bezpieczne lub chronione kluczami idempotencji
+- weryfikuj zgodność dostawcy i konsumenta testami kontraktowymi
+- nie współdziel encji persystencji ani tabel baz danych między modułami

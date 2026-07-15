@@ -1,20 +1,20 @@
 # Backend
 
-Java 25 + Spring Boot 4 backend for Mealio.
+Backend Mealio oparty na Javie 25 i Spring Boot 4.
 
-## Build
+## Budowanie i testy
 
 ```bash
 mvn -pl backend -am test
 ```
 
-## Run with Docker
+## Uruchomienie w Dockerze
 
 ```bash
 docker compose up --build
 ```
 
-## Structure
+## Struktura
 
 ```text
 src/main/java/com/mealio/

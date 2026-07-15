@@ -1,11 +1,11 @@
 openapi: 3.0.3
 info:
-  title: Mealio Backend API
+  title: API backendu Mealio
   version: 0.1.0
-  description: API for health checks, configurable categories, recipes, and ingredients.
+  description: API kontroli stanu, konfigurowalnych kategorii, przepisów i składników.
 servers:
   - url: http://localhost:8080
-    description: Local development
+    description: Środowisko lokalne
 tags:
   - name: Health
   - name: Categories
@@ -14,11 +14,11 @@ paths:
   /api/v1/health:
     get:
       tags: [Health]
-      summary: Check application health
+      summary: Sprawdzenie stanu aplikacji
       operationId: getApplicationHealth
       responses:
         "200":
-          description: Application is healthy.
+          description: Aplikacja działa prawidłowo.
           content:
             application/json:
               schema:
@@ -26,11 +26,11 @@ paths:
   /api/v1/categories:
     get:
       tags: [Categories]
-      summary: List categories
+      summary: Lista kategorii
       operationId: listCategories
       responses:
         "200":
-          description: Categories ordered by path.
+          description: Kategorie uporządkowane według ścieżki.
           content:
             application/json:
               schema:
@@ -41,7 +41,7 @@ paths:
           $ref: "#/components/responses/CategoryPersistenceError"
     post:
       tags: [Categories]
-      summary: Create a category
+      summary: Utworzenie kategorii
       operationId: createCategory
       requestBody:
         required: true
@@ -51,7 +51,7 @@ paths:
               $ref: "#/components/schemas/CategoryCreateRequest"
       responses:
         "201":
-          description: Category created.
+          description: Kategoria została utworzona.
           headers:
             Location:
               schema:
@@ -64,7 +64,7 @@ paths:
         "400":
           $ref: "#/components/responses/InvalidCategoryRequest"
         "409":
-          description: A category with the generated path already exists.
+          description: Kategoria o wygenerowanej ścieżce już istnieje.
           content:
             application/json:
               schema:
@@ -76,11 +76,11 @@ paths:
       - $ref: "#/components/parameters/ResourceId"
     get:
       tags: [Categories]
-      summary: Get a category
+      summary: Pobranie kategorii
       operationId: getCategory
       responses:
         "200":
-          description: Category found.
+          description: Kategoria została znaleziona.
           content:
             application/json:
               schema:
@@ -88,7 +88,7 @@ paths:
         "400":
           $ref: "#/components/responses/InvalidCategoryRequest"
         "404":
-          description: Category not found.
+          description: Nie znaleziono kategorii.
           content:
             application/json:
               schema:
@@ -97,7 +97,7 @@ paths:
           $ref: "#/components/responses/CategoryPersistenceError"
     patch:
       tags: [Categories]
-      summary: Update selected category fields
+      summary: Aktualizacja wybranych pól kategorii
       operationId: patchCategory
       requestBody:
         required: true
@@ -107,7 +107,7 @@ paths:
               $ref: "#/components/schemas/CategoryPatchRequest"
       responses:
         "200":
-          description: Category updated.
+          description: Kategoria została zaktualizowana.
           content:
             application/json:
               schema:
@@ -115,13 +115,13 @@ paths:
         "400":
           $ref: "#/components/responses/InvalidCategoryRequest"
         "404":
-          description: Category or requested parent not found.
+          description: Nie znaleziono kategorii lub wskazanego rodzica.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorResponse"
         "409":
-          description: Updated category path conflicts with another category.
+          description: Nowa ścieżka kategorii koliduje z inną kategorią.
           content:
             application/json:
               schema:
@@ -130,21 +130,21 @@ paths:
           $ref: "#/components/responses/CategoryPersistenceError"
     delete:
       tags: [Categories]
-      summary: Delete an empty category
+      summary: Usunięcie pustej kategorii
       operationId: deleteCategory
       responses:
         "204":
-          description: Category deleted.
+          description: Kategoria została usunięta.
         "400":
           $ref: "#/components/responses/InvalidCategoryRequest"
         "404":
-          description: Category not found.
+          description: Nie znaleziono kategorii.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorResponse"
         "409":
-          description: Category has children and cannot be deleted.
+          description: Kategoria ma dzieci i nie może zostać usunięta.
           content:
             application/json:
               schema:
@@ -154,11 +154,11 @@ paths:
   /api/v1/recipes:
     get:
       tags: [Recipes]
-      summary: List recipes
+      summary: Lista przepisów
       operationId: listRecipes
       responses:
         "200":
-          description: Recipes ordered by date descending and name.
+          description: Przepisy uporządkowane malejąco według daty, a następnie nazwy.
           content:
             application/json:
               schema:
@@ -169,7 +169,7 @@ paths:
           $ref: "#/components/responses/RecipePersistenceError"
     post:
       tags: [Recipes]
-      summary: Create a recipe
+      summary: Utworzenie przepisu
       operationId: createRecipe
       requestBody:
         required: true
@@ -179,7 +179,7 @@ paths:
               $ref: "#/components/schemas/RecipeCreateRequest"
       responses:
         "201":
-          description: Recipe created.
+          description: Przepis został utworzony.
           headers:
             Location:
               schema:
@@ -198,11 +198,11 @@ paths:
       - $ref: "#/components/parameters/ResourceId"
     get:
       tags: [Recipes]
-      summary: Get a recipe with ingredients
+      summary: Pobranie przepisu ze składnikami
       operationId: getRecipe
       responses:
         "200":
-          description: Recipe found.
+          description: Przepis został znaleziony.
           content:
             application/json:
               schema:
@@ -218,7 +218,7 @@ paths:
       - $ref: "#/components/parameters/ResourceId"
     post:
       tags: [Recipes]
-      summary: Add an ingredient to a recipe
+      summary: Dodanie składnika do przepisu
       operationId: addRecipeIngredient
       requestBody:
         required: true
@@ -228,7 +228,7 @@ paths:
               $ref: "#/components/schemas/IngredientCreateRequest"
       responses:
         "201":
-          description: Ingredient created.
+          description: Składnik został utworzony.
           headers:
             Location:
               schema:
@@ -255,31 +255,31 @@ components:
         format: uuid
   responses:
     InvalidCategoryRequest:
-      description: Category request is invalid.
+      description: Żądanie dotyczące kategorii jest nieprawidłowe.
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/ApiErrorResponse"
     CategoryPersistenceError:
-      description: Category persistence failed.
+      description: Zapis kategorii nie powiódł się.
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/ApiErrorResponse"
     InvalidRecipeRequest:
-      description: Recipe or ingredient request is invalid.
+      description: Żądanie dotyczące przepisu lub składnika jest nieprawidłowe.
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/ApiErrorResponse"
     RecipeNotFound:
-      description: Recipe not found.
+      description: Nie znaleziono przepisu.
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/ApiErrorResponse"
     RecipePersistenceError:
-      description: Recipe persistence failed.
+      description: Zapis przepisu nie powiódł się.
       content:
         application/json:
           schema:
@@ -430,7 +430,7 @@ components:
                 $ref: "#/components/schemas/IngredientResponse"
     MeasurementUnit:
       type: string
-      description: Short unit code. Enum names are also accepted on input.
+      description: Skrócony kod jednostki. Na wejściu akceptowane są także nazwy enumów.
       enum: [g, t, w, ml, pcs]
     IngredientCreateRequest:
       type: object

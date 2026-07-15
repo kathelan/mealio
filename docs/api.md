@@ -1,13 +1,13 @@
 # API
 
-The API starts with a very small surface.
+API rozpoczyna się od niewielkiego zestawu operacji.
 
-The service contracts live in [ASR OpenAPI](openapi/asr.yaml) and
-[Backend OpenAPI](openapi/backend.yaml).
-Future meal-parser and nutrition-resolver services will also own separate OpenAPI
-contracts and will be integrated through generated REST clients.
+Kontrakty usług znajdują się w [OpenAPI ASR](openapi/asr.yaml) i
+[OpenAPI backendu](openapi/backend.yaml). Przyszłe usługi parsera posiłków i resolvera
+żywieniowego również otrzymają osobne kontrakty OpenAPI i będą integrowane przez
+generowanych klientów REST.
 
-## Health
+## Kontrola stanu
 
 - `GET /api/v1/health`
 - `GET /actuator/health`
@@ -16,11 +16,11 @@ contracts and will be integrated through generated REST clients.
 
 ## ASR
 
-OpenAPI contract: [ASR OpenAPI](openapi/asr.yaml)
+Kontrakt OpenAPI: [OpenAPI ASR](openapi/asr.yaml)
 
 `POST /api/v1/transcriptions`
 
-Request:
+Żądanie:
 
 ```http
 Content-Type: multipart/form-data
@@ -30,7 +30,7 @@ language=pl
 prompt=<optional provider hint>
 ```
 
-Response:
+Odpowiedź:
 
 ```json
 {
@@ -43,10 +43,10 @@ Response:
 }
 ```
 
-## Categories
+## Kategorie
 
-Categories are nested labels for recipes, such as breakfast, soup, sweet, and savory.
-They are addressed by UUID and expose a generated `slug` and slash-separated `path`.
+Kategorie są zagnieżdżonymi etykietami przepisów, np. śniadanie, zupa, słodkie i wytrawne.
+Są identyfikowane przez UUID i udostępniają generowany `slug` oraz rozdzielaną ukośnikami `path`.
 
 - `GET /api/v1/categories`
 - `GET /api/v1/categories/{id}`
@@ -54,7 +54,7 @@ They are addressed by UUID and expose a generated `slug` and slash-separated `pa
 - `PATCH /api/v1/categories/{id}`
 - `DELETE /api/v1/categories/{id}`
 
-Create request:
+Żądanie utworzenia:
 
 ```json
 {
@@ -65,14 +65,14 @@ Create request:
 }
 ```
 
-Patch supports only `name`, `parentId`, `type`, and `sortOrder`. Unknown fields,
-empty payloads, non-integer `sortOrder` values, invalid parent moves, and invalid
-types return `400`.
+Aktualizacja obsługuje wyłącznie `name`, `parentId`, `type` i `sortOrder`. Nieznane pola,
+puste żądania, niecałkowite wartości `sortOrder`, niedozwolone przeniesienia i błędne typy
+zwracają `400`.
 
-Deleting a category with children returns `409 CATEGORY_HAS_CHILDREN`; clients must
-move or delete children first.
+Usunięcie kategorii z dziećmi zwraca `409 CATEGORY_HAS_CHILDREN`; klient musi najpierw
+przenieść lub usunąć dzieci.
 
-Category errors use:
+Błędy kategorii mają postać:
 
 ```json
 {
@@ -82,32 +82,30 @@ Category errors use:
 }
 ```
 
-## Recipes
+## Przepisy
 
 - `GET /api/v1/recipes`
 - `POST /api/v1/recipes`
 - `GET /api/v1/recipes/{id}`
 - `POST /api/v1/recipes/{id}/ingredients`
 
-Creating a recipe accepts `name`, optional `description`, `createdOn`, `imageUrl`, and
-`categoryIds`. Every category id must already exist. When `createdOn` is omitted, the
-backend uses the current date.
+Tworzenie przepisu przyjmuje `name` oraz opcjonalne `description`, `createdOn`, `imageUrl`
+i `categoryIds`. Każda kategoria musi istnieć. Gdy pominięto `createdOn`, backend używa
+bieżącej daty.
 
-Ingredients accept `name`, a positive `quantity`, `unit`, and optional non-negative
-`calories`. Units can be sent as their short codes (`g`, `t`, `w`, `ml`, `pcs`) or enum
-names. `GET /api/v1/recipes/{id}` returns the recipe together with its ingredients.
+Składniki przyjmują `name`, dodatnią `quantity`, `unit` i opcjonalne nieujemne `calories`.
+Jednostki można przesłać jako skróty (`g`, `t`, `w`, `ml`, `pcs`) albo nazwy enumów.
+`GET /api/v1/recipes/{id}` zwraca przepis razem ze składnikami.
 
-Recipe errors use the same error envelope as categories, with codes such as
-`RECIPE_NOT_FOUND`, `INVALID_RECIPE_REQUEST`, and `RECIPE_PERSISTENCE_ERROR`.
+Błędy przepisów używają tej samej struktury co kategorie, z kodami takimi jak
+`RECIPE_NOT_FOUND`, `INVALID_RECIPE_REQUEST` i `RECIPE_PERSISTENCE_ERROR`.
 
-## Proposed voice meal APIs
+## Planowane API głosowego wprowadzania posiłków
 
-The meal parser will accept transcript text supplied by the workflow orchestrator and return
-proposed food items with quantities, units, suggested categories, and confidence. The
-nutrition resolver will enrich those items with calories, nutrition data provenance,
-and confidence.
+Parser posiłków przyjmie tekst transkrypcji przekazany przez orkiestrator i zwróci
+proponowane produkty, ilości, jednostki, kategorie i poziom pewności. Resolver żywieniowy
+wzbogaci je o kalorie, pochodzenie danych żywieniowych i poziom pewności.
 
-Neither service persists recipes, categories, or consumed meals. Its result remains a
-proposal until the user confirms it; the confirmed payload is then written through the
-backend API. Mutating calls should support idempotency so retries cannot create duplicate
-records.
+Żadna z tych usług nie zapisuje przepisów, kategorii ani spożytych posiłków. Wynik pozostaje
+propozycją do czasu zatwierdzenia przez użytkownika; potwierdzone dane są następnie zapisywane
+przez API backendu. Operacje modyfikujące powinny być idempotentne, aby ponowienia nie tworzyły duplikatów.

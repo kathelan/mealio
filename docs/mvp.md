@@ -1,24 +1,24 @@
 # MVP
 
-The first MVP should stay intentionally small.
+Pierwsze MVP powinno być celowo niewielkie.
 
-## Scope
+## Zakres
 
-- create generic meal categories, such as breakfast, sweet, and savory
-- create recipes with name, description, date, and photo reference
-- add ingredients with quantity, unit, and calories
-- support units like `g`, `t`, and `w`
-- expose a health endpoint for OpenShift
+- tworzenie ogólnych kategorii posiłków, np. śniadanie, słodkie i wytrawne
+- tworzenie przepisów z nazwą, opisem, datą i odnośnikiem do zdjęcia
+- dodawanie składników z ilością, jednostką i kaloriami
+- obsługa jednostek takich jak `g`, `t` i `w`
+- endpoint kontroli stanu dla OpenShift
 
-## Out of scope
+## Poza zakresem
 
-- meal diary
-- weight tracking
-- AI features
-- social features
-- shopping lists
+- dziennik posiłków
+- monitorowanie masy ciała
+- funkcje AI
+- funkcje społecznościowe
+- listy zakupów
 
-## Why this shape
+## Uzasadnienie
 
-This keeps the first version focused on one valuable loop: define categories, store recipes,
-and support the data needed for future diary and nutrition tracking features.
+Dzięki temu pierwsza wersja skupia się na jednej wartościowej pętli: definiowaniu kategorii,
+zapisywaniu przepisów i gromadzeniu danych potrzebnych w przyszłym dzienniku oraz monitorowaniu żywienia.

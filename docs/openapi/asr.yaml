@@ -1,11 +1,11 @@
 openapi: 3.0.3
 info:
-  title: Mealio ASR API
+  title: API ASR Mealio
   version: 0.0.1
 paths:
   /api/v1/transcriptions:
     post:
-      summary: Transcribe uploaded meal audio
+      summary: Transkrypcja przesłanego nagrania posiłku
       operationId: createTranscription
       requestBody:
         required: true
@@ -26,25 +26,25 @@ paths:
                   type: string
       responses:
         "200":
-          description: Audio was transcribed and the transcript record was stored.
+          description: Audio zostało przetworzone, a transkrypcja zapisana.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/TranscriptionResponse"
         "400":
-          description: Uploaded audio or transcription request is invalid.
+          description: Przesłane audio lub żądanie transkrypcji jest nieprawidłowe.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorResponse"
         "502":
-          description: ASR provider request failed.
+          description: Wywołanie dostawcy ASR nie powiodło się.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorResponse"
         "500":
-          description: Transcription could not be persisted.
+          description: Nie udało się zapisać transkrypcji.
           content:
             application/json:
               schema:

@@ -1,18 +1,19 @@
 # Mealio
 
-Mealio is a mobile-first nutrition tracking platform. The first backend milestone is a
-small, clean API for recipes, generic meal categories, and health checks, built with a
-hexagonal architecture and prepared for deployment on OpenShift.
+Mealio to platforma do monitorowania żywienia, projektowana przede wszystkim dla urządzeń
+mobilnych. Pierwszy etap backendu obejmuje małe, przejrzyste API przepisów, ogólnych
+kategorii posiłków i kontroli stanu, zbudowane w architekturze heksagonalnej i przygotowane
+do wdrożenia na OpenShift.
 
-## Current focus
+## Obecny zakres
 
-- backend-first initialization
-- Spring Boot API on Java 25
-- PostgreSQL persistence
-- Dockerized development
-- OpenShift-friendly health probes
+- rozpoczęcie prac od backendu
+- API Spring Boot na Javie 25
+- persystencja PostgreSQL
+- środowisko deweloperskie w Dockerze
+- sondy stanu zgodne z OpenShift
 
-## Repository layout
+## Struktura repozytorium
 
 ```text
 asr/
@@ -24,29 +25,29 @@ docker-compose.yml
 README.md
 ```
 
-## Local development
+## Uruchomienie lokalne
 
 ```bash
 docker compose up --build
 ```
 
-The app exposes:
+Aplikacja udostępnia:
 
 - `GET /api/v1/health`
 - `GET /actuator/health`
 - `GET /actuator/health/liveness`
 - `GET /actuator/health/readiness`
 
-The standalone ASR module is in `asr/`:
+Samodzielny moduł ASR znajduje się w `asr/`:
 
 ```bash
 mvn -pl asr -am spring-boot:run
 ```
 
-Because service modules depend on local shared jars, prefer running Maven from the
-repository root with `-pl <module> -am`.
+Ponieważ moduły usług zależą od lokalnych współdzielonych plików JAR, Maven najlepiej
+uruchamiać z katalogu głównego repozytorium, używając `-pl <module> -am`.
 
-Convenience targets:
+Pomocnicze cele:
 
 ```bash
 make test-asr
@@ -54,33 +55,33 @@ make run-asr
 make install-local-libs
 ```
 
-Running Maven directly from a service directory, for example `cd asr && mvn test`,
-uses artifacts from `~/.m2` and will not rebuild sibling modules automatically.
-Install local shared jars first if you want to work that way:
+Uruchomienie Mavena bezpośrednio z katalogu usługi, np. `cd asr && mvn test`, korzysta
+z artefaktów w `~/.m2` i nie przebudowuje automatycznie modułów sąsiednich. Przy takim
+trybie pracy najpierw zainstaluj lokalne współdzielone pliki JAR:
 
 ```bash
 make install-local-libs
 cd asr && mvn test
 ```
 
-## Documentation
+## Dokumentacja
 
-- [Architecture](docs/architecture.md)
+- [Architektura](docs/architecture.md)
 - [MVP](docs/mvp.md)
-- [Domain model](docs/domain.md)
+- [Model domenowy](docs/domain.md)
 - [API](docs/api.md)
 - [ASR OpenAPI](docs/openapi/asr.yaml)
 - [Backend OpenAPI](docs/openapi/backend.yaml)
-- [Database](docs/database.md)
-- [ASR module](docs/asr.md)
-- [Development notes](docs/development.md)
+- [Baza danych](docs/database.md)
+- [Moduł ASR](docs/asr.md)
+- [Notatki deweloperskie](docs/development.md)
 
-## Next step
+## Następny krok
 
-Add structured meal interpretation on top of ASR transcripts:
+Dodanie strukturalnej interpretacji posiłków na podstawie transkrypcji ASR:
 
-- parse transcript text into proposed foods and quantities
-- resolve products and nutrition data without coupling the logic to the ASR provider
-- calculate calories and preserve confidence and provenance for each proposed item
-- require user confirmation before categories, recipes, or consumed meals are persisted
-- publish service OpenAPI contracts and integrate them through generated REST clients
+- przekształcanie tekstu transkrypcji w proponowane produkty i ilości
+- rozpoznawanie produktów i danych żywieniowych bez wiązania logiki z dostawcą ASR
+- obliczanie kalorii z zachowaniem pewności i pochodzenia każdej propozycji
+- wymaganie potwierdzenia użytkownika przed zapisaniem kategorii, przepisów lub posiłków
+- publikacja kontraktów OpenAPI usług i integracja przez generowane klienty REST

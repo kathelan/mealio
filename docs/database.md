@@ -1,13 +1,12 @@
-# Database
+# Baza danych
 
-Mealio uses PostgreSQL as the durable application store. Local development starts
-PostgreSQL from Docker Compose, and later deployments should keep the same database
-contract so moving from local Docker to OpenShift Sandbox and then to a VPS only
-changes connection settings.
+Mealio używa PostgreSQL jako trwałego magazynu danych aplikacji. Lokalnie PostgreSQL jest
+uruchamiany przez Docker Compose. Kolejne środowiska zachowują ten sam kontrakt bazy, aby
+przejście z lokalnego Dockera przez OpenShift Sandbox do VPS wymagało jedynie zmiany połączenia.
 
-## Local Shape
+## Środowisko lokalne
 
-The local database runs as the `postgres` service in `docker-compose.yml`:
+Lokalna baza działa jako usługa `postgres` zdefiniowana w `docker-compose.yml`:
 
 ```text
 database: mealio
@@ -17,11 +16,10 @@ schemas:
   asr
 ```
 
-The schemas isolate service-owned tables while keeping one PostgreSQL instance for the
-MVP. The backend service uses the `backend` schema. The ASR service uses the `asr`
-schema.
+Schematy izolują tabele należące do usług, jednocześnie pozwalając używać jednej instancji
+PostgreSQL w MVP. Backend korzysta ze schematu `backend`, a ASR ze schematu `asr`.
 
-## Ownership
+## Własność danych
 
 ```text
 backend schema:
@@ -37,70 +35,67 @@ asr schema:
   future provider audit metadata
 ```
 
-Audio files are not stored durably in the MVP. The mobile app uploads audio, ASR sends
-it to the transcription provider, the service stores the transcript and metadata, and
-the audio bytes are discarded.
+Pliki audio nie są trwale przechowywane w MVP. Aplikacja mobilna wysyła audio, ASR przekazuje
+je dostawcy transkrypcji, zapisuje tekst i metadane, a następnie odrzuca bajty audio.
 
-The backend schema currently stores nested meal categories, recipes, recipe-category
-links, and recipe ingredients. Categories use a generated `slug` and slash-separated
-`path`; deleting a category that still has children is rejected by the application so
-the tree stays explicit and predictable.
+Schemat backendu przechowuje zagnieżdżone kategorie, przepisy, relacje przepis–kategoria
+i składniki. Kategorie używają generowanego `slug` oraz rozdzielanej ukośnikami `path`.
+Usunięcie kategorii z dziećmi jest odrzucane, dzięki czemu drzewo pozostaje jednoznaczne.
 
-## Migrations
+## Migracje
 
-Each service owns its Liquibase changelog:
+Każda usługa posiada własny changelog Liquibase:
 
 ```text
 backend/src/main/resources/db/changelog/db.changelog-master.yaml
 asr/src/main/resources/db/changelog/db.changelog-master.yaml
 ```
 
-Hibernate must not create or update tables directly. Keep:
+Hibernate nie może bezpośrednio tworzyć ani aktualizować tabel. Zachowaj:
 
 ```yaml
 spring.jpa.hibernate.ddl-auto: none
 ```
 
-Schema changes go through Liquibase changesets.
+Zmiany schematu są wykonywane przez changesety Liquibase.
 
-## Running Locally
+## Uruchomienie lokalne
 
-Start the stack:
+Uruchomienie całego stosu:
 
 ```bash
 docker compose up --build
 ```
 
-Start only PostgreSQL:
+Uruchomienie tylko PostgreSQL:
 
 ```bash
 docker compose up -d postgres
 ```
 
-Inspect schemas:
+Sprawdzenie schematów:
 
 ```bash
 docker compose exec postgres psql -U mealio -d mealio -c "\dn"
 ```
 
-Reset local data:
+Reset danych lokalnych:
 
 ```bash
 docker compose down -v
 docker compose up -d postgres
 ```
 
-## Deployment Path
+## Ścieżka wdrożenia
 
-The planned path is:
+Planowana ścieżka:
 
 ```text
 local Docker Compose -> OpenShift Sandbox -> VPS Docker Compose
 ```
 
-OpenShift Sandbox can host a temporary PostgreSQL instance for demos, but it should be
-treated as disposable. Before moving between environments, take a `pg_dump` and verify
-restore.
+OpenShift Sandbox może przechowywać tymczasową instancję PostgreSQL na potrzeby demo,
+ale należy traktować ją jako nietrwałą. Przed migracją wykonaj `pg_dump` i sprawdź odtworzenie.
 
-On the VPS, PostgreSQL should live on a persistent Docker volume, with scheduled
-encrypted backups copied outside the server.
+Na VPS PostgreSQL powinien używać trwałego wolumenu Dockera, a zaszyfrowane kopie zapasowe
+powinny być wykonywane cyklicznie i kopiowane poza serwer.

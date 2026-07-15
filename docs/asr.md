@@ -1,31 +1,29 @@
-# ASR module
+# Moduł ASR
 
-The ASR module lives in `asr/` as a standalone Spring Boot Java module. It turns
-uploaded meal audio into a transcript and deliberately stops at speech-to-text. Meal
-parsing, nutrition lookup, confidence scoring, and user confirmation should be
-separate modules built on top of this transcript.
+Moduł ASR znajduje się w `asr/` jako samodzielny moduł Java Spring Boot. Zamienia audio
+posiłku w transkrypcję i celowo kończy odpowiedzialność na zamianie mowy na tekst. Parsowanie
+posiłków, wyszukiwanie wartości odżywczych, ocena pewności i potwierdzenie użytkownika należą
+do osobnych modułów korzystających z transkrypcji.
 
-## Goal
+## Cel
 
-Build a production-shaped voice input path for Mealio:
+Zbudowanie produkcyjnego przepływu wprowadzania głosowego:
 
 ```text
 audio upload -> ASR provider -> transcript -> meal parser -> nutrition resolver -> confirmation
 ```
 
-The first implementation exposes the ASR boundary and keeps the provider replaceable.
-This lets us start with OpenAI and later add Deepgram, Google Speech-to-Text, or local
-Whisper without changing the public API.
+Pierwsza implementacja udostępnia granicę ASR i pozwala wymienić dostawcę. Możemy zacząć
+od OpenAI, a później dodać Deepgram, Google Speech-to-Text lub lokalny Whisper bez zmiany API.
 
-ASR is not responsible for category creation, food persistence, or calorie calculation.
-The workflow orchestrator passes the transcript returned by ASR to downstream meal-parser
-and nutrition-resolver services through versioned OpenAPI contracts. They return a proposal
-for user confirmation.
+ASR nie odpowiada za tworzenie kategorii, zapis jedzenia ani obliczanie kalorii. Orkiestrator
+przekazuje transkrypcję do parsera posiłków i resolvera żywieniowego przez wersjonowane
+kontrakty OpenAPI. Usługi zwracają propozycję do zatwierdzenia przez użytkownika.
 
-## Architecture
+## Architektura
 
-The module should follow hexagonal architecture. Application code depends on ports,
-not directly on HTTP controllers, SDKs, or external ASR clients.
+Moduł stosuje architekturę heksagonalną. Kod aplikacji zależy od portów, a nie bezpośrednio
+od kontrolerów HTTP, SDK ani zewnętrznych klientów ASR.
 
 - Inbound adapter: `TranscriptionController`
 - Inbound port: `TranscribeAudioUseCase`
@@ -33,14 +31,14 @@ not directly on HTTP controllers, SDKs, or external ASR clients.
 - Outbound port: `AsrProviderPort`
 - Outbound adapters: `MockAsrProviderAdapter`, `OpenAiAsrProviderAdapter`
 
-The intended dependency direction is:
+Kierunek zależności:
 
 ```text
 web/controller -> inbound port -> application service -> outbound port -> ASR provider adapter
 ```
 
-This keeps the transcription use case stable while providers can be swapped or combined
-behind the outbound port.
+Dzięki temu przypadek użycia transkrypcji pozostaje stabilny, a dostawców można wymieniać
+lub łączyć za portem wyjściowym.
 
 ## API
 
@@ -53,7 +51,7 @@ language=pl
 prompt=<optional ASR provider hint>
 ```
 
-Example response:
+Przykładowa odpowiedź:
 
 ```json
 {
@@ -66,9 +64,9 @@ Example response:
 }
 ```
 
-## Providers
+## Dostawcy
 
-Default local mode uses a mock provider:
+Domyślny tryb lokalny używa dostawcy mock:
 
 ```yaml
 mealio:
@@ -76,7 +74,7 @@ mealio:
     provider: mock
 ```
 
-OpenAI mode:
+Tryb OpenAI:
 
 ```yaml
 mealio:
@@ -87,7 +85,7 @@ mealio:
       model: gpt-4o-mini-transcribe
 ```
 
-Local run:
+Uruchomienie lokalne:
 
 ```bash
 MEALIO_ASR_PROVIDER=openai OPENAI_API_KEY=... mvn -pl asr -am spring-boot:run
@@ -99,7 +97,7 @@ Docker Compose:
 MEALIO_ASR_PROVIDER=openai OPENAI_API_KEY=... docker compose up --build asr
 ```
 
-Smoke request:
+Żądanie smoke testu:
 
 ```bash
 curl -X POST http://localhost:8081/api/v1/transcriptions \
@@ -107,22 +105,20 @@ curl -X POST http://localhost:8081/api/v1/transcriptions \
   -F "language=pl"
 ```
 
-Sample recordings used for local manual testing live in `asr/records/`, not in
-`src/main/resources`, so they are not packaged into the Spring Boot artifact.
+Przykładowe nagrania do testów ręcznych znajdują się w `asr/records/`, a nie w
+`src/main/resources`, dlatego nie trafiają do artefaktu Spring Boot.
 
-`prompt` remains available as an optional provider hint, but the default ASR path does
-not use domain-specific prompts. Meal interpretation should happen after
-transcription.
+`prompt` pozostaje opcjonalną wskazówką dla dostawcy, ale domyślny przepływ ASR nie używa
+promptów domenowych. Interpretacja posiłku następuje po transkrypcji.
 
-The ASR module uses the local `request-audit` jar for HTTP request/response audit
-logging. Run Maven commands from the repository root with `-pl asr -am` so Maven also
-builds the shared jar.
+Moduł ASR używa lokalnego JAR `request-audit` do audytu żądań i odpowiedzi HTTP. Polecenia
+Mavena uruchamiaj z katalogu głównego z `-pl asr -am`, aby zbudować również wspólny JAR.
 
-## Next work
+## Następne prace
 
-- Add provider-level timeout and retry policy.
-- Extend the persisted transcription audit data with original audio metadata where useful.
-- Add a meal parser module that converts transcript text into proposed food items and quantities.
-- Add a nutrition resolver that calculates calories and records the data source and confidence.
-- Add an explicit user-confirmation step before parsed results change backend data.
-- Add fallback provider support once we have traffic and cost data.
+- dodać limity czasu i politykę ponowień dla dostawców
+- rozszerzyć audyt transkrypcji o przydatne metadane oryginalnego audio
+- dodać parser posiłków zamieniający tekst na proponowane produkty i ilości
+- dodać resolver żywieniowy obliczający kalorie oraz zapisujący źródło i pewność danych
+- dodać jawne potwierdzenie użytkownika przed zmianą danych backendu
+- dodać dostawcę zapasowego po zebraniu danych o ruchu i kosztach

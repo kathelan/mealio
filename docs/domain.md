@@ -1,6 +1,6 @@
-# Domain Model
+# Model domenowy
 
-## Initial concepts
+## Początkowe pojęcia
 
 - MealCategory
 - Recipe
@@ -9,18 +9,18 @@
 
 ## MealCategory
 
-Represents a generic grouping for recipes or meals. Categories are user-configurable
-and can be nested under another category.
+Reprezentuje ogólne grupowanie przepisów lub posiłków. Kategorie są konfigurowane przez
+użytkownika i mogą być zagnieżdżane w innych kategoriach.
 
-Examples:
+Przykłady:
 
-- breakfast
+- śniadanie
 - lunch
-- dinner
-- sweet
-- savory
+- obiad
+- słodkie
+- wytrawne
 
-Expected fields:
+Oczekiwane pola:
 
 - id
 - parentId
@@ -30,7 +30,7 @@ Expected fields:
 - type
 - sortOrder
 
-Example tree:
+Przykładowe drzewo:
 
 - breakfast
 - breakfast / sweet
@@ -41,9 +41,9 @@ Example tree:
 
 ## Recipe
 
-Represents a stored cooking or meal item with metadata.
+Reprezentuje zapisany przepis lub posiłek wraz z metadanymi.
 
-Expected fields:
+Oczekiwane pola:
 
 - id
 - name
@@ -54,9 +54,9 @@ Expected fields:
 
 ## RecipeIngredient
 
-Represents one ingredient line in a recipe.
+Reprezentuje pojedynczą pozycję składnika w przepisie.
 
-Expected fields:
+Oczekiwane pola:
 
 - id
 - recipeId

@@ -1,4 +1,4 @@
-# Infrastructure
+# Infrastruktura
 
-This folder will hold deployment and local environment files for Docker, OpenShift, and
-other runtime setup.
+Ten katalog zawiera pliki wdrożeniowe i konfigurację środowisk lokalnych dla Dockera,
+OpenShift oraz pozostałych środowisk uruchomieniowych.

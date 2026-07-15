@@ -1,48 +1,47 @@
 # Mealio ASR
 
-Standalone Spring Boot module for speech-to-text ingestion.
+Samodzielny moduł Spring Boot do zamiany mowy na tekst.
 
-## Purpose
+## Przeznaczenie
 
-This module accepts meal audio and returns a transcript. It does not calculate
-calories and does not parse food items yet. Those concerns should live in separate
-modules that consume the transcript.
+Moduł przyjmuje nagranie posiłku i zwraca transkrypcję. Nie oblicza kalorii ani nie
+rozpoznaje jeszcze produktów. Te odpowiedzialności należą do osobnych modułów.
 
 ```text
 audio upload -> ASR module -> transcript -> meal parser -> nutrition resolver
 ```
 
-## Architecture
+## Architektura
 
-The module is built with hexagonal architecture:
+Moduł jest zbudowany w architekturze heksagonalnej:
 
-- inbound adapter: `TranscriptionController`
-- inbound port: `TranscribeAudioUseCase`
-- application service: `TranscriptionService`
-- outbound port: `AsrProviderPort`
-- outbound adapters: `MockAsrProviderAdapter`, `OpenAiAsrProviderAdapter`
+- adapter wejściowy: `TranscriptionController`
+- port wejściowy: `TranscribeAudioUseCase`
+- serwis aplikacyjny: `TranscriptionService`
+- port wyjściowy: `AsrProviderPort`
+- adaptery wyjściowe: `MockAsrProviderAdapter`, `OpenAiAsrProviderAdapter`
 
-Dependency direction:
+Kierunek zależności:
 
 ```text
 web/controller -> inbound port -> application service -> outbound port -> ASR provider adapter
 ```
 
-The application layer depends only on interfaces. Provider SDKs, HTTP clients, and
-external APIs stay behind outbound adapters.
+Warstwa aplikacji zależy wyłącznie od interfejsów. SDK dostawców, klienci HTTP i zewnętrzne
+API pozostają za adapterami wyjściowymi.
 
-## Run
+## Uruchomienie
 
-Default mode uses the mock provider:
+Tryb domyślny używa dostawcy mock:
 
 ```bash
 mvn -pl asr -am spring-boot:run
 ```
 
-Run Maven from the repository root. The ASR module depends on sibling local modules,
-so root reactor commands rebuild the required shared jars automatically.
+Uruchamiaj Maven z katalogu głównego repozytorium. Moduł ASR zależy od sąsiednich modułów,
+więc reactor automatycznie przebuduje wymagane współdzielone pliki JAR.
 
-OpenAI mode:
+Tryb OpenAI:
 
 ```bash
 MEALIO_ASR_PROVIDER=openai OPENAI_API_KEY=... mvn -pl asr -am spring-boot:run
@@ -54,13 +53,13 @@ Docker Compose:
 docker compose up --build asr
 ```
 
-OpenAI mode with Docker Compose:
+Tryb OpenAI z Docker Compose:
 
 ```bash
 MEALIO_ASR_PROVIDER=openai OPENAI_API_KEY=... docker compose up --build asr
 ```
 
-Docker Compose smoke test with a local audio file:
+Smoke test Docker Compose z lokalnym plikiem audio:
 
 ```bash
 curl -X POST http://localhost:8081/api/v1/transcriptions \
@@ -68,9 +67,8 @@ curl -X POST http://localhost:8081/api/v1/transcriptions \
   -F "language=pl"
 ```
 
-The repository includes one local sample recording under `records/` for manual smoke
-tests. Do not put sample recordings under `src/main/resources`, because files from
-that directory are packaged into the application artifact.
+Repozytorium zawiera przykładowe nagranie w `records/` do testów ręcznych. Nie umieszczaj
+nagrań w `src/main/resources`, ponieważ pliki z tego katalogu trafiają do artefaktu aplikacji.
 
 ## API
 
@@ -83,7 +81,7 @@ language=pl
 prompt=<optional ASR provider hint>
 ```
 
-Local Maven example:
+Przykład lokalny z Mavenem:
 
 ```bash
 curl -X POST http://localhost:8080/api/v1/transcriptions \
@@ -91,7 +89,7 @@ curl -X POST http://localhost:8080/api/v1/transcriptions \
   -F "language=pl"
 ```
 
-Response:
+Odpowiedź:
 
 ```json
 {
@@ -104,7 +102,7 @@ Response:
 }
 ```
 
-## Configuration
+## Konfiguracja
 
 ```yaml
 mealio:
@@ -116,7 +114,7 @@ mealio:
       model: gpt-4o-mini-transcribe
 ```
 
-Environment variables:
+Zmienne środowiskowe:
 
 ```bash
 MEALIO_ASR_PROVIDER=openai
@@ -124,17 +122,16 @@ OPENAI_API_KEY=sk-...
 MEALIO_ASR_OPENAI_MODEL=gpt-4o-mini-transcribe
 ```
 
-The OpenAI adapter calls `POST /audio/transcriptions` with multipart form data:
+Adapter OpenAI wywołuje `POST /audio/transcriptions` z danymi multipart:
 `file`, `model`, `response_format`, `language`, and optional `prompt`.
 
-`prompt` is intentionally optional. Keep the ASR module focused on transcription;
-domain-specific interpretation, such as meal parsing, belongs in a separate module.
+`prompt` jest celowo opcjonalny. Moduł ASR powinien skupiać się na transkrypcji;
+interpretacja domenowa, np. parsowanie posiłków, należy do osobnego modułu.
 
-The module depends on the local `request-audit` jar for inbound and outbound HTTP
-request/response audit logging, so Maven commands should be run from the repository
-root with `-pl asr -am`.
+Moduł zależy od lokalnego JAR `request-audit`, który audytuje przychodzące i wychodzące
+żądania HTTP. Polecenia Mavena uruchamiaj z katalogu głównego z `-pl asr -am`.
 
-If you run Maven directly from `asr/`, install local shared jars first:
+Jeśli uruchamiasz Maven bezpośrednio z `asr/`, najpierw zainstaluj współdzielone JAR-y:
 
 ```bash
 cd ..
@@ -143,9 +140,8 @@ cd asr
 mvn test
 ```
 
-## Next steps
+## Następne kroki
 
-- Add timeout, retry, and fallback policies around providers.
-- Add transcript audit persistence.
-- Add a separate meal parser module that turns transcript text into structured food
-  items.
+- dodać limity czasu, ponowienia i politykę dostawcy zapasowego
+- rozwijać persystencję audytu transkrypcji
+- dodać osobny parser posiłków zamieniający transkrypcję na ustrukturyzowane produkty
