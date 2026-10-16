@@ -2,10 +2,10 @@
 
 API rozpoczyna się od niewielkiego zestawu operacji.
 
-Kontrakty usług znajdują się w [OpenAPI ASR](openapi/asr.yaml) i
-[OpenAPI backendu](openapi/backend.yaml). Przyszłe usługi parsera posiłków i resolvera
-żywieniowego również otrzymają osobne kontrakty OpenAPI i będą integrowane przez
-generowanych klientów REST.
+Publiczne kontrakty HTTP znajdują się w [OpenAPI ASR](openapi/asr.yaml) i
+[OpenAPI backendu](openapi/backend.yaml). Parser posiłków, katalog produktów i obliczenia
+żywieniowe powstają początkowo jako moduły jednego backendu. Nie otrzymują osobnego REST API
+wyłącznie po to, by komunikować się wewnątrz procesu.
 
 ## Kontrola stanu
 
@@ -100,12 +100,31 @@ Jednostki można przesłać jako skróty (`g`, `t`, `w`, `ml`, `pcs`) albo nazwy
 Błędy przepisów używają tej samej struktury co kategorie, z kodami takimi jak
 `RECIPE_NOT_FOUND`, `INVALID_RECIPE_REQUEST` i `RECIPE_PERSISTENCE_ERROR`.
 
-## Planowane API głosowego wprowadzania posiłków
+## Planowane API wprowadzania posiłków
 
-Parser posiłków przyjmie tekst transkrypcji przekazany przez orkiestrator i zwróci
-proponowane produkty, ilości, jednostki, kategorie i poziom pewności. Resolver żywieniowy
-wzbogaci je o kalorie, pochodzenie danych żywieniowych i poziom pewności.
+Backend przyjmie wpisany tekst lub transkrypcję i zwróci proponowane produkty, ilości,
+jednostki, źródła danych oraz poziom pewności. Moduł żywieniowy obliczy wynik na podstawie
+zatwierdzonych danych katalogowych.
 
-Żadna z tych usług nie zapisuje przepisów, kategorii ani spożytych posiłków. Wynik pozostaje
-propozycją do czasu zatwierdzenia przez użytkownika; potwierdzone dane są następnie zapisywane
-przez API backendu. Operacje modyfikujące powinny być idempotentne, aby ponowienia nie tworzyły duplikatów.
+Wynik pozostaje propozycją do czasu zatwierdzenia przez użytkownika. Operacje zatwierdzające
+powinny być idempotentne, aby ponowienia nie tworzyły duplikatów.
+
+Planowane operacje katalogu produktów obejmują wyszukiwanie tekstowe, odczyt po GTIN oraz
+utworzenie lub korektę produktu przez użytkownika. Szczegóły źródeł opisuje
+[strategia danych produktowych](product-data-strategy.md).
+
+## Planowane API dziennika
+
+Podstawowym modelem zapisu jest pojedynczy wpis spożycia. Widok dnia jest projekcją wpisów
+pogrupowanych według sekcji, wraz z sumami.
+
+```http
+GET    /api/v1/diary/{date}
+POST   /api/v1/diary/{date}/entries
+PATCH  /api/v1/diary/entries/{entryId}
+DELETE /api/v1/diary/entries/{entryId}
+```
+
+Dodawanie wyniku parsera tekstowego może utworzyć kilka wpisów atomowo dopiero po
+potwierdzeniu propozycji. `date` ma format ISO `YYYY-MM-DD` i reprezentuje dzień wybrany
+przez klienta, niezależnie od strefy czasowej serwera.

@@ -6,7 +6,7 @@
 - dokumentuj decyzje raz, zwięźle, i aktualizuj je
 - preferuj jedno zwarte źródło prawdy w `docs/`
 
-## Proponowana kolejność prac
+## Stan historyczny
 
 1. zainicjalizować projekt backendu
 2. dodać lokalne środowisko Docker i PostgreSQL
@@ -15,10 +15,10 @@
 5. dodać przypadki użycia, porty, adaptery i endpointy REST kategorii — gotowe
 6. dodać przypadki użycia, adaptery persystencji, endpointy REST i testy przepisów — gotowe
 7. opublikować API kategorii, przepisów i składników jako `docs/openapi/backend.yaml` — gotowe
-8. zdefiniować kontrakty OpenAPI parsera posiłków i resolvera żywieniowego — następne
-9. zaimplementować propozycje posiłków z transkrypcji, obliczanie kalorii i pochodzenie danych
-10. wygenerować klientów REST i dodać testy kontraktowe między usługami
-11. dodać potwierdzenie użytkownika przed zapisaniem proponowanych danych w backendzie
+Pierwsze siedem kroków utworzyło obecną bazę kodu. Dalszy plan został zastąpiony przez
+[plan modularizacji](refactoring-plan.md), [aktualne MVP](mvp.md) i
+[strategię danych produktowych](product-data-strategy.md). Parser oraz resolver powstają
+początkowo jako moduły modularnego monolitu, a nie osobne usługi REST.
 
 ## Polecenia
 

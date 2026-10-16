@@ -16,9 +16,10 @@ audio upload -> ASR provider -> transcript -> meal parser -> nutrition resolver 
 Pierwsza implementacja udostępnia granicę ASR i pozwala wymienić dostawcę. Możemy zacząć
 od OpenAI, a później dodać Deepgram, Google Speech-to-Text lub lokalny Whisper bez zmiany API.
 
-ASR nie odpowiada za tworzenie kategorii, zapis jedzenia ani obliczanie kalorii. Orkiestrator
-przekazuje transkrypcję do parsera posiłków i resolvera żywieniowego przez wersjonowane
-kontrakty OpenAPI. Usługi zwracają propozycję do zatwierdzenia przez użytkownika.
+ASR nie odpowiada za tworzenie kategorii, zapis jedzenia ani obliczanie kalorii. Klient lub
+backend przekazuje transkrypcję do modułu parsera posiłków. Parser, katalog produktów i moduł
+żywieniowy zwracają propozycję do zatwierdzenia przez użytkownika. W MVP są modułami backendu,
+a nie osobnymi usługami REST.
 
 ## Architektura
 
@@ -118,7 +119,7 @@ Mavena uruchamiaj z katalogu głównego z `-pl asr -am`, aby zbudować również
 
 - dodać limity czasu i politykę ponowień dla dostawców
 - rozszerzyć audyt transkrypcji o przydatne metadane oryginalnego audio
-- dodać parser posiłków zamieniający tekst na proponowane produkty i ilości
-- dodać resolver żywieniowy obliczający kalorie oraz zapisujący źródło i pewność danych
+- zintegrować transkrypcję z modułem parsera posiłków w backendzie
+- obliczać kalorie z zatwierdzonych danych katalogowych i zachowywać ich pochodzenie
 - dodać jawne potwierdzenie użytkownika przed zmianą danych backendu
 - dodać dostawcę zapasowego po zebraniu danych o ruchu i kosztach
