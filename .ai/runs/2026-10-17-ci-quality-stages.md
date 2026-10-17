@@ -49,5 +49,8 @@ profil Maven dla integracji oraz przygotować opcjonalny skan SonarQube.
 
 ## Otwarte kwestie
 
-- Potwierdzić wynik nowego workflow po otwarciu PR. Analiza SonarQube Cloud
-  ruszy dopiero po ustawieniu klucza organizacji.
+- SonarCloud Code Analysis check PR przeszedł. Pierwszy Maven scanner w tym PR
+  wykrył włączoną Automatic Analysis i odrzucił równoległą analizę CI. Workflow
+  dostosowano: domyślnie używa integracji Cloud; Maven scanner z JaCoCo można
+  włączyć przez `SONAR_CI_ANALYSIS=true` po wyłączeniu Automatic Analysis.
+- Sprawdzenia nowego commita na PR należy potwierdzić.

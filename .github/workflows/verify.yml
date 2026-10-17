@@ -58,11 +58,15 @@ jobs:
           SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL || secrets.SONAR_HOST_URL }}
           SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY || secrets.SONAR_PROJECT_KEY }}
           SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION || secrets.SONAR_ORGANIZATION }}
+          SONAR_CI_ANALYSIS: ${{ vars.SONAR_CI_ANALYSIS || secrets.SONAR_CI_ANALYSIS }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           if [[ -z "$SONAR_HOST_URL" || -z "$SONAR_PROJECT_KEY" || -z "$SONAR_TOKEN" ]]; then
             echo "configured=false" >> "$GITHUB_OUTPUT"
             echo "SonarQube skipped: configure SONAR_HOST_URL, SONAR_PROJECT_KEY and SONAR_TOKEN." >> "$GITHUB_STEP_SUMMARY"
+          elif [[ "$SONAR_HOST_URL" == *sonarcloud.io* && "${SONAR_CI_ANALYSIS,,}" != "true" ]]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "SonarCloud analysis is handled by its GitHub integration. To use the Maven scanner with JaCoCo, disable Automatic Analysis and set SONAR_CI_ANALYSIS=true." >> "$GITHUB_STEP_SUMMARY"
           elif [[ "$SONAR_HOST_URL" == *sonarcloud.io* && -z "$SONAR_ORGANIZATION" ]]; then
             echo "configured=false" >> "$GITHUB_OUTPUT"
             echo "SonarQube skipped: configure SONAR_ORGANIZATION for SonarQube Cloud." >> "$GITHUB_STEP_SUMMARY"
@@ -75,6 +79,7 @@ jobs:
           SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL || secrets.SONAR_HOST_URL }}
           SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY || secrets.SONAR_PROJECT_KEY }}
           SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION || secrets.SONAR_ORGANIZATION }}
+          SONAR_CI_ANALYSIS: ${{ vars.SONAR_CI_ANALYSIS || secrets.SONAR_CI_ANALYSIS }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           sonar_args=(

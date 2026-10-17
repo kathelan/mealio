@@ -64,11 +64,16 @@ raporty jako artefakty także po błędzie.
 `make test` uruchamia szybkie testy i raport; `make unit` także egzekwuje próg.
 `make lint`, `make build` i `make integration` odpowiadają pozostałym jobom.
 SonarQube wymaga `SONAR_HOST_URL`, `SONAR_PROJECT_KEY` oraz sekretu `SONAR_TOKEN`.
-URL i klucz projektu można dodać jako Actions variables albo secrets. Dla
-SonarQube Cloud należy także ustawić `SONAR_ORGANIZATION` (jako variable lub
-secret). Bez wymaganej konfiguracji skan jest pomijany; po uruchomieniu błędy
-analizy blokują etap unit. Skan używa już skompilowanych klas i raportu JaCoCo,
-więc nie uruchamia drugi raz testów.
+URL i klucz projektu można dodać jako Actions variables albo secrets. SonarQube
+Cloud Automatic Analysis wykonuje analizę przez GitHub integration. Workflow
+domyślnie pomija Maven scanner dla Cloud, bo tryby Automatic Analysis i CI
+analysis kolidują. Aby przesłać coverage JaCoCo Maven scannerem, wyłącz Automatic
+Analysis w ustawieniach projektu i ustaw `SONAR_CI_ANALYSIS=true` (Actions
+variable lub secret) oraz `SONAR_ORGANIZATION`. Dla własnego SonarQube Server
+Maven scanner uruchamia się po unit tests przy pushu i PR. Bez wymaganej
+konfiguracji skan jest pomijany; po uruchomieniu błędy analizy blokują etap unit.
+Skan używa już skompilowanych klas i raportu JaCoCo, więc nie uruchamia drugi raz
+testów.
 Dla pojedynczego modułu: `mvn -pl backend -am verify -DskipITs` (analogicznie `asr`).
 Po przenoszeniu klas albo przy powielonych artefaktach lokalnych uruchom `make verify`
 z czyszczeniem. Nie uruchamiaj równocześnie buildów zapisujących ten sam `target`.

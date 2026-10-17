@@ -15,23 +15,25 @@ Data: 2026-10-17. Zakres: usprawnienie CI bez zmian funkcjonalnych.
 
 1. [x] Zaktualizować workflow, cache i raportowanie jednostek.
 2. [x] Dodać profil Maven integracji zachowując pełne domyślne `verify`.
-3. [x] Dodać skan SonarQube konfigurowany bezpiecznie przez ustawienia repo.
+3. [x] Dodać SonarQube analysis zgodny z istniejącą integracją Cloud.
 4. [x] Zweryfikować workflow, komendy Maven oraz pełny zestaw testów; zapisać wynik.
 
 ## Implementacja
 
 Etap integracyjny używa `-Pintegration-tests -DskipUnitTests`, a job unit
-pozostaje jedynym właścicielem progu 100% linii. Skan SonarQube działa po testach
-jednostkowych i korzysta z już wygenerowanego raportu JaCoCo. URL i klucz projektu
-mogą pochodzić z Actions variables lub secrets; token jest pobierany wyłącznie
-z Actions secrets. Dla SonarQube Cloud potrzebna jest też zmienna organizacji.
-Bez wymaganych ustawień skan raportuje pominięcie; po konfiguracji błąd skanera
-jest błędem joba unit.
+pozostaje jedynym właścicielem progu 100% linii. Dla SonarQube Server Maven scan
+działa po unit tests i korzysta z wygenerowanego raportu JaCoCo. SonarQube Cloud
+Automatic Analysis koliduje z CI analysis; domyślnie używana jest integracja
+GitHub Cloud. Użytkownik może wyłączyć Automatic Analysis i ustawić
+`SONAR_CI_ANALYSIS=true`, aby włączyć Maven scanner oraz przesłać JaCoCo.
+URL i klucz projektu mogą pochodzić z Actions variables lub secrets; token jest
+pobierany wyłącznie z Actions secrets.
 
 Wynik: `mvn clean verify -DskipITs` zaliczył unit tests i próg 100% linii;
 `mvn clean verify -Pintegration-tests -DskipUnitTests` uruchomił 29 testów
 integracyjnych (8 ASR, 21 backend) na Testcontainers PostgreSQL bez powtórzenia
 unit tests; pełne `mvn clean verify` także przeszło. YAML workflow parsuje się,
 `git diff --check` przechodzi. `actionlint` nie jest dostępny lokalnie.
-Skan SonarQube nie został jeszcze wykonany z GitHub Actions; PR uruchomi go,
-gdy konfiguracja projektu będzie kompletna.
+SonarCloud Code Analysis w PR przeszło. Pierwszy CI Maven scan PR zakończył się
+błędem z powodu włączonego SonarCloud Automatic Analysis; workflow zmieniono tak,
+by nie uruchamiać obu metod naraz.
