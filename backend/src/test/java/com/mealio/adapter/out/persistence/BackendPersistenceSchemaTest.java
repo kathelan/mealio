@@ -3,8 +3,8 @@ package com.mealio.adapter.out.persistence;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.mealio.category.infrastructure.persistence.repository.MealCategoryJpaRepository;
-import com.mealio.adapter.out.persistence.repository.RecipeIngredientJpaRepository;
-import com.mealio.adapter.out.persistence.repository.RecipeJpaRepository;
+import com.mealio.recipe.infrastructure.persistence.repository.RecipeIngredientJpaRepository;
+import com.mealio.recipe.infrastructure.persistence.repository.RecipeJpaRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

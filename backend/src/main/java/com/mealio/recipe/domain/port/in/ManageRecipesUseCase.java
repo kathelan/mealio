@@ -1,7 +1,7 @@
 package com.mealio.recipe.domain.port.in;
 
-import com.mealio.domain.model.Recipe;
-import com.mealio.domain.model.RecipeIngredient;
+import com.mealio.recipe.domain.model.Recipe;
+import com.mealio.recipe.domain.model.RecipeIngredient;
 import com.mealio.recipe.domain.model.AddIngredientCommand;
 import com.mealio.recipe.domain.model.CreateRecipeCommand;
 import com.mealio.recipe.domain.model.RecipeDetails;

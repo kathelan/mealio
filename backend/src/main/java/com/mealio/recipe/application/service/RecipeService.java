@@ -1,7 +1,10 @@
 package com.mealio.recipe.application.service;
 
-import com.mealio.domain.model.Recipe;
-import com.mealio.domain.model.RecipeIngredient;
+import com.mealio.category.api.CategoryLookup;
+import com.mealio.category.api.CategoryLookupUnavailableException;
+import com.mealio.recipe.domain.exception.RecipePersistenceException;
+import com.mealio.recipe.domain.model.Recipe;
+import com.mealio.recipe.domain.model.RecipeIngredient;
 import com.mealio.recipe.domain.exception.InvalidRecipeException;
 import com.mealio.recipe.domain.exception.RecipeNotFoundException;
 import com.mealio.recipe.domain.model.AddIngredientCommand;
@@ -27,6 +30,7 @@ import org.springframework.util.StringUtils;
 public class RecipeService implements ManageRecipesUseCase {
     private final RecipeRepository repository;
     private final Clock clock;
+    private final CategoryLookup categoryLookup;
 
     @Override
     @Transactional(readOnly = true)
@@ -53,7 +57,12 @@ public class RecipeService implements ManageRecipesUseCase {
         var imageUrl = optional(command.imageUrl(), "Recipe image URL", 1024);
         var categoryIds = command.categoryIds() == null ? new LinkedHashSet<UUID>() : new LinkedHashSet<>(command.categoryIds());
         if (categoryIds.contains(null)) throw new InvalidRecipeException("Category ids cannot contain null");
-        var existingIds = repository.findExistingCategoryIds(categoryIds);
+        Set<UUID> existingIds;
+        try {
+            existingIds = categoryLookup.findExistingIds(categoryIds);
+        } catch (CategoryLookupUnavailableException exception) {
+            throw new RecipePersistenceException("Cannot validate recipe categories", exception);
+        }
         if (!existingIds.equals(categoryIds)) {
             var missing = new LinkedHashSet<>(categoryIds);
             missing.removeAll(existingIds);

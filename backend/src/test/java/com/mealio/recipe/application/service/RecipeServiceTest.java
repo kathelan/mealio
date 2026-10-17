@@ -8,8 +8,11 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.mealio.domain.model.MeasurementUnit;
-import com.mealio.domain.model.Recipe;
+import com.mealio.category.api.CategoryLookup;
+import com.mealio.category.api.CategoryLookupUnavailableException;
+import com.mealio.recipe.domain.exception.RecipePersistenceException;
+import com.mealio.recipe.domain.model.MeasurementUnit;
+import com.mealio.recipe.domain.model.Recipe;
 import com.mealio.recipe.domain.exception.InvalidRecipeException;
 import com.mealio.recipe.domain.exception.RecipeNotFoundException;
 import com.mealio.recipe.domain.model.AddIngredientCommand;
@@ -28,12 +31,13 @@ import org.junit.jupiter.api.Test;
 
 class RecipeServiceTest {
     private final RecipeRepository repository = mock(RecipeRepository.class);
+    private final CategoryLookup categoryLookup = mock(CategoryLookup.class);
     private final Clock clock = Clock.fixed(Instant.parse("2026-10-17T23:30:00Z"), ZoneOffset.UTC);
-    private final RecipeService service = new RecipeService(repository, clock);
+    private final RecipeService service = new RecipeService(repository, clock, categoryLookup);
 
     @Test
     void normalizesRecipeAndUsesDateFromClockWhenCategoriesAreAbsent() {
-        when(repository.findExistingCategoryIds(Set.of())).thenReturn(Set.of());
+        when(categoryLookup.findExistingIds(Set.of())).thenReturn(Set.of());
         when(repository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
         var result = service.create(new CreateRecipeCommand("  Rice  bowl ", null, null, null, null));
@@ -45,9 +49,21 @@ class RecipeServiceTest {
     }
 
     @Test
+    void mapsCategoryLookupFailureToExistingRecipePersistenceError() {
+        var ids = Set.of(UUID.randomUUID());
+        var failure = new CategoryLookupUnavailableException(new IllegalStateException());
+        when(categoryLookup.findExistingIds(ids)).thenThrow(failure);
+
+        assertThatThrownBy(() -> service.create(new CreateRecipeCommand("Rice", null, null, null, ids)))
+                .isInstanceOf(RecipePersistenceException.class)
+                .hasMessage("Cannot validate recipe categories").hasCause(failure);
+        verify(repository, never()).save(any());
+    }
+
+    @Test
     void rejectsMissingCategoryBeforeSavingRecipe() {
         var missing = UUID.randomUUID();
-        when(repository.findExistingCategoryIds(Set.of(missing))).thenReturn(Set.of());
+        when(categoryLookup.findExistingIds(Set.of(missing))).thenReturn(Set.of());
 
         assertThatThrownBy(() -> service.create(new CreateRecipeCommand("Rice", null, null, null, Set.of(missing))))
                 .isInstanceOf(InvalidRecipeException.class).hasMessageContaining(missing.toString());

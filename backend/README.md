@@ -23,22 +23,29 @@ docker compose up --build
 ```text
 src/main/java/com/mealio/
   category/
+    api/           # publiczny odczyt identyfikatorów kategorii
     domain/
     application/
-    adapter/in/web/
-    infrastructure/persistence/
-      adapter/
-      entity/
-      mapper/
-      repository/
+    infrastructure/
+      web/
+      persistence/
   recipe/
-  domain/          # modele legacy recipe i kategorii
-  application/     # health
-  adapter/         # health i persystencja legacy recipe oraz BaseEntity
+    domain/
+    application/
+    infrastructure/
+      web/
+      persistence/
+  health/
+    application/
+    infrastructure/
   infrastructure/  # konfiguracja aplikacji
 ```
 
 Tabela `meal_categories`, jej encja, mapper i repository należą do `category`.
-Zależności persystencji recipe od kategorii oraz wspólna klasa `BaseEntity` są
-jawnym długiem migracyjnym kontrolowanym przez ArchUnit. Następna faza usuwa te
-zależności i porządkuje pozostałe pakiety według [planu migracji](../.ai/specs/2026-10-17-monorepo-migration.md).
+Tabele `recipes`, `recipe_categories` i `recipe_ingredients` należą do `recipe`.
+Przepis zapisuje identyfikatory kategorii jako UUID i sprawdza ich istnienie przez
+`category.api.CategoryLookup`. Moduły mają własne bazowe encje i DTO HTTP.
+Health zwraca wynik aplikacyjny mapowany przez swój adapter HTTP.
+
+ArchUnit sprawdza granice bez wyjątków migracyjnych. Dalsze etapy opisuje
+[plan migracji](../.ai/specs/2026-10-17-monorepo-migration.md).

@@ -1,20 +1,17 @@
 package com.mealio.recipe.infrastructure.persistence.adapter;
 
-import com.mealio.category.infrastructure.persistence.entity.MealCategoryEntity;
-import com.mealio.adapter.out.persistence.entity.RecipeEntity;
-import com.mealio.adapter.out.persistence.entity.RecipeIngredientEntity;
-import com.mealio.category.infrastructure.persistence.repository.MealCategoryJpaRepository;
-import com.mealio.adapter.out.persistence.repository.RecipeIngredientJpaRepository;
-import com.mealio.adapter.out.persistence.repository.RecipeJpaRepository;
-import com.mealio.domain.model.MeasurementUnit;
-import com.mealio.domain.model.Recipe;
-import com.mealio.domain.model.RecipeIngredient;
+import com.mealio.recipe.infrastructure.persistence.entity.RecipeEntity;
+import com.mealio.recipe.infrastructure.persistence.entity.RecipeIngredientEntity;
+import com.mealio.recipe.infrastructure.persistence.repository.RecipeIngredientJpaRepository;
+import com.mealio.recipe.infrastructure.persistence.repository.RecipeJpaRepository;
+import com.mealio.recipe.domain.model.MeasurementUnit;
+import com.mealio.recipe.domain.model.Recipe;
+import com.mealio.recipe.domain.model.RecipeIngredient;
 import com.mealio.recipe.domain.exception.RecipePersistenceException;
 import com.mealio.recipe.domain.port.out.RecipeRepository;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataAccessException;
@@ -25,7 +22,6 @@ import org.springframework.stereotype.Repository;
 public class JpaRecipeRepository implements RecipeRepository {
     private final RecipeJpaRepository recipes;
     private final RecipeIngredientJpaRepository ingredients;
-    private final MealCategoryJpaRepository categories;
 
     @Override
     public List<Recipe> findAll() {
@@ -47,7 +43,7 @@ public class JpaRecipeRepository implements RecipeRepository {
             entity.setDescription(recipe.description());
             entity.setCreatedOn(recipe.createdOn());
             entity.setImageUrl(recipe.imageUrl());
-            entity.setCategories(new LinkedHashSet<>(categories.findAllById(recipe.categoryIds())));
+            entity.setCategoryIds(new LinkedHashSet<>(recipe.categoryIds()));
             return toDomain(recipes.saveAndFlush(entity));
         } catch (DataAccessException e) { throw failure("Cannot save recipe", e); }
     }
@@ -71,17 +67,8 @@ public class JpaRecipeRepository implements RecipeRepository {
         catch (DataAccessException e) { throw failure("Cannot load recipe ingredients", e); }
     }
 
-    @Override
-    public Set<UUID> findExistingCategoryIds(Set<UUID> categoryIds) {
-        try {
-            return categories.findAllById(categoryIds).stream().map(MealCategoryEntity::getId)
-                    .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
-        } catch (DataAccessException e) { throw failure("Cannot validate recipe categories", e); }
-    }
-
     private Recipe toDomain(RecipeEntity entity) {
-        var categoryIds = entity.getCategories().stream().map(MealCategoryEntity::getId)
-                .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+        var categoryIds = new LinkedHashSet<>(entity.getCategoryIds());
         return new Recipe(entity.getId(), entity.getName(), entity.getDescription(), entity.getCreatedOn(),
                 entity.getImageUrl(), categoryIds);
     }

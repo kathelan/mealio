@@ -25,7 +25,7 @@ ASR pozostaje opcjonalnym wejściem audio -> tekst. AI nie dostarcza wartości o
      nie poszerzać listy podczas kolejnych faz.
    - Testy jednostkowe, HTTP, schematu od pustej bazy H2 i architektury oraz pełne
      `mvn clean verify` muszą przejść. OpenAPI i change sety pozostają identyczne.
-2. [ ] Domknięcie granic recipe/category (kroki 4–6).
+2. [x] Domknięcie granic recipe/category (kroki 4–6).
    - Zabezpieczyć recipe testami, przenieść modele i persystencję do właściciela.
    - Wprowadzić małe publiczne API kategorii, usunąć zależności recipe od jej JPA,
      oddzielić DTO błędów recipe od kategorii, odwrócić zależności health,
@@ -70,3 +70,32 @@ ASR pozostaje opcjonalnym wejściem audio -> tekst. AI nie dostarcza wartości o
 - `git diff --check`, kontrola odnośników lokalnych i brak zmian OpenAPI/change setów: OK.
 - Następna do realizacji: faza 2. Cała specyfikacja pozostaje aktywna w `.ai/specs`,
   ponieważ pozostałe fazy nie są jeszcze wdrożone.
+
+## Realizacja fazy 2 — plan techniczny
+
+1. Zabezpieczyć serwis recipe testami jednostkowymi i usuwanie kategorii z przepisu
+   testem HTTP; uruchomić je na dotychczasowej implementacji.
+2. Przenieść modele i persystencję recipe do jego pakietów, adaptery HTTP do infrastruktury.
+   Relację do kategorii mapować jako zbiór UUID przez istniejącą tabelę `recipe_categories`
+   (ElementCollection), bez JPA encji kategorii ani zmiany schematu i kluczy obcych.
+3. Udostępnić `category.api.CategoryLookup` zwracające istniejące identyfikatory;
+   sprawdzanie kategorii przenieść do przypadku użycia recipe. Błędy odczytu mapować
+   na dotychczasowy błąd persystencji recipe. Każdy moduł ma własną bazową encję.
+4. Oddzielić DTO błędów i przenieść health do właściciela: aplikacja zwraca swój wynik,
+   infrastruktura mapuje go na HTTP i konfiguruje serwis. Usunąć nieużywane modele legacy.
+5. Usunąć wszystkie wyjątki ArchUnit, uruchomić pełne `mvn clean verify`, sprawdzić
+   niezmienność OpenAPI i migracji, zapisać wynik i przygotować commit fazy 2.
+
+Korekta planu przed przenosinami: testy bazowe wykryły NPE przy pominiętym
+`categoryIds`. Zgodnie z zasadą oddzielania zmiany zachowania od refaktoryzacji
+najpierw powstaje osobny commit według `implemented/2026-10-17-recipe-optional-categories.md`.
+Testy HTTP usuwania kategorii oraz pozostałe testy charakteryzacyjne przeszły
+na dotychczasowym mapowaniu JPA.
+
+Faza 2 ukończona 2026-10-17: modele i persystencja recipe należą do właściciela,
+adaptery HTTP do infrastruktury modułów, lookup kategorii korzysta z publicznego API.
+Usunięto globalne modele legacy, wspólną encję i wszystkie wyjątki ArchUnit.
+Health nie zależy w aplikacji od konfiguracji ani DTO HTTP.
+`mvn clean verify`: BUILD SUCCESS, 67 testów (46 backend, 10 ASR, 11 request-audit),
+bez błędów i pominięć. Próg JaCoCo 80% zachowany. OpenAPI i change sety bez zmian.
+Następna faza: 3 (PostgreSQL/Testcontainers i automatyzacja pełnej weryfikacji).

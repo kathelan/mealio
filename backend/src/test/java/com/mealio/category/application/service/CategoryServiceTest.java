@@ -18,6 +18,7 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -160,6 +161,12 @@ class CategoryServiceTest {
         @Override
         public List<MealCategory> findAll() {
             return List.copyOf(categories);
+        }
+
+        @Override
+        public Set<UUID> findExistingIds(Set<UUID> ids) {
+            return categories.stream().map(MealCategory::id).filter(ids::contains)
+                    .collect(java.util.stream.Collectors.toSet());
         }
 
         @Override

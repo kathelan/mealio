@@ -3,6 +3,7 @@ package com.mealio.category.domain.port.out;
 import com.mealio.category.domain.model.MealCategory;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 public interface CategoryRepository {
@@ -10,6 +11,8 @@ public interface CategoryRepository {
     List<MealCategory> findAll();
 
     Optional<MealCategory> findById(UUID id);
+
+    Set<UUID> findExistingIds(Set<UUID> ids);
 
     Optional<MealCategory> findByPath(String path);
 

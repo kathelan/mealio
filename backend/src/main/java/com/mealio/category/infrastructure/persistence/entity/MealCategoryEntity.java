@@ -9,7 +9,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import com.mealio.adapter.out.persistence.entity.BaseEntity;
 import com.mealio.category.domain.model.CategoryType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

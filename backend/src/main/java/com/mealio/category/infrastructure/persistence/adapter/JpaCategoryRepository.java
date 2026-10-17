@@ -11,6 +11,7 @@ import jakarta.persistence.EntityManager;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataAccessException;
@@ -32,6 +33,16 @@ public class JpaCategoryRepository implements CategoryRepository {
                     .toList();
         } catch (DataAccessException exception) {
             throw new CategoryPersistenceException("Cannot load categories", exception);
+        }
+    }
+
+    @Override
+    public Set<UUID> findExistingIds(Set<UUID> ids) {
+        try {
+            return jpaRepository.findAllById(ids).stream().map(MealCategoryEntity::getId)
+                    .collect(java.util.stream.Collectors.toSet());
+        } catch (DataAccessException exception) {
+            throw new CategoryPersistenceException("Cannot look up categories", exception);
         }
     }
 

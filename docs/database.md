@@ -42,6 +42,14 @@ Schemat backendu przechowuje zagnieżdżone kategorie, przepisy, relacje przepis
 i składniki. Kategorie używają generowanego `slug` oraz rozdzielanej ukośnikami `path`.
 Usunięcie kategorii z dziećmi jest odrzucane, dzięki czemu drzewo pozostaje jednoznaczne.
 
+Właścicielem `meal_categories` jest moduł `category`. Moduł `recipe` posiada
+`recipes`, `recipe_categories` i `recipe_ingredients`. Powiązania w `recipe_categories`
+przechowują UUID kategorii; recipe nie odczytuje jej encji ani repozytorium JPA.
+Istnienie kategorii sprawdza przez publiczne `category.api.CategoryLookup`.
+Klucz obcy nadal zapewnia spójność, a usunięcie kategorii usuwa jej powiązania
+z przepisami przez dotychczasowe `ON DELETE CASCADE`. Istniejący change set 001
+pozostaje niezmieniony; własność jego tabel jest określona powyżej.
+
 ## Migracje
 
 Każda usługa posiada własny changelog Liquibase:
