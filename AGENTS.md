@@ -4,6 +4,45 @@
 
 Mealio to aplikacja iOS wspierana przez backend do rejestrowania jedzenia oraz obliczania kalorii i makroskładników. MVP obejmuje ręczne dodawanie produktów, skanowanie kodów kreskowych oraz zamianę opisu posiłku na ustrukturyzowane pozycje. ASR jest opcjonalnym wejściem `audio -> tekst`; nie interpretuje posiłków i nie oblicza kalorii.
 
+## Praca z pamięcią i specyfikacjami AI
+
+Repozytorium używa katalogu `.ai/` jako wspólnego, wersjonowanego miejsca na specyfikacje,
+logi autonomicznych przebiegów i trwałe wnioski. Każdy agent AI pracujący w tym repozytorium
+musi stosować poniższe zasady:
+
+- `.ai/specs/` przechowuje specyfikacje SDD. Nową specyfikację zapisuj jako
+  `.ai/specs/YYYY-MM-DD-slug.md`, z datą utworzenia i krótkim, małymi literami slugiem
+  rozdzielonym myślnikami. Specyfikacje wdrożone przenoś do `.ai/specs/implemented/`, a
+  nieaktualne lub porzucone do `.ai/specs/archive/`; zachowaj pierwotną nazwę pliku.
+- `.ai/runs/` przechowuje jeden raport dla każdego autonomicznego przebiegu AI. Zapisuj go
+  jako `.ai/runs/YYYY-MM-DD-slug.md`. Raportuj cel, wykonane działania, zmienione pliki,
+  weryfikację i jej wynik oraz otwarte kwestie. Nie zapisuj sekretów, danych osobowych,
+  nagrań ani wrażliwych danych. Nie twórz raportu dla zwykłej, krótkiej pomocy konwersacyjnej;
+  zapisuj przebiegi autonomiczne i zadania wykonywane przez agenta w repozytorium.
+- `.ai/lessons.md` jest indeksem i krótką pamięcią wspólną, a `.ai/lessons/` zawiera
+  rozwinięte ustalenia. Po naprawie błędu, odkryciu trwałej reguły lub usprawnienia przydatnego
+  w przyszłych zadaniach dopisz zwięzły wpis z datą i kontekstem do `lessons.md`; większe
+  wnioski zapisz w `.ai/lessons/YYYY-MM-DD-slug.md` i podlinkuj z indeksu. Nie zapisuj tam
+  jednorazowych szczegółów ani sekretów.
+- Przed rozpoczęciem zadania przejrzyj `.ai/lessons.md` oraz pasujące notatki z `.ai/lessons/`.
+  Jeśli zadanie zmienia zachowanie lub zakres produktu, najpierw utwórz albo zaktualizuj
+  specyfikację SDD, a potem realizuj ją; po wdrożeniu przenieś ją do `implemented/`.
+- Przy złożonym zadaniu najpierw rozpisz krótki, etapowy plan oparty na specyfikacji i
+  kryteriach ukończenia; jeśli implementacja ujawni błędne założenie lub nieoczekiwane
+  przeszkody, wróć do planu i skoryguj go przed dalszymi zmianami.
+- Na końcu autonomicznego przebiegu utwórz raport w `.ai/runs/` oraz zaktualizuj pamięć,
+  jeśli pojawiły się trwałe wnioski. Gdy dana kategoria nie ma nowego materiału, nie dodawaj
+  sztucznego wpisu.
+- Po korekcie użytkownika lub naprawie błędu oceń, czy przyczyna wskazuje na trwałą regułę;
+  jeśli tak, zapisz ją w `.ai/lessons.md` lub notatce w `.ai/lessons/`, zamiast powielać ją
+  w wielu instrukcjach. Reguły ogólne dopisuj w `AGENTS.md` tylko wtedy, gdy dotyczą pracy
+  wszystkich agentów w repozytorium.
+- Nie nadpisuj istniejących specyfikacji, raportów ani lekcji bez potrzeby. Sprawdź istniejące
+  nazwy i zawartość, aby uniknąć kolizji; w razie konfliktu użyj kolejnego czytelnego sluga.
+
+Pliki `CLAUDE.md` i `AGENTS.md` opisują tę samą politykę. W razie rozbieżności należy je
+uzgodnić, zachowując bardziej szczegółową regułę repozytorium.
+
 Przed rozpoczęciem pracy przeczytaj dokumenty odnoszące się do zadania:
 
 - `docs/mvp.md` — zakres produktu,
@@ -51,6 +90,10 @@ Po zmianie:
 3. Z katalogu głównego uruchom `mvn verify`.
 4. Zaktualizuj OpenAPI i dokumentację, jeśli zmienił się kontrakt lub zachowanie.
 5. Przejrzyj diff i opisz nieweryfikowane elementy oraz ryzyka.
+
+Dobierz weryfikację do zakresu: dla zmian kodu uruchom odpowiednie testy i wymagane bramki
+projektu; dla zmian dokumentacji sprawdź spójność instrukcji, odnośników i diffu. Nie uznawaj
+zmiany za zweryfikowaną na podstawie samej inspekcji, jeśli wymagane testy nie zostały wykonane.
 
 Nie deklaruj ukończenia, jeżeli wymagane testy nie zostały uruchomione. Podaj wtedy dokładne polecenie, błąd i przyczynę.
 
