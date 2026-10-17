@@ -83,6 +83,12 @@ Nie dodawaj wykluczeń klas ani nie obniżaj progu, aby ominąć tę zasadę.
 
 ## Zasady zmian
 
+- Każdą zmianę w repozytorium realizuj na osobnej gałęzi i dostarczaj przez pull request.
+  Nie twórz commitów bezpośrednio na `main`; commity przypisane do zadania zapisuj
+  na jego gałęzi przed otwarciem lub aktualizacją pull requesta.
+- Gdy wszystkie wymagane checki PR są zielone, scal go metodą squash, chyba że użytkownik
+  wskaże inną strategię. Nie scalaj PR-a z niezaliczonymi wymaganymi checkami.
+
 Przed zmianą:
 
 1. Sprawdź `git status` i zachowaj istniejące zmiany użytkownika.
