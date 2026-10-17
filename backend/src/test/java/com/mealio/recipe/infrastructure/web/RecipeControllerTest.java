@@ -44,6 +44,10 @@ class RecipeControllerTest {
         assertThat(added.getStatusCode().value()).isEqualTo(201);
         assertThat(added.getHeaders().getLocation()).hasPath("/api/v1/recipes/" + recipe.id() + "/ingredients/" + ingredient.id());
         assertThat(added.getBody().unit()).isEqualTo("g");
+        var deleted = controller.delete(recipe.id());
+        assertThat(deleted.getStatusCode().value()).isEqualTo(204);
+        assertThat(deleted.getBody()).isNull();
+        verify(useCase).delete(recipe.id());
         var command = org.mockito.ArgumentCaptor.forClass(com.mealio.recipe.domain.model.AddIngredientCommand.class);
         verify(useCase).addIngredient(command.capture());
         assertThat(command.getValue().recipeId()).isEqualTo(recipe.id());

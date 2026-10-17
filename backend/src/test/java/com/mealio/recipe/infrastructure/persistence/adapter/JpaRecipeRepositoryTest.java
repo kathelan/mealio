@@ -57,6 +57,8 @@ class JpaRecipeRepositoryTest {
         assertThat(repository.findAll()).containsExactly(recipe);
         assertThat(repository.findById(id)).contains(recipe);
         assertThat(repository.save(recipe)).isEqualTo(recipe);
+        repository.deleteById(id);
+        verify(recipes).deleteById(id);
         var ingredient = new RecipeIngredient(id, id, "Rice", BigDecimal.ONE, MeasurementUnit.GRAM, BigDecimal.TEN);
         assertThat(repository.saveIngredient(ingredient)).isEqualTo(ingredient);
         var stored = new RecipeIngredientEntity();
@@ -79,12 +81,14 @@ class JpaRecipeRepositoryTest {
         when(recipes.findAll()).thenThrow(failure);
         when(recipes.findById(any())).thenThrow(failure);
         when(recipes.saveAndFlush(any())).thenThrow(failure);
+        doThrow(failure).when(recipes).deleteById(any());
         when(ingredients.saveAndFlush(any())).thenThrow(failure);
         when(ingredients.findByRecipe_IdOrderByCreatedAtAscIdAsc(any())).thenThrow(failure);
         var recipe = new Recipe(id, "Rice", null, null, null, Set.of());
         var ingredient = new RecipeIngredient(id, id, "Rice", BigDecimal.ONE, MeasurementUnit.GRAM, null);
         for (Runnable operation : List.<Runnable>of(() -> repository.findAll(), () -> repository.findById(id),
-                () -> repository.save(recipe), () -> repository.saveIngredient(ingredient), () -> repository.findIngredients(id))) {
+                () -> repository.save(recipe), () -> repository.deleteById(id), () -> repository.saveIngredient(ingredient),
+                () -> repository.findIngredients(id))) {
             assertThatThrownBy(operation::run).isInstanceOf(RecipePersistenceException.class).hasCause(failure);
         }
     }

@@ -13,4 +13,5 @@ public interface ManageRecipesUseCase {
     RecipeDetails get(UUID id);
     Recipe create(CreateRecipeCommand command);
     RecipeIngredient addIngredient(AddIngredientCommand command);
+    void delete(UUID id);
 }

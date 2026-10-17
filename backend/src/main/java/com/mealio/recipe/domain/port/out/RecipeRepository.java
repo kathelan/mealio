@@ -10,6 +10,7 @@ public interface RecipeRepository {
     List<Recipe> findAll();
     Optional<Recipe> findById(UUID id);
     Recipe save(Recipe recipe);
+    void deleteById(UUID id);
     RecipeIngredient saveIngredient(RecipeIngredient ingredient);
     List<RecipeIngredient> findIngredients(UUID recipeId);
 }
