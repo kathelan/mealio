@@ -51,7 +51,7 @@ public class RecipeService implements ManageRecipesUseCase {
         var name = normalize(command.name(), "Recipe name", 220);
         var description = optional(command.description(), "Recipe description", 2048);
         var imageUrl = optional(command.imageUrl(), "Recipe image URL", 1024);
-        var categoryIds = command.categoryIds() == null ? Set.<UUID>of() : new LinkedHashSet<>(command.categoryIds());
+        var categoryIds = command.categoryIds() == null ? new LinkedHashSet<UUID>() : new LinkedHashSet<>(command.categoryIds());
         if (categoryIds.contains(null)) throw new InvalidRecipeException("Category ids cannot contain null");
         var existingIds = repository.findExistingCategoryIds(categoryIds);
         if (!existingIds.equals(categoryIds)) {

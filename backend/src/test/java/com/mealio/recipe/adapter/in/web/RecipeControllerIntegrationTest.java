@@ -2,6 +2,7 @@ package com.mealio.recipe.adapter.in.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -57,6 +58,14 @@ class RecipeControllerIntegrationTest {
         ingredients.deleteAllInBatch();
         recipes.deleteAllInBatch();
         categories.deleteAllInBatch();
+    }
+
+    @Test
+    void createsRecipeWhenOptionalCategoriesAreOmitted() throws Exception {
+        var json = mvc.perform(post("/api/v1/recipes").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Rice\"}"))
+                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+        assertThat(mapper.readValue(json, RecipeResponse.class).categoryIds()).isEmpty();
     }
 
     @Test
@@ -148,5 +157,23 @@ class RecipeControllerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON).content(json))
                 .andExpect(status().isBadRequest()).andReturn().getResponse().getContentAsString();
         assertThat(mapper.readValue(response, ApiErrorResponse.class).code()).isEqualTo("INVALID_RECIPE_REQUEST");
+    }
+
+    @Test
+    void deletingCategoryRemovesOnlyItsRecipeAssociation() throws Exception {
+        var category = createCategory();
+        var createdJson = mvc.perform(post("/api/v1/recipes").contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(new RecipeCreateRequest("Rice", null, null, null,
+                                Set.of(category.id())))))
+                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+        var recipe = mapper.readValue(createdJson, RecipeResponse.class);
+
+        mvc.perform(delete("/api/v1/categories/{id}", category.id())).andExpect(status().isNoContent());
+
+        var fetched = mvc.perform(get("/api/v1/recipes/{id}", recipe.id()))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        var details = mapper.readValue(fetched, RecipeDetailsResponse.class);
+        assertThat(details.id()).isEqualTo(recipe.id());
+        assertThat(details.categoryIds()).isEmpty();
     }
 }
