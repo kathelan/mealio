@@ -8,6 +8,7 @@ Ujednolicić nazwę workflow GitHub Actions i usunąć nieaktualny, lokalny dupl
 - Usunięto nieśledzony plik `.github/workflows/verify 2.yml`, który zawierał starszą konfigurację i mogły z niego powstać zduplikowane workflow.
 - Zachowano nazwę workflow `Mealio CI` oraz cztery nazwy jobów wymagane przez ruleset `Protect main`.
 - Ujednolicono prefiks grupy concurrency z nazwą workflow.
+- Dodano wykrywanie zmian; przy zmianach wyłącznie w plikach Markdown joby build, lint i testów są pomijane. Jeśli detekcja zmian zawiedzie, wymagane joby uruchamiają się normalnie.
 - Zaktualizowano ścieżkę workflow w `docs/development.md`.
 - Dołączono istniejące lokalne zmiany w `AGENTS.md` i `README.md` wskazane przez użytkownika.
 
@@ -17,6 +18,7 @@ Ujednolicić nazwę workflow GitHub Actions i usunąć nieaktualny, lokalny dupl
 - `actionlint` nie jest zainstalowany lokalnie.
 - Pełne testy Maven nie są wymagane dla zmiany nazwy workflow i dokumentacji.
 - Weryfikacja GitHub Actions nastąpi na PR.
+- Reguła pomijania przy samych plikach Markdown jest zgodna z dokumentacją GitHub: pominięty job ma status zaliczony, a pominięcie całego workflow przez `paths` pozostawiłoby wymagane checki oczekujące.
 
 ## Otwarte kwestie
 Brak.
