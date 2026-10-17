@@ -23,6 +23,7 @@
         <jacoco.version>0.8.14</jacoco.version>
         <unitArgLine/>
         <integrationArgLine/>
+        <skipUnitTests>false</skipUnitTests>
     </properties>
 
     <modules>
@@ -62,6 +63,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <argLine>@{unitArgLine}</argLine>
+                    <skipTests>${skipUnitTests}</skipTests>
                     <excludes><exclude>**/*IntegrationTest.java</exclude></excludes>
                 </configuration>
             </plugin>
@@ -72,9 +74,6 @@
                     <argLine>@{integrationArgLine}</argLine>
                     <includes><include>**/*IntegrationTest.java</include></includes>
                 </configuration>
-                <executions>
-                    <execution><goals><goal>integration-test</goal><goal>verify</goal></goals></execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
@@ -110,25 +109,56 @@
                             </limit></limits></rule></rules>
                         </configuration>
                     </execution>
-                    <execution>
-                        <id>integration-agent</id>
-                        <goals><goal>prepare-agent-integration</goal></goals>
-                        <configuration>
-                            <propertyName>integrationArgLine</propertyName>
-                            <append>false</append>
-                            <destFile>${project.build.directory}/jacoco-integration.exec</destFile>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>integration-report</id>
-                        <goals><goal>report-integration</goal></goals>
-                        <configuration>
-                            <dataFile>${project.build.directory}/jacoco-integration.exec</dataFile>
-                            <outputDirectory>${project.reporting.outputDirectory}/jacoco-integration</outputDirectory>
-                        </configuration>
-                    </execution>
                 </executions>
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>integration-tests</id>
+            <activation><activeByDefault>true</activeByDefault></activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>default</id>
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
+                                <id>integration-tests</id>
+                                <goals><goal>integration-test</goal><goal>verify</goal></goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>integration-agent</id>
+                                <goals><goal>prepare-agent-integration</goal></goals>
+                                <configuration>
+                                    <propertyName>integrationArgLine</propertyName>
+                                    <append>false</append>
+                                    <destFile>${project.build.directory}/jacoco-integration.exec</destFile>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>integration-report</id>
+                                <goals><goal>report-integration</goal></goals>
+                                <configuration>
+                                    <dataFile>${project.build.directory}/jacoco-integration.exec</dataFile>
+                                    <outputDirectory>${project.reporting.outputDirectory}/jacoco-integration</outputDirectory>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

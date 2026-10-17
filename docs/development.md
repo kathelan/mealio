@@ -34,10 +34,11 @@ Root POM jest wspólnym parentem trzech modułów Java.
 | Build Java | `mvn --batch-mode --no-transfer-progress clean package -DskipTests` |
 | Lint Java | `mvn --batch-mode --no-transfer-progress validate` |
 | Unit tests and 100% coverage | `mvn --batch-mode --no-transfer-progress clean verify -DskipITs` |
-| Integration tests PostgreSQL | `mvn --batch-mode --no-transfer-progress clean verify` |
+| Integration tests PostgreSQL | `mvn --batch-mode --no-transfer-progress clean verify -Pintegration-tests -DskipUnitTests` |
 
-Workflow `.github/workflows/verify.yml` wykonuje te cztery joby dla każdego PR
-oraz push. W ustawieniach ochrony gałęzi GitHub należy wskazać powyższe nazwy
+Workflow `.github/workflows/verify.yml` wykonuje cztery obowiązkowe joby dla każdego PR
+oraz push. Opcjonalny job SonarQube uruchamia analizę po skonfigurowaniu wymaganych ustawień.
+W ustawieniach ochrony gałęzi GitHub należy wskazać nazwy obowiązkowych jobów
 jako wymagane sprawdzenia. Sam plik workflow nie zmienia ochrony gałęzi.
 Prototyp SwiftUI nie ma projektu Xcode ani targetu do budowania; CI obejmuje
 istniejące aplikacje Java. Build iOS wymaga osobnego etapu migracji klienta.
@@ -45,7 +46,10 @@ istniejące aplikacje Java. Build iOS wymaga osobnego etapu migracji klienta.
 JUnit Jupiter + Mockito + AssertJ służą do testów jednostkowych. Surefire uruchamia
 `*Test`, z wyłączeniem `*IntegrationTest`. Testy jednostkowe nie wymagają Dockera ani
 połączeń sieciowych. ArchUnit sprawdza granice modułów w tej samej fazie.
-Failsafe uruchamia `*IntegrationTest` w fazach integration-test/verify. Testy
+Profil Maven `integration-tests` uruchamia Failsafe dla `*IntegrationTest` w fazach integration-test/verify.
+Profil jest aktywny domyślnie, więc standardowe `mvn verify` nadal uruchamia pełny zestaw.
+W jobie CI dla integracji Surefire pomija unit tests przez `-DskipUnitTests`.
+Testy
 PostgreSQL 17 korzystają z Testcontainers, migracji Liquibase i Hibernate validate;
 każda usługa startuje na losowym porcie i udostępnia rzeczywisty HTTP health check.
 Nie korzystają z lokalnej bazy Compose. Brak Dockera przerywa integracje, bez pomijania testów.
@@ -59,6 +63,12 @@ raporty jako artefakty także po błędzie.
 
 `make test` uruchamia szybkie testy i raport; `make unit` także egzekwuje próg.
 `make lint`, `make build` i `make integration` odpowiadają pozostałym jobom.
+SonarQube wymaga `SONAR_HOST_URL`, `SONAR_PROJECT_KEY` oraz sekretu `SONAR_TOKEN`.
+URL i klucz projektu można dodać jako Actions variables albo secrets. Dla
+SonarQube Cloud należy także ustawić `SONAR_ORGANIZATION` (jako variable lub
+secret). Bez wymaganej konfiguracji skan jest pomijany; po uruchomieniu błędy
+analizy blokują etap unit. Skan używa już skompilowanych klas i raportu JaCoCo,
+więc nie uruchamia drugi raz testów.
 Dla pojedynczego modułu: `mvn -pl backend -am verify -DskipITs` (analogicznie `asr`).
 Po przenoszeniu klas albo przy powielonych artefaktach lokalnych uruchom `make verify`
 z czyszczeniem. Nie uruchamiaj równocześnie buildów zapisujących ten sam `target`.

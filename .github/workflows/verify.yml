@@ -17,8 +17,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '25'
@@ -30,8 +30,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '25'
@@ -43,17 +43,57 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '25'
           cache: maven
       - run: mvn --batch-mode --no-transfer-progress clean verify -DskipITs
-      - uses: actions/upload-artifact@v4
+      - name: Check SonarQube configuration
+        id: sonar-config
+        env:
+          SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL || secrets.SONAR_HOST_URL }}
+          SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY || secrets.SONAR_PROJECT_KEY }}
+          SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION || secrets.SONAR_ORGANIZATION }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          if [[ -z "$SONAR_HOST_URL" || -z "$SONAR_PROJECT_KEY" || -z "$SONAR_TOKEN" ]]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "SonarQube skipped: configure SONAR_HOST_URL, SONAR_PROJECT_KEY and SONAR_TOKEN." >> "$GITHUB_STEP_SUMMARY"
+          elif [[ "$SONAR_HOST_URL" == *sonarcloud.io* && -z "$SONAR_ORGANIZATION" ]]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "SonarQube skipped: configure SONAR_ORGANIZATION for SonarQube Cloud." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Run SonarQube analysis with unit coverage
+        if: steps.sonar-config.outputs.configured == 'true'
+        env:
+          SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL || secrets.SONAR_HOST_URL }}
+          SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY || secrets.SONAR_PROJECT_KEY }}
+          SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION || secrets.SONAR_ORGANIZATION }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          sonar_args=(
+            "-Dsonar.host.url=$SONAR_HOST_URL"
+            "-Dsonar.projectKey=$SONAR_PROJECT_KEY"
+            "-Dsonar.java.source=25"
+            "-Dsonar.coverage.jacoco.xmlReportPaths=**/target/site/jacoco-unit/jacoco.xml"
+          )
+          if [[ -n "$SONAR_ORGANIZATION" ]]; then
+            sonar_args+=("-Dsonar.organization=$SONAR_ORGANIZATION")
+          fi
+          mvn --batch-mode --no-transfer-progress \
+            org.sonarsource.scanner.maven:sonar-maven-plugin:5.5.0.6356:sonar \
+            "${sonar_args[@]}"
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: unit-reports
+          name: jacoco-unit-and-surefire-reports
+          if-no-files-found: warn
           path: |
             **/target/surefire-reports/
             **/target/site/jacoco-unit/
@@ -63,19 +103,20 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '25'
           cache: maven
       - name: Require Docker for Testcontainers
         run: docker info
-      - run: mvn --batch-mode --no-transfer-progress clean verify
-      - uses: actions/upload-artifact@v4
+      - run: mvn --batch-mode --no-transfer-progress clean verify -Pintegration-tests -DskipUnitTests
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: integration-reports
+          name: jacoco-integration-and-failsafe-reports
+          if-no-files-found: warn
           path: |
             **/target/failsafe-reports/
             **/target/site/jacoco-integration/

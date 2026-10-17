@@ -10,7 +10,7 @@ unit:
 	mvn --batch-mode --no-transfer-progress clean verify -DskipITs
 
 integration:
-	mvn --batch-mode --no-transfer-progress clean verify
+	mvn --batch-mode --no-transfer-progress clean verify -Pintegration-tests -DskipUnitTests
 
 verify:
 	mvn clean verify
