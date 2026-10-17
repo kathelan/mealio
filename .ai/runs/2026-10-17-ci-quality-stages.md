@@ -33,6 +33,8 @@ profil Maven dla integracji oraz przygotować opcjonalny skan SonarQube.
 - `Makefile`
 - `AGENTS.md` — reguła pracy wyłącznie przez gałęzie i pull requesty.
 - `docs/development.md` — dokumentacja CI i TODO dla iOS end-to-end XCUITest po dodaniu targetu Xcode.
+- GitHub ruleset `Protect main` (ID `25301522`) — pull request, linear history,
+  wymagane cztery checki CI, zakaz force-push i usunięcia gałęzi.
 - `.ai/specs/implemented/2026-10-17-ci-quality-stages.md`
 
 ## Weryfikacja

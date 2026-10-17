@@ -41,7 +41,9 @@ oraz push. Opcjonalny skan SonarQube jest częścią joba unit.
 Nazwy checków to `Build (Java)`, `Lint (Checkstyle)`, `Unit tests (Java, 100% lines)`
 i `Integration tests (PostgreSQL/Testcontainers)`. W ustawieniach ochrony gałęzi
 GitHub należy wskazać te nazwy obowiązkowych jobów
-jako wymagane sprawdzenia. Sam plik workflow nie zmienia ochrony gałęzi.
+jako wymagane sprawdzenia. Repozytorium ma aktywny ruleset `Protect main`, który
+egzekwuje pull request, linear history, te cztery checki oraz blokuje force-push
+i usunięcie `main`.
 Prototyp SwiftUI nie ma projektu Xcode ani targetu do budowania; CI obejmuje
 istniejące aplikacje Java. Build iOS wymaga osobnego etapu migracji klienta.
 TODO: po dodaniu projektu Xcode i uruchamialnego targetu iOS dodać do CI testy
