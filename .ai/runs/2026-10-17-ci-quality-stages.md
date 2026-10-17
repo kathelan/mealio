@@ -18,9 +18,10 @@ profil Maven dla integracji oraz przygotować opcjonalny skan SonarQube.
   wykonuje pełny zestaw.
 - Job integracyjny używa `-Pintegration-tests -DskipUnitTests`, by nie powielać
   unit tests. Próg 100% linii pozostaje sprawdzany w jobie unit.
-- Skan SonarQube uruchamia się po unit tests na wygenerowanych klasach i raporcie
-  JaCoCo. URL i klucz akceptują Actions variables lub secrets; token jest
-  pobierany z sekretu. SonarQube Cloud wymaga także `SONAR_ORGANIZATION`.
+- Skan SonarQube Server uruchamia się po unit tests na wygenerowanych klasach i
+  raporcie JaCoCo. Cloud domyślnie korzysta z Automatic Analysis; Maven Scanner
+  i import JaCoCo wymagają wyłączenia Automatic Analysis oraz `SONAR_CI_ANALYSIS=true`.
+  URL i klucz akceptują Actions variables lub secrets; token jest pobierany z sekretu.
 - Zaktualizowano `Makefile` i `docs/development.md`.
 
 ## Zmienione pliki
@@ -30,8 +31,8 @@ profil Maven dla integracji oraz przygotować opcjonalny skan SonarQube.
   `Lint (Checkstyle)`, `Unit tests (Java, 100% lines)`, `Integration tests (PostgreSQL/Testcontainers)`.
 - `pom.xml`
 - `Makefile`
-- `docs/development.md`
 - `AGENTS.md` — reguła pracy wyłącznie przez gałęzie i pull requesty.
+- `docs/development.md` — dokumentacja CI i TODO dla iOS end-to-end XCUITest po dodaniu targetu Xcode.
 - `.ai/specs/implemented/2026-10-17-ci-quality-stages.md`
 
 ## Weryfikacja

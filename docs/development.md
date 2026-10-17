@@ -44,6 +44,8 @@ GitHub należy wskazać te nazwy obowiązkowych jobów
 jako wymagane sprawdzenia. Sam plik workflow nie zmienia ochrony gałęzi.
 Prototyp SwiftUI nie ma projektu Xcode ani targetu do budowania; CI obejmuje
 istniejące aplikacje Java. Build iOS wymaga osobnego etapu migracji klienta.
+TODO: po dodaniu projektu Xcode i uruchamialnego targetu iOS dodać do CI testy
+end-to-end XCUITest na symulatorze dla głównych ścieżek użytkownika aplikacji.
 
 JUnit Jupiter + Mockito + AssertJ służą do testów jednostkowych. Surefire uruchamia
 `*Test`, z wyłączeniem `*IntegrationTest`. Testy jednostkowe nie wymagają Dockera ani
