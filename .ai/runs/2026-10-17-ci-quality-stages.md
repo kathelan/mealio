@@ -26,9 +26,12 @@ profil Maven dla integracji oraz przygotować opcjonalny skan SonarQube.
 ## Zmienione pliki
 
 - `.github/workflows/verify.yml`
+- Widoczne nazwy workflow/jobów ujednolicono pod checki PR: `Mealio CI`, `Build (Java)`,
+  `Lint (Checkstyle)`, `Unit tests (Java, 100% lines)`, `Integration tests (PostgreSQL/Testcontainers)`.
 - `pom.xml`
 - `Makefile`
 - `docs/development.md`
+- `AGENTS.md` — reguła pracy wyłącznie przez gałęzie i pull requesty.
 - `.ai/specs/implemented/2026-10-17-ci-quality-stages.md`
 
 ## Weryfikacja

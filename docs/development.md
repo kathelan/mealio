@@ -37,8 +37,10 @@ Root POM jest wspólnym parentem trzech modułów Java.
 | Integration tests PostgreSQL | `mvn --batch-mode --no-transfer-progress clean verify -Pintegration-tests -DskipUnitTests` |
 
 Workflow `.github/workflows/verify.yml` wykonuje cztery obowiązkowe joby dla każdego PR
-oraz push. Opcjonalny job SonarQube uruchamia analizę po skonfigurowaniu wymaganych ustawień.
-W ustawieniach ochrony gałęzi GitHub należy wskazać nazwy obowiązkowych jobów
+oraz push. Opcjonalny skan SonarQube jest częścią joba unit.
+Nazwy checków to `Build (Java)`, `Lint (Checkstyle)`, `Unit tests (Java, 100% lines)`
+i `Integration tests (PostgreSQL/Testcontainers)`. W ustawieniach ochrony gałęzi
+GitHub należy wskazać te nazwy obowiązkowych jobów
 jako wymagane sprawdzenia. Sam plik workflow nie zmienia ochrony gałęzi.
 Prototyp SwiftUI nie ma projektu Xcode ani targetu do budowania; CI obejmuje
 istniejące aplikacje Java. Build iOS wymaga osobnego etapu migracji klienta.
