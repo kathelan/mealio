@@ -94,6 +94,26 @@ class PostgreSqlIntegrationTest {
     }
 
     @Test
+    void deletesRecipeAndCascadesItsIngredientsAndCategoryLinksInPostgres() {
+        var category = categories.create(new CreateCategoryCommand(null, "Dinner", null, 1));
+        var recipe = recipes.create(new CreateRecipeCommand("Rice", null, LocalDate.of(2026, 10, 17),
+                null, Set.of(category.id())));
+        recipes.addIngredient(new AddIngredientCommand(recipe.id(), "Rice", BigDecimal.ONE,
+                MeasurementUnit.GRAM, null));
+
+        recipes.delete(recipe.id());
+
+        assertThatThrownBy(() -> recipes.get(recipe.id()))
+                .isInstanceOf(com.mealio.recipe.domain.exception.RecipeNotFoundException.class);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM backend.recipe_ingredients WHERE recipe_id = ?",
+                Integer.class, recipe.id())).isZero();
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM backend.recipe_categories WHERE recipe_id = ?",
+                Integer.class, recipe.id())).isZero();
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM backend.meal_categories WHERE id = ?",
+                Integer.class, category.id())).isEqualTo(1);
+    }
+
+    @Test
     void databaseRejectsDuplicateRootPathsAndUnknownCategoryLinks() {
         categories.create(new CreateCategoryCommand(null, "Dinner", null, 0));
         assertThatThrownBy(() -> jdbc.update("""

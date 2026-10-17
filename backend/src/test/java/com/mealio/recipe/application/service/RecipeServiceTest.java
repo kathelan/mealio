@@ -107,6 +107,26 @@ class RecipeServiceTest {
     }
 
     @Test
+    void deletesExistingRecipe() {
+        var recipe = recipe("Rice", LocalDate.now(clock));
+        when(repository.findById(recipe.id())).thenReturn(Optional.of(recipe));
+
+        service.delete(recipe.id());
+
+        verify(repository).deleteById(recipe.id());
+    }
+
+    @Test
+    void missingRecipePreventsDeletion() {
+        var id = UUID.randomUUID();
+        when(repository.findById(id)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.delete(id)).isInstanceOf(RecipeNotFoundException.class);
+
+        verify(repository, never()).deleteById(any());
+    }
+
+    @Test
     void validatesAllRecipeAndIngredientBoundaries() {
         assertThatThrownBy(() -> service.create(null)).isInstanceOf(InvalidRecipeException.class);
         for (var command : List.of(new CreateRecipeCommand(" ", null, null, null, null),

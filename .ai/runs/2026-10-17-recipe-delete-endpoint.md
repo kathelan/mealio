@@ -1,0 +1,7 @@
+# Przebieg: usuwanie przepisów przez API
+
+- Cel: dodać brakującą operację usuwania przepisu do istniejącego API i opisać ją w OpenAPI, README oraz issue #4.
+- Działania: zsynchronizowano gałąź PR z `origin/main` (konfiguracja skills przestała być zmianą gałęzi); wybrano małe rozszerzenie istniejącego API `recipe`; dodano `DELETE /api/v1/recipes/{id}` z odpowiedzią 204 i 404 `RECIPE_NOT_FOUND`; istniejące FK kaskadowo usuwają składniki i przypisania kategorii; zaktualizowano specyfikację, OpenAPI, README, issue i PR.
+- Zmienione pliki: `backend/src/main/java/com/mealio/recipe/domain/port/in/ManageRecipesUseCase.java`, `backend/src/main/java/com/mealio/recipe/domain/port/out/RecipeRepository.java`, `backend/src/main/java/com/mealio/recipe/application/service/RecipeService.java`, `backend/src/main/java/com/mealio/recipe/infrastructure/persistence/adapter/JpaRecipeRepository.java`, `backend/src/main/java/com/mealio/recipe/infrastructure/web/RecipeController.java`, trzy testy jednostkowe backendu, test HTTP `RecipeControllerIntegrationTest`, `PostgreSqlIntegrationTest`, `docs/openapi/backend.yaml`, `README.md`, `.ai/specs/implemented/2026-10-17-recipe-deletion.md`.
+- Weryfikacja: `mvn clean verify` — BUILD SUCCESS; integracje backendu 23/23, unit JaCoCo 100% linii; `git diff --check` — powodzenie; 11 względnych linków README prowadzi do istniejących plików; OpenAPI YAML parsuje się poprawnie.
+- Otwarte kwestie: PR wymaga niezależnej recenzji i ręcznego QA (etykieta `needs-qa`); merge nie jest częścią tego przebiegu.

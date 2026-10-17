@@ -49,6 +49,12 @@ public class JpaRecipeRepository implements RecipeRepository {
     }
 
     @Override
+    public void deleteById(UUID id) {
+        try { recipes.deleteById(id); }
+        catch (DataAccessException e) { throw failure("Cannot delete recipe", e); }
+    }
+
+    @Override
     public RecipeIngredient saveIngredient(RecipeIngredient ingredient) {
         try {
             var entity = new RecipeIngredientEntity();

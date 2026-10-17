@@ -93,6 +93,13 @@ public class RecipeService implements ManageRecipesUseCase {
                 command.quantity(), command.unit(), command.calories()));
     }
 
+    @Override
+    @Transactional
+    public void delete(UUID id) {
+        repository.findById(id).orElseThrow(() -> new RecipeNotFoundException(id));
+        repository.deleteById(id);
+    }
+
     private String normalize(String value, String label, int maxLength) {
         if (!StringUtils.hasText(value)) throw new InvalidRecipeException(label + " is required");
         var normalized = value.trim().replaceAll("\\s+", " ");

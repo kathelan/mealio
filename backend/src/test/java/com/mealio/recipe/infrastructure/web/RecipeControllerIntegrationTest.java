@@ -29,6 +29,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
@@ -49,6 +50,7 @@ class RecipeControllerIntegrationTest {
     @Autowired RecipeIngredientJpaRepository ingredients;
     @Autowired RecipeJpaRepository recipes;
     @Autowired MealCategoryJpaRepository categories;
+    @Autowired JdbcTemplate jdbc;
     private MockMvc mvc;
 
     @BeforeEach
@@ -119,6 +121,28 @@ class RecipeControllerIntegrationTest {
         mvc.perform(post("/api/v1/recipes/{id}/ingredients", id).contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"Sugar\",\"quantity\":1,\"unit\":\"g\"}"))
                 .andExpect(status().isNotFound());
+
+        mvc.perform(delete("/api/v1/recipes/{id}", id)).andExpect(status().isNotFound());
+    }
+
+    @Test
+    void deletesRecipeAndCascadesItsIngredientsAndCategoryLinks() throws Exception {
+        var category = createCategory();
+        var createdJson = mvc.perform(post("/api/v1/recipes").contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(new RecipeCreateRequest("Rice", null, null, null,
+                                Set.of(category.id())))))
+                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+        var recipe = mapper.readValue(createdJson, RecipeResponse.class);
+        mvc.perform(post("/api/v1/recipes/{id}/ingredients", recipe.id()).contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(new IngredientCreateRequest("Rice", BigDecimal.ONE, "g", null))))
+                .andExpect(status().isCreated());
+
+        mvc.perform(delete("/api/v1/recipes/{id}", recipe.id())).andExpect(status().isNoContent());
+
+        assertThat(recipes.existsById(recipe.id())).isFalse();
+        assertThat(ingredients.findAll()).isEmpty();
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM backend.recipe_categories WHERE category_id = ?",
+                Integer.class, category.id())).isZero();
     }
 
     @Test
