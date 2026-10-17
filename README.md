@@ -60,6 +60,16 @@ Aplikacja udostępnia:
 - `GET /actuator/health/liveness`
 - `GET /actuator/health/readiness`
 
+## Dostępne API backendu
+
+Backend udostępnia obecnie operacje kategorii i przepisów:
+
+- Kategorie (`/api/v1/categories`): listowanie i tworzenie; dla konkretnego ID także pobieranie, częściowa aktualizacja oraz usuwanie pustej kategorii.
+- Przepisy (`/api/v1/recipes`): listowanie i tworzenie; dla konkretnego ID pobieranie przepisu ze składnikami.
+- Składniki przepisów (`/api/v1/recipes/{id}/ingredients`): dodawanie składnika do przepisu.
+
+Pełne ścieżki, formaty żądań i odpowiedzi oraz kody błędów opisuje [specyfikacja OpenAPI backendu](docs/openapi/backend.yaml).
+
 Samodzielny moduł ASR znajduje się w `asr/`:
 
 ```bash
