@@ -28,13 +28,6 @@ docker compose up --build
 
 ```text
 src/main/java/com/mealio/
-  product/
-    api/           # snapshot bieżącej lub historycznej wersji
-    domain/
-    application/
-    infrastructure/
-      web/
-      persistence/
   category/
     api/           # publiczny odczyt identyfikatorów kategorii
     domain/
@@ -59,11 +52,6 @@ Tabele `recipes`, `recipe_categories` i `recipe_ingredients` należą do `recipe
 Przepis zapisuje identyfikatory kategorii jako UUID i sprawdza ich istnienie przez
 `category.api.CategoryLookup`. Moduły mają własne bazowe encje i DTO HTTP.
 Health zwraca wynik aplikacyjny mapowany przez swój adapter HTTP.
-
-`product` posiada `products` i `product_versions`. Ręczny katalog obsługuje
-wyszukiwanie, GTIN, niepełne wartości i tworzenie niezmiennych wersji przez HTTP.
-Kontrakt modułu używa Optional, a adapter HTTP mapuje brak danych na JSON null.
-Korekty wymagają expectedVersion; katalog nie wywołuje jeszcze dostawców zewnętrznych.
 
 ArchUnit sprawdza granice bez wyjątków migracyjnych. Dalsze etapy opisuje
 [plan migracji](../.ai/specs/2026-10-17-monorepo-migration.md).

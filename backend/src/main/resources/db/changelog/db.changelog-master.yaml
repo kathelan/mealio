@@ -229,7 +229,3 @@ databaseChangeLog:
             columns:
               - column:
                   name: recipe_id
-
-  - include:
-      file: 002-create-product-catalog.yaml
-      relativeToChangelogFile: true

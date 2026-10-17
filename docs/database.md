@@ -50,16 +50,6 @@ Klucz obcy nadal zapewnia spójność, a usunięcie kategorii usuwa jej powiąza
 z przepisami przez dotychczasowe `ON DELETE CASCADE`. Istniejący change set 001
 pozostaje niezmieniony; własność jego tabel jest określona powyżej.
 
-Moduł `product` posiada tabele `products` (tożsamość, unikalny znormalizowany GTIN,
-bieżący numer wersji i optymistyczna rewizja) i `product_versions` (niezmienne dane,
-wartości odżywcze, status kompletności i snapshot ręcznego źródła).
-Migracja `002-create-product-catalog.yaml`, autor `product`, dodaje tabele bez
-zmiany change setu 001 i bez modyfikowania istniejących danych kategorii/przepisów.
-Klucze obce, unikalność GTIN i numerów wersji, nieujemność wartości oraz spójność
-statusu kompletności są egzekwowane również w bazie. Testy PostgreSQL sprawdzają
-przejście z samej migracji 001 do pełnego schematu z zachowaniem danych legacy,
-rollback nieudanego tworzenia i równoczesne korekty wersji.
-
 ## Migracje
 
 Każda usługa posiada własny changelog Liquibase:

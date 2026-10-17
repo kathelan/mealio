@@ -1,3 +1,7 @@
+> Raport historyczny. Wdrożenie wycofano 2026-10-17, ponieważ zakres zadania
+> obejmuje migrację bez nowych funkcji. Aktualny stan opisuje raport
+> `2026-10-17-migration-scope-correction.md`.
+
 # Faza 5.1 — lokalny katalog produktów
 
 Data: 2026-10-17.

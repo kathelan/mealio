@@ -24,3 +24,10 @@ nowy kod stosuje preferencje, testy architektury oraz pełny build przechodzą.
 Weryfikacja bieżącego drzewa wraz z product: mvn clean verify, 111 testów,
 0 failures/errors/skipped, pokrycie backendu 88,76%. OpenAPI oraz dokumentacja
 produktu aktualizowane są w jego osobnej specyfikacji.
+
+## Korekta zakresu — 2026-10-17
+
+Przykład implementacji product opisany powyżej został następnie wycofany jako
+wykraczający poza migrację. Standardy Optional/builderów, kanoniczna lokalizacja
+oraz testy ArchUnit pozostają wdrożone. Wynik 111 testów jest historyczny;
+aktualne sprawdzenie opisuje raport migration-scope-correction.

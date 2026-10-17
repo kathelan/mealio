@@ -5,6 +5,11 @@ oraz odnośnik do rozwiniętej notatki, jeśli istnieje. Nie zapisuj sekretów a
 
 ## Wnioski
 
+- 2026-10-17 — Korekta zakresu przez użytkownika: migracja monorepo obejmuje
+  porządkowanie struktury, builda, testów i standardów przy zachowaniu zachowania.
+  Nie planuj nowych funkcji jako faz migracji. Product/nutrition/diary/mealparser
+  wymagają oddzielnego zlecenia; katalog dodany w tym przebiegu został wycofany.
+
 - 2026-10-17 — Preferencja użytkownika przy fazie 5: opcjonalne dane w domenie
   i kontraktach Java reprezentujemy przez Optional, a złożone obiekty tworzymy
   builderami z zachowaną walidacją. Nullable JSON/JPA mapujemy w adapterach.

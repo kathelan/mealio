@@ -35,14 +35,23 @@ ASR pozostaje opcjonalnym wejściem audio -> tekst. AI nie dostarcza wartości o
    - Testcontainers sprawdza migracje od pustej bazy, ograniczenia i persystencję PostgreSQL.
    - Wspólne polecenia i automatyzacja uruchamiają testy wszystkich modułów bez pomijania
      testów integracyjnych; `mvn verify` przechodzi z dostępnym Dockerem.
-4. [ ] Klient SwiftUI w monorepo.
+4. [ ] Struktura klienta SwiftUI w monorepo.
    - Przenieść prototyp do jednoznacznego katalogu iOS i utworzyć budowalny projekt Xcode.
-   - Połączyć klienta z istniejącym API według OpenAPI, z konfiguracją adresu backendu;
-     obliczenia i reguły żywieniowe pozostają w backendzie.
+   - Zachować zachowanie istniejącego prototypu. W tej migracji nie wdrażać
+     nowych przepływów ani integracji HTTP klienta; kontrakty pozostają w OpenAPI.
    - Sprawdzić build klienta na dostępnym SDK; zaktualizować strukturę i instrukcje repozytorium.
-5. [ ] Moduły MVP (krok 8; osobne specyfikacje przed implementacją zachowania).
-   - Kolejno wdrażać product, nutrition, diary i mealparser zgodnie z ADR-0004–0008.
-   - Każdy przepływ ma testy, aktualne OpenAPI i integrację iOS; pełne bramki przechodzą.
+## Granica zakresu — korekta 2026-10-17
+
+Zadanie obejmuje wyłącznie migrację projektu i standardy implementacji.
+Dodanie modułów product, nutrition, diary i mealparser jest rozwojem produktu,
+a nie fazą migracji. Wymaga oddzielnego zlecenia i specyfikacji. Wcześniejsze
+umieszczenie tych funkcji jako fazy 5 planu migracji było błędem zakresu.
+
+Na polecenie użytkownika wycofano commit katalogu `11dbca4`: kod, jego migrację,
+endpointy oraz zmiany OpenAPI. Specyfikacja katalogu trafiła do archive;
+raport wdrożenia pozostaje oznaczony jako historyczny. Zachowano nowe standardy
+w `.ai/docs/engineering-standards.md`, ich testy ArchUnit oraz osobny research.
+Kolejnym zakresem migracyjnym pozostaje punkt 4, bez nowych funkcjonalności.
 
 ## Weryfikacja i postęp
 
@@ -127,22 +136,8 @@ Następna faza: 4 (iOS). Kontrola środowiska: `xcodebuild -version` zgłasza,
 zwraca `SDK "iphoneos" cannot be located`. Swift 6.4 jest dostępny, ale sam
 kompilator nie pozwala zweryfikować builda aplikacji iOS. Faza 4 nie jest ukończona.
 
-## Faza 5 — kolejność wdrożeń backendu
+## Aktualny stan po korekcie
 
-Na polecenie użytkownika z 2026-10-17 faza 5 jest realizowana przed ukończeniem iOS.
-
-- [x] 5.1 Lokalny katalog product, walidacja GTIN, źródła ręczne i niezmienne wersje:
-  wdrożona specyfikacja `implemented/2026-10-17-product-catalog.md`.
-- [ ] 5.2 Nutrition: deterministyczne obliczenia, jednostki i kompletność.
-- [ ] 5.3 Diary: dziennik dnia, wpisy, snapshoty, edycja i atomowe potwierdzanie.
-- [ ] 5.4 Kandydaci zewnętrzni: lokalny katalog -> Open Food Facts -> ręczne dane;
-  opcjonalny FatSecret zgodnie z zaakceptowanymi warunkami integracji.
-- [ ] 5.5 Mealparser: port interpretacji tekstu, jawna niepewność i potwierdzenie.
-
-Aktualne standardy dla agentów: `../docs/engineering-standards.md` (ścieżka względem
-tej specyfikacji). Osobny research `2026-10-17-engineering-stack-research.md` opisuje
-rekomendacje; nie zmienia automatycznie stacku ani zaakceptowanych ADR.
-
-Etap 5.1 ukończony 2026-10-17: katalog ręczny, GTIN, wersje i snapshoty źródła.
-Pełne mvn clean verify: 111 testów bez błędów i pominięć, JaCoCo 88,76%.
-Następny etap: 5.2 nutrition. Cała faza 5 oraz faza 4 pozostają nieukończone.
+Fazy migracyjne 1–3 oraz standardy są zachowane. Nowe funkcje katalogu są wycofane.
+Repozytorium wróciło do API i schematu sprzed ich implementacji. Research stacku
+jest dokumentem rekomendacji i nie jest planem automatycznego wdrażania funkcji.

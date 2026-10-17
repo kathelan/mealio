@@ -1,3 +1,9 @@
+# Status: wycofana — 2026-10-17
+
+Implementacja katalogu została wycofana na polecenie użytkownika jako wykraczająca
+poza migrację monorepo. Poniżej zachowano historyczną specyfikację; nie jest
+zgodą na ponowne wdrożenie funkcji.
+
 # Faza 5.1 — lokalny katalog produktów i wersje danych
 
 Data: 2026-10-17. Status: wdrożona.

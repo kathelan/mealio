@@ -33,13 +33,14 @@ Backend spełnia obecny próg JaCoCo 80%. Testy integracyjne persystencji używa
 ## Kolejność prac
 
 1. [x] Zabezpieczyć zachowanie `category` testami charakteryzacyjnymi logiki, błędów i HTTP.
-2. Dodać Spring Modulith lub ArchUnit i jawnie rejestrować istniejące naruszenia.
+2. [x] Dodać Spring Modulith lub ArchUnit i jawnie rejestrować istniejące naruszenia.
 3. [x] Przenieść encję, mapper i Spring Data repository kategorii do `category.infrastructure.persistence` bez zmiany API i schematu.
 4. [x] Zabezpieczyć testami `recipe`, przenieść jego model i persystencję do właściciela.
 5. [x] Zastąpić dostęp `recipe` do persystencji kategorii małym publicznym API `category`.
 6. [x] Usunąć pozostałości globalnych pakietów dopiero po migracji wszystkich użytkowników.
 7. [x] Dodać testy PostgreSQL przez Testcontainers i zweryfikować migracje od pustej bazy.
-8. [ ] Implementować moduły MVP: `product`, `diary`, `nutrition`, `mealparser`.
+8. Poza zakresem migracji: przyszłe moduły MVP `product`, `diary`, `nutrition`,
+   `mealparser` wymagają oddzielnego zlecenia; nie są kolejnym krokiem tej migracji.
 
 ASR pozostaje niezależnym wejściem audio i nie blokuje przepływu tekstowego.
 
