@@ -1,4 +1,4 @@
-package com.mealio.adapter.out.persistence.entity;
+package com.mealio.category.infrastructure.persistence.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -9,7 +9,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import com.mealio.domain.model.MealCategoryType;
+import com.mealio.adapter.out.persistence.entity.BaseEntity;
+import com.mealio.category.domain.model.CategoryType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -39,7 +40,7 @@ public class MealCategoryEntity extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 32)
-    private MealCategoryType type;
+    private CategoryType type;
 
     @Column(nullable = false)
     private Integer sortOrder;

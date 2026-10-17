@@ -1,6 +1,6 @@
-package com.mealio.adapter.out.persistence.repository;
+package com.mealio.category.infrastructure.persistence.repository;
 
-import com.mealio.adapter.out.persistence.entity.MealCategoryEntity;
+import com.mealio.category.infrastructure.persistence.entity.MealCategoryEntity;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

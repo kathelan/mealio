@@ -7,7 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mealio.adapter.out.persistence.repository.MealCategoryJpaRepository;
+import com.mealio.category.infrastructure.persistence.repository.MealCategoryJpaRepository;
 import com.mealio.adapter.out.persistence.repository.RecipeIngredientJpaRepository;
 import com.mealio.adapter.out.persistence.repository.RecipeJpaRepository;
 import com.mealio.category.adapter.in.web.dto.CategoryCreateRequest;

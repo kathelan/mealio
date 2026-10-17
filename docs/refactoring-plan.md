@@ -21,11 +21,17 @@ Backend spełnia obecny próg JaCoCo 80%. Testy integracyjne persystencji używa
 
 ## Znane naruszenia docelowych granic
 
-- `category.infrastructure` korzysta z globalnych encji i Spring Data repositories w `com.mealio.adapter.out.persistence`.
+- Encja i Spring Data repository kategorii należą już do `category.infrastructure.persistence`;
+  encja nadal dziedziczy po globalnym `BaseEntity` (dług do usunięcia przy porządkowaniu persystencji).
 - `recipe` korzysta z modeli w globalnym `com.mealio.domain.model`.
 - `recipe.infrastructure` odwołuje się bezpośrednio do encji oraz repository persystencji kategorii.
 - Porty wejściowe są zgrupowane w szerokie interfejsy `Manage*UseCase`.
-- Nie istnieje automatyczny test granic modułów.
+- ArchUnit kontroluje czystość domen, zależności aplikacji, dostęp do wnętrz modułów
+  i cykle między modułami biznesowymi. Istniejące zależności recipe/globalnej encji recipe
+  do kategorii oraz health do DTO HTTP i konfiguracji są jawnymi wyjątkami wskazującymi
+  konkretne pary klas do usunięcia w kolejnej fazie.
+- `RecipeExceptionHandler` korzysta z DTO błędu kategorii, a globalny `HealthService`
+  tworzy DTO HTTP i korzysta z konfiguracji infrastruktury.
 - Testy bazodanowe nie sprawdzają PostgreSQL.
 
 ## Kolejność prac
@@ -40,6 +46,9 @@ Backend spełnia obecny próg JaCoCo 80%. Testy integracyjne persystencji używa
 8. Implementować moduły MVP: `product`, `diary`, `nutrition`, `mealparser`.
 
 ASR pozostaje niezależnym wejściem audio i nie blokuje przepływu tekstowego.
+
+Specyfikacja, fazy i wyniki bieżącej migracji:
+[plan migracji monorepo](../.ai/specs/2026-10-17-monorepo-migration.md).
 
 ## Bramka każdego kroku
 

@@ -1,9 +1,9 @@
 package com.mealio.recipe.infrastructure.persistence.adapter;
 
-import com.mealio.adapter.out.persistence.entity.MealCategoryEntity;
+import com.mealio.category.infrastructure.persistence.entity.MealCategoryEntity;
 import com.mealio.adapter.out.persistence.entity.RecipeEntity;
 import com.mealio.adapter.out.persistence.entity.RecipeIngredientEntity;
-import com.mealio.adapter.out.persistence.repository.MealCategoryJpaRepository;
+import com.mealio.category.infrastructure.persistence.repository.MealCategoryJpaRepository;
 import com.mealio.adapter.out.persistence.repository.RecipeIngredientJpaRepository;
 import com.mealio.adapter.out.persistence.repository.RecipeJpaRepository;
 import com.mealio.domain.model.MeasurementUnit;

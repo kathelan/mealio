@@ -2,7 +2,7 @@ package com.mealio.adapter.out.persistence;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.mealio.adapter.out.persistence.repository.MealCategoryJpaRepository;
+import com.mealio.category.infrastructure.persistence.repository.MealCategoryJpaRepository;
 import com.mealio.adapter.out.persistence.repository.RecipeIngredientJpaRepository;
 import com.mealio.adapter.out.persistence.repository.RecipeJpaRepository;
 import org.junit.jupiter.api.Test;

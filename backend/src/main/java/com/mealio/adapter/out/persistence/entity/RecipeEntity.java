@@ -1,5 +1,6 @@
 package com.mealio.adapter.out.persistence.entity;
 
+import com.mealio.category.infrastructure.persistence.entity.MealCategoryEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

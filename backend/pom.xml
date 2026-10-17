@@ -22,9 +22,16 @@
         <maven.compiler.release>25</maven.compiler.release>
         <lombok.version>1.18.46</lombok.version>
         <jacoco.version>0.8.14</jacoco.version>
+        <archunit.version>1.4.1</archunit.version>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>com.tngtech.archunit</groupId>
+            <artifactId>archunit</artifactId>
+            <version>${archunit.version}</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>com.mealio</groupId>
             <artifactId>request-audit</artifactId>

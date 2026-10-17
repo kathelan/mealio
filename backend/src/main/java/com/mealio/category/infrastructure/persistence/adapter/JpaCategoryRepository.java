@@ -1,7 +1,7 @@
 package com.mealio.category.infrastructure.persistence.adapter;
 
-import com.mealio.adapter.out.persistence.entity.MealCategoryEntity;
-import com.mealio.adapter.out.persistence.repository.MealCategoryJpaRepository;
+import com.mealio.category.infrastructure.persistence.entity.MealCategoryEntity;
+import com.mealio.category.infrastructure.persistence.repository.MealCategoryJpaRepository;
 import com.mealio.category.domain.exception.DuplicateCategoryException;
 import com.mealio.category.domain.exception.CategoryPersistenceException;
 import com.mealio.category.domain.model.MealCategory;

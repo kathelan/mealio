@@ -5,4 +5,7 @@ oraz odnośnik do rozwiniętej notatki, jeśli istnieje. Nie zapisuj sekretów a
 
 ## Wnioski
 
-_(Na razie brak wpisów.)_
+- 2026-10-17 — Migracja pakietów JPA: po przeniesieniu encji uruchamiaj
+  `mvn clean verify`, aby pozostałe pliki `.class` nie wprowadzały starych encji
+  do skanowania Hibernate. Dług architektoniczny zapisuj jako konkretne pary klas;
+  ArchUnit widzi właściciela odziedziczonej metody, co może różnić się od typu w imporcie.

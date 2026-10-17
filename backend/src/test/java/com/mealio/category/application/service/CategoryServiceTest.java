@@ -129,6 +129,30 @@ class CategoryServiceTest {
                 .isInstanceOf(CategoryHasChildrenException.class);
     }
 
+    @Test
+    void listsByPathAndAllowsTheSameSlugUnderDifferentParents() {
+        var lunch = service.create(new CreateCategoryCommand(null, "Lunch", CategoryType.MEAL, 2));
+        var breakfast = service.create(new CreateCategoryCommand(null, "Breakfast", CategoryType.MEAL, 1));
+        service.create(new CreateCategoryCommand(lunch.id(), "Sweet", CategoryType.TASTE, 0));
+        service.create(new CreateCategoryCommand(breakfast.id(), "Sweet", CategoryType.TASTE, 0));
+
+        assertThat(service.list()).extracting(MealCategory::path)
+                .containsExactly("breakfast", "breakfast/sweet", "lunch", "lunch/sweet");
+    }
+
+    @Test
+    void noOpPatchPreservesTimestampsAndDescendants() {
+        var parent = service.create(new CreateCategoryCommand(null, "Lunch", CategoryType.MEAL, 0));
+        var child = service.create(new CreateCategoryCommand(parent.id(), "Soup", CategoryType.CUSTOM, 0));
+        var laterService = new CategoryService(repository, Clock.offset(clock, java.time.Duration.ofHours(1)));
+
+        var unchanged = laterService.patch(new PatchCategoryCommand(parent.id(), FieldPatch.of("Lunch"),
+                FieldPatch.missing(), FieldPatch.missing(), FieldPatch.missing()));
+
+        assertThat(unchanged).isEqualTo(parent);
+        assertThat(service.get(child.id())).isEqualTo(child);
+    }
+
     private static final class InMemoryCategoryRepository implements CategoryRepository {
 
         private final List<MealCategory> categories = new ArrayList<>();

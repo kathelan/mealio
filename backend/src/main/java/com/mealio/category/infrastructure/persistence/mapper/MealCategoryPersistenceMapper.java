@@ -1,8 +1,6 @@
 package com.mealio.category.infrastructure.persistence.mapper;
 
-import com.mealio.adapter.out.persistence.entity.MealCategoryEntity;
-import com.mealio.domain.model.MealCategoryType;
-import com.mealio.category.domain.model.CategoryType;
+import com.mealio.category.infrastructure.persistence.entity.MealCategoryEntity;
 import com.mealio.category.domain.model.MealCategory;
 import org.springframework.stereotype.Component;
 
@@ -15,7 +13,7 @@ public class MealCategoryPersistenceMapper {
         entity.setName(category.name());
         entity.setSlug(category.slug());
         entity.setPath(category.path());
-        entity.setType(MealCategoryType.valueOf(category.type().name()));
+        entity.setType(category.type());
         entity.setSortOrder(category.sortOrder());
         entity.setCreatedAt(category.createdAt());
         entity.setUpdatedAt(category.updatedAt());
@@ -28,7 +26,7 @@ public class MealCategoryPersistenceMapper {
                 entity.getName(),
                 entity.getSlug(),
                 entity.getPath(),
-                CategoryType.valueOf(entity.getType().name()),
+                entity.getType(),
                 entity.getSortOrder(),
                 entity.getCreatedAt(),
                 entity.getUpdatedAt()

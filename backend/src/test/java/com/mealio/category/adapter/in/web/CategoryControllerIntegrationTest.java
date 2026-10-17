@@ -9,7 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mealio.adapter.out.persistence.repository.MealCategoryJpaRepository;
+import com.mealio.category.infrastructure.persistence.repository.MealCategoryJpaRepository;
 import com.mealio.category.adapter.in.web.dto.ApiErrorResponse;
 import com.mealio.category.adapter.in.web.dto.CategoryCreateRequest;
 import com.mealio.category.adapter.in.web.dto.CategoryResponse;
@@ -236,5 +236,48 @@ class CategoryControllerIntegrationTest {
                 .getResponse()
                 .getContentAsString();
         return objectMapper.readValue(responseJson, CategoryResponse.class);
+    }
+
+    @Test
+    void renamingParentPersistsDescendantPathsAndAllCategoryTypes() throws Exception {
+        var parent = postCategory(new CategoryCreateRequest(null, "Dinner", CategoryType.MEAL, 1));
+        var child = postCategory(new CategoryCreateRequest(parent.id(), "Sweet", CategoryType.TASTE, 2));
+        var grandchild = postCategory(new CategoryCreateRequest(child.id(), "Cake", CategoryType.CUSTOM, 3));
+
+        mockMvc.perform(patch("/api/v1/categories/{id}", parent.id())
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"name\":\"Lunch\"}"))
+                .andExpect(status().isOk());
+
+        var listedJson = mockMvc.perform(get("/api/v1/categories"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        var listed = objectMapper.readValue(listedJson, new TypeReference<List<CategoryResponse>>() {});
+        assertThat(listed).extracting(CategoryResponse::path)
+                .containsExactly("lunch", "lunch/sweet", "lunch/sweet/cake");
+        assertThat(listed).extracting(CategoryResponse::type)
+                .containsExactly(CategoryType.MEAL, CategoryType.TASTE, CategoryType.CUSTOM);
+        assertThat(listed.get(1).parentId()).isEqualTo(parent.id());
+        assertThat(listed.get(2).id()).isEqualTo(grandchild.id());
+        assertThat(listed.get(2).parentId()).isEqualTo(child.id());
+    }
+
+    @Test
+    void rejectedCycleAndDuplicateMovePreserveStoredTree() throws Exception {
+        var parent = postCategory(new CategoryCreateRequest(null, "Dinner", CategoryType.MEAL, 1));
+        var child = postCategory(new CategoryCreateRequest(parent.id(), "Soup", CategoryType.CUSTOM, 2));
+        postCategory(new CategoryCreateRequest(null, "Soup", CategoryType.CUSTOM, 3));
+
+        mockMvc.perform(patch("/api/v1/categories/{id}", parent.id())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of("parentId", child.id()))))
+                .andExpect(status().isBadRequest());
+        var conflict = mockMvc.perform(patch("/api/v1/categories/{id}", child.id())
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"parentId\":null}"))
+                .andExpect(status().isConflict()).andReturn().getResponse().getContentAsString();
+        assertThat(objectMapper.readValue(conflict, ApiErrorResponse.class).code())
+                .isEqualTo("CATEGORY_ALREADY_EXISTS");
+
+        var fetched = mockMvc.perform(get("/api/v1/categories/{id}", child.id()))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        assertThat(objectMapper.readValue(fetched, CategoryResponse.class)).isEqualTo(child);
     }
 }
