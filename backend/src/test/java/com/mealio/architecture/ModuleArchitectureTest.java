@@ -1,6 +1,8 @@
 package com.mealio.architecture;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noFields;
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.fields;
 import static com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.slices;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -16,6 +18,18 @@ class ModuleArchitectureTest {
     private static final JavaClasses CLASSES = new ClassFileImporter()
             .withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)
             .importPackages("com.mealio");
+
+    @Test
+    void dependenciesUseConstructorInjection() {
+        noFields().should().beAnnotatedWith(org.springframework.beans.factory.annotation.Autowired.class)
+                .check(CLASSES);
+    }
+
+    @Test
+    void jpaFieldsDoNotStoreOptionalContainers() {
+        fields().that().areDeclaredInClassesThat().areAnnotatedWith(jakarta.persistence.Entity.class)
+                .should().notHaveRawType(java.util.Optional.class).check(CLASSES);
+    }
 
     @Test
     void domainsDoNotDependOnFrameworksOrAdapters() {

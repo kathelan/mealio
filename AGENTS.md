@@ -47,7 +47,7 @@ Przed rozpoczęciem pracy przeczytaj dokumenty odnoszące się do zadania:
 
 - `docs/mvp.md` — zakres produktu,
 - `docs/architecture.md` — architektura i granice modułów,
-- `docs/engineering-practices.md` — standardy implementacyjne i testowe,
+- `.ai/docs/engineering-standards.md` — standardy implementacyjne i testowe,
 - `docs/product-data-strategy.md` — źródła kodów kreskowych i danych żywieniowych,
 - `docs/refactoring-plan.md` — kolejność porządkowania istniejącego kodu,
 - `docs/decisions/` — zaakceptowane decyzje architektoniczne,
@@ -55,6 +55,13 @@ Przed rozpoczęciem pracy przeczytaj dokumenty odnoszące się do zadania:
 
 ## Nienegocjowalne zasady
 
+- Brak opcjonalnej wartości w domenie i kontraktach Java reprezentuj przez `Optional`,
+  zamiast propagować `null` i pisać ręczne null-checki. Mapuj nullable JSON/JPA na
+  `Optional` na granicy adaptera; pola encji JPA i format JSON zachowują typy właściwe
+  dla używanej technologii. Wymagane dane nadal waliduj jawnie.
+- Preferuj buildery dla obiektów z wieloma polami: agregatów, komend, DTO i encji.
+  Builder musi prowadzić przez walidację niezmienników. Dla prostych obiektów wartości
+  preferuj nazwane fabryki; konstrukcja wyjątków i obiektów frameworka nie wymaga buildera.
 - Stosuj SOLID pragmatycznie; nie twórz abstrakcji bez granicy, wymiennej implementacji lub korzyści testowej.
 - Organizuj backend najpierw według domen biznesowych, a dopiero wewnątrz nich według `api`, `application`, `domain`, `infrastructure`.
 - Domena nie zależy od Springa, JPA, HTTP, klientów zewnętrznych ani DTO transportowych.

@@ -5,6 +5,10 @@ oraz odnośnik do rozwiniętej notatki, jeśli istnieje. Nie zapisuj sekretów a
 
 ## Wnioski
 
+- 2026-10-17 — Preferencja użytkownika przy fazie 5: opcjonalne dane w domenie
+  i kontraktach Java reprezentujemy przez Optional, a złożone obiekty tworzymy
+  builderami z zachowaną walidacją. Nullable JSON/JPA mapujemy w adapterach.
+  Szczegóły są w .ai/docs/engineering-standards.md i wspólnych instrukcjach AGENTS.md.
 - 2026-10-17 — Migracja pakietów JPA: po przeniesieniu encji uruchamiaj
   `mvn clean verify`, aby pozostałe pliki `.class` nie wprowadzały starych encji
   do skanowania Hibernate. Dług architektoniczny zapisuj jako konkretne pary klas;
