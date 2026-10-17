@@ -35,4 +35,3 @@ Pozwolić klientom API i osobom używającym backendu usunąć niepotrzebny prze
 ## Kompatybilność
 
 Addytywna zmiana publicznego kontraktu `/api/v1`: nowa metoda DELETE nie zmienia istniejących operacji. Wymaga aktualizacji OpenAPI. Bez migracji bazy.
-
