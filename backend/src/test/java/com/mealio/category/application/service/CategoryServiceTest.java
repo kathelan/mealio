@@ -154,6 +154,36 @@ class CategoryServiceTest {
         assertThat(service.get(child.id())).isEqualTo(child);
     }
 
+    @Test
+    void validatesRequiredPayloadIdNameTypeAndTreeDepth() {
+        assertThatThrownBy(() -> service.create(null)).isInstanceOf(InvalidCategoryException.class);
+        for (var name : java.util.Arrays.asList(null, " ", "x".repeat(161), "!!!")) {
+            assertThatThrownBy(() -> service.create(new CreateCategoryCommand(null, name, null, null)))
+                    .isInstanceOf(InvalidCategoryException.class);
+        }
+        assertThatThrownBy(() -> service.get(UUID.randomUUID()))
+                .isInstanceOf(com.mealio.category.domain.exception.CategoryNotFoundException.class);
+        assertThatThrownBy(() -> service.patch(null)).isInstanceOf(InvalidCategoryException.class);
+        assertThatThrownBy(() -> service.patch(new PatchCategoryCommand(null, FieldPatch.of("x"),
+                FieldPatch.missing(), FieldPatch.missing(), FieldPatch.missing())))
+                .isInstanceOf(InvalidCategoryException.class);
+        var root = service.create(new CreateCategoryCommand(null, "Root", null, null));
+        assertThatThrownBy(() -> service.patch(new PatchCategoryCommand(root.id(), FieldPatch.missing(),
+                FieldPatch.missing(), FieldPatch.of(null), FieldPatch.missing())))
+                .isInstanceOf(InvalidCategoryException.class).hasMessageContaining("type");
+        assertThatThrownBy(() -> service.patch(new PatchCategoryCommand(root.id(), FieldPatch.missing(),
+                FieldPatch.of(root.id()), FieldPatch.missing(), FieldPatch.missing())))
+                .isInstanceOf(InvalidCategoryException.class).hasMessageContaining("own parent");
+        var second = service.create(new CreateCategoryCommand(root.id(), "a".repeat(160), null, null));
+        var third = service.create(new CreateCategoryCommand(second.id(), "b".repeat(160), null, null));
+        var fourth = service.create(new CreateCategoryCommand(third.id(), "c".repeat(160), null, null));
+        assertThatThrownBy(() -> service.create(new CreateCategoryCommand(fourth.id(), "d".repeat(30), null, null)))
+                .isInstanceOf(InvalidCategoryException.class).hasMessageContaining("path");
+        service.delete(fourth.id());
+        assertThatThrownBy(() -> service.get(fourth.id()))
+                .isInstanceOf(com.mealio.category.domain.exception.CategoryNotFoundException.class);
+    }
+
     private static final class InMemoryCategoryRepository implements CategoryRepository {
 
         private final List<MealCategory> categories = new ArrayList<>();

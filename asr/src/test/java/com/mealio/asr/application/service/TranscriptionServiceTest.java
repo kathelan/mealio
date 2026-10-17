@@ -100,4 +100,22 @@ class TranscriptionServiceTest {
             return saved;
         }
     }
+    @Test
+    void rejectsMissingAudioAndLanguageBeforeCallingProvider() {
+        var provider = org.mockito.Mockito.mock(com.mealio.asr.domain.port.out.AsrProviderPort.class);
+        var records = org.mockito.Mockito.mock(com.mealio.asr.domain.port.out.TranscriptionRecordRepository.class);
+        var subject = new TranscriptionService(provider, records, java.time.Clock.systemUTC());
+        var valid = new com.mealio.asr.domain.model.AudioContent("a", "audio/wav", new byte[]{1});
+        for (var request : java.util.Arrays.asList(null,
+                new com.mealio.asr.domain.model.TranscriptionRequest(null, "pl", null),
+                new com.mealio.asr.domain.model.TranscriptionRequest(
+                        new com.mealio.asr.domain.model.AudioContent("a", null, null), "pl", null),
+                new com.mealio.asr.domain.model.TranscriptionRequest(
+                        new com.mealio.asr.domain.model.AudioContent("a", null, new byte[0]), "pl", null),
+                new com.mealio.asr.domain.model.TranscriptionRequest(valid, " ", null))) {
+            org.assertj.core.api.Assertions.assertThatThrownBy(() -> subject.transcribe(request))
+                    .isInstanceOf(com.mealio.asr.domain.exception.InvalidTranscriptionRequestException.class);
+        }
+        org.mockito.Mockito.verifyNoInteractions(provider, records);
+    }
 }

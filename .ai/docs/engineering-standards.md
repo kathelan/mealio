@@ -74,6 +74,8 @@ Zasady:
 - testy są deterministyczne i niezależne od kolejności,
 - refaktoryzację poprzedzają testy charakteryzacyjne,
 - test architektury jest częścią builda,
+- każda nowa funkcja ma 100% pokrycia wykonywalnych linii w testach jednostkowych;
+  bramka JaCoCo obejmuje każdy moduł Java, bez uzupełniania wyniku testami integracyjnymi,
 - H2 nie jest wystarczającym dowodem zgodności z PostgreSQL.
 
 ## Refaktoryzacja

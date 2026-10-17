@@ -26,16 +26,42 @@ początkowo jako moduły modularnego monolitu, a nie osobne usługi REST.
 make verify
 ```
 
-Wymagane: Java 25, Maven i działający Docker. Cel wykonuje `mvn clean verify`
-z katalogu głównego: testy wszystkich modułów, granice ArchUnit i bramkę JaCoCo
-backendu oraz testy PostgreSQL 17 przez Testcontainers. Pierwszy przebieg pobiera
-obrazy PostgreSQL i kontenera sprzątającego Ryuk. Testy nie korzystają z lokalnej
-bazy Compose ani jej danych i nie są pomijane przy braku Dockera.
+Wymagane: Java 25 i Maven; dla integracji także działający Docker.
+Root POM jest wspólnym parentem trzech modułów Java.
 
-Szybsze sprawdzenie zmienianego modułu: `make test-backend` albo `make test-asr`.
-Oba polecenia również obejmują jego testy PostgreSQL. Po przenoszeniu klas lub
-wykryciu powielonych plików w `target` uruchom pełne `make verify` z czyszczeniem.
-Workflow `.github/workflows/verify.yml` uruchamia tę samą pełną bramkę na push i PR.
+| Sprawdzenie CI | Polecenie z katalogu głównego |
+| --- | --- |
+| Build Java | `mvn --batch-mode --no-transfer-progress clean package -DskipTests` |
+| Lint Java | `mvn --batch-mode --no-transfer-progress validate` |
+| Unit tests and 100% coverage | `mvn --batch-mode --no-transfer-progress clean verify -DskipITs` |
+| Integration tests PostgreSQL | `mvn --batch-mode --no-transfer-progress clean verify` |
+
+Workflow `.github/workflows/verify.yml` wykonuje te cztery joby dla każdego PR
+oraz push. W ustawieniach ochrony gałęzi GitHub należy wskazać powyższe nazwy
+jako wymagane sprawdzenia. Sam plik workflow nie zmienia ochrony gałęzi.
+Prototyp SwiftUI nie ma projektu Xcode ani targetu do budowania; CI obejmuje
+istniejące aplikacje Java. Build iOS wymaga osobnego etapu migracji klienta.
+
+JUnit Jupiter + Mockito + AssertJ służą do testów jednostkowych. Surefire uruchamia
+`*Test`, z wyłączeniem `*IntegrationTest`. Testy jednostkowe nie wymagają Dockera ani
+połączeń sieciowych. ArchUnit sprawdza granice modułów w tej samej fazie.
+Failsafe uruchamia `*IntegrationTest` w fazach integration-test/verify. Testy
+PostgreSQL 17 korzystają z Testcontainers, migracji Liquibase i Hibernate validate;
+każda usługa startuje na losowym porcie i udostępnia rzeczywisty HTTP health check.
+Nie korzystają z lokalnej bazy Compose. Brak Dockera przerywa integracje, bez pomijania testów.
+
+JaCoCo wymaga **100% wykonywalnych linii** w każdym module Java, z danych wyłącznie
+Surefire. Raporty zawierają także pokrycie gałęzi, dla którego nie ustalamy progu.
+Kod generowany jest filtrowany standardowo przez JaCoCo; nie stosujemy wykluczeń klas.
+Wyniki: `MODUŁ/target/site/jacoco-unit/index.html` i `jacoco-integration/index.html`,
+JUnit XML: `target/surefire-reports/` i `target/failsafe-reports/`. CI zapisuje te
+raporty jako artefakty także po błędzie.
+
+`make test` uruchamia szybkie testy i raport; `make unit` także egzekwuje próg.
+`make lint`, `make build` i `make integration` odpowiadają pozostałym jobom.
+Dla pojedynczego modułu: `mvn -pl backend -am verify -DskipITs` (analogicznie `asr`).
+Po przenoszeniu klas albo przy powielonych artefaktach lokalnych uruchom `make verify`
+z czyszczeniem. Nie uruchamiaj równocześnie buildów zapisujących ten sam `target`.
 
 ```bash
 docker compose up --build

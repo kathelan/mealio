@@ -33,9 +33,11 @@ API pozostają za adapterami wyjściowymi.
 ## Uruchomienie
 
 Testy uruchamiaj z katalogu głównego: `mvn -pl asr -am test`.
-Wymagają działającego Dockera: Testcontainers uruchamia PostgreSQL 17, sprawdza
-migrację pustej bazy, Hibernate validate i zapis rekordu transkrypcji. Brak Dockera
+Nie wymagają Dockera. Integracje (`mvn -pl asr -am verify`) wymagają Dockera: Testcontainers uruchamia PostgreSQL 17, sprawdza
+migrację pustej bazy, Hibernate validate, zapis transkrypcji i HTTP aplikacji na losowym porcie. Brak Dockera
 powoduje błąd builda. `make verify` uruchamia pełne sprawdzenia wszystkich modułów.
+
+JaCoCo egzekwuje 100% linii z testów jednostkowych. [Joby CI i raporty](../docs/development.md).
 
 Tryb domyślny używa dostawcy mock:
 
@@ -135,15 +137,6 @@ interpretacja domenowa, np. parsowanie posiłków, należy do osobnego modułu.
 
 Moduł zależy od lokalnego JAR `request-audit`, który audytuje przychodzące i wychodzące
 żądania HTTP. Polecenia Mavena uruchamiaj z katalogu głównego z `-pl asr -am`.
-
-Jeśli uruchamiasz Maven bezpośrednio z `asr/`, najpierw zainstaluj współdzielone JAR-y:
-
-```bash
-cd ..
-mvn -pl request-audit install -DskipTests
-cd asr
-mvn test
-```
 
 ## Następne kroki
 

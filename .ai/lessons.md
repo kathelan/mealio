@@ -21,3 +21,8 @@ oraz odnośnik do rozwiniętej notatki, jeśli istnieje. Nie zapisuj sekretów a
 - 2026-10-17 — Opcjonalne kategorie recipe: `Set.of().contains(null)` rzuca NPE.
   Przed walidacją obecności null normalizuj opcjonalną kolekcję do zbioru,
   który obsługuje takie sprawdzenie; testuj oddzielnie pominięte pole i pustą kolekcję.
+
+- 2026-10-17 — Bramka pokrycia jednostkowego korzysta wyłącznie z danych Surefire.
+  Failsafe zapisuje oddzielny plik JaCoCo; wspólny plik pozwoliłby integracjom
+  ukryć brakujące testy jednostkowe. Sprawdzaj bramki próbą negatywną i uruchamiaj
+  polecenia workflow lokalnie przed uznaniem konfiguracji CI za zweryfikowaną.

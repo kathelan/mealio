@@ -26,7 +26,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
 @TestPropertySource(properties = {
         "spring.liquibase.default-schema=backend",
@@ -35,6 +35,20 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
         "spring.jpa.properties.hibernate.default_schema=backend"
 })
 class PostgreSqlIntegrationTest {
+    @org.springframework.boot.test.web.server.LocalServerPort
+    int port;
+
+    @Test
+    void servesHttpFromTemporaryApplicationWithPostgres() throws Exception {
+        try (var client = java.net.http.HttpClient.newHttpClient()) {
+            var response = client.send(java.net.http.HttpRequest.newBuilder(
+                    java.net.URI.create("http://localhost:" + port + "/actuator/health")).GET().build(),
+                    java.net.http.HttpResponse.BodyHandlers.ofString());
+            assertThat(response.statusCode()).isEqualTo(200);
+            assertThat(response.body()).contains("UP");
+        }
+    }
+
     @Container
     static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:17-alpine")
             .withInitScript("db/postgres-test-init.sql");

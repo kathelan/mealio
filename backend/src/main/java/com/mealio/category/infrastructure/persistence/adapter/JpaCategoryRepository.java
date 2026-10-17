@@ -102,11 +102,7 @@ public class JpaCategoryRepository implements CategoryRepository {
 
     @Override
     public List<MealCategory> saveAll(List<MealCategory> categories) {
-        try {
-            return categories.stream().map(this::save).toList();
-        } catch (DataAccessException exception) {
-            throw new CategoryPersistenceException("Cannot save categories", exception);
-        }
+        return categories.stream().map(this::save).toList();
     }
 
     @Override

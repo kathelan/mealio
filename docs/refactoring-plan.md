@@ -17,7 +17,7 @@ Wynik: `BUILD SUCCESS`, Java 25.0.2, Spring Boot 4.1.0.
 | mealio-backend | 27 | 0 failures, 0 errors |
 | Razem | 48 | zielony baseline |
 
-Backend spełnia obecny próg JaCoCo 80%. Testy integracyjne persystencji używają H2. [x] Build emituje ostrzeżenie o dynamicznym dołączaniu Mockito/Byte Buddy na Javie 25 oraz ostrzeżenie Lombok dotyczące `sun.misc.Unsafe`; nie są to obecnie błędy builda.
+W baseline backend spełniał próg JaCoCo 80%, a integracje persystencji używały H2. [x] Build emituje ostrzeżenie o dynamicznym dołączaniu Mockito/Byte Buddy na Javie 25 oraz ostrzeżenie Lombok dotyczące `sun.misc.Unsafe`; nie są to obecnie błędy builda.
 
 ## Stan po fazie 2 — 2026-10-17
 
@@ -29,6 +29,13 @@ Backend spełnia obecny próg JaCoCo 80%. Testy integracyjne persystencji używa
 - ArchUnit kontroluje granice bez wyjątków migracyjnych.
 - Pozostają szerokie porty `Manage*UseCase`; ich podział wymaga konkretnej potrzeby.
 - Testy Testcontainers/PostgreSQL 17 dla backendu i ASR są częścią standardowej bramki.
+
+## CI — 2026-10-17
+
+Oddzielne joby PR sprawdzają build, Checkstyle, testy jednostkowe i integracyjne.
+Wszystkie moduły Java obowiązuje 100% wykonywalnych linii pokrytych samymi
+unit tests. Surefire i Failsafe zapisują oddzielne raporty JaCoCo.
+[Komendy i raporty](development.md).
 
 ## Kolejność prac
 

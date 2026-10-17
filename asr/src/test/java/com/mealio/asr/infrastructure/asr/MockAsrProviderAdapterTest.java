@@ -36,4 +36,12 @@ class MockAsrProviderAdapterTest {
 
         assertThat(adapter.transcribe(request)).isEqualTo("Mock transcript for meal.wav");
     }
+    @Test
+    void reportsProviderAndUsesFallbackFilenameWithMissingMetadata() {
+        var provider = new MockAsrProviderAdapter();
+        org.assertj.core.api.Assertions.assertThat(provider.providerName()).isEqualTo("mock");
+        org.assertj.core.api.Assertions.assertThat(provider.transcribe(new com.mealio.asr.domain.model.TranscriptionRequest(
+                new com.mealio.asr.domain.model.AudioContent(null, null, new byte[]{1}), "pl", null)))
+                .isEqualTo("Mock transcript for audio");
+    }
 }

@@ -86,4 +86,31 @@ class HttpAuditSanitizerTest {
                 .containsEntry("lang", java.util.List.of("pl"))
                 .containsEntry("email", java.util.List.of("<redacted>"));
     }
+    @Test
+    void handlesNullEmptyBinaryAndSupportedTextBodies() {
+        assertThat(sanitizer.bodyOmittedReason(null, null)).isEqualTo("disabled");
+        properties.setIncludeBodies(true);
+        assertThat(sanitizer.bodyOmittedReason(null, null)).isEqualTo("not_captured");
+        assertThat(sanitizer.bodyOmittedReason(new byte[0], null)).isNull();
+        assertThat(sanitizer.body(null, null)).isEmpty();
+        assertThat(sanitizer.body(new byte[0], null)).isEmpty();
+        assertThat(sanitizer.body(new byte[]{1}, null)).isEqualTo("<binary body omitted>");
+        assertThat(sanitizer.bodyOmittedReason(new byte[]{1}, MediaType.APPLICATION_OCTET_STREAM))
+                .isEqualTo("binary_or_unsupported_content_type");
+        for (var type : java.util.List.of(MediaType.TEXT_PLAIN, MediaType.APPLICATION_XML,
+                MediaType.APPLICATION_JSON, MediaType.parseMediaType("application/problem+json"))) {
+            assertThat(sanitizer.bodyLogged(new byte[]{65}, type)).isTrue();
+            assertThat(sanitizer.bodyOmittedReason(new byte[]{65}, type)).isNull();
+        }
+    }
+
+    @Test
+    void queryParserFailureCannotLeakRawValues() {
+        try (var parser = org.mockito.Mockito.mockStatic(org.springframework.web.util.UriComponentsBuilder.class)) {
+            parser.when(() -> org.springframework.web.util.UriComponentsBuilder.fromUriString("/?invalid"))
+                    .thenThrow(new IllegalArgumentException("malformed URI"));
+            assertThat(sanitizer.query("invalid"))
+                    .containsEntry("<invalid-query>", java.util.List.of("<redacted>"));
+        }
+    }
 }

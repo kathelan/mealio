@@ -12,11 +12,14 @@ Pełna bramka z katalogu głównego: `mvn clean verify`. Po przenoszeniu klas JP
 używaj `clean`, aby stare pliki `.class` nie zostały wykryte jako dodatkowe encje.
 Testy architektury (`ModuleArchitectureTest`) są częścią standardowego zestawu testów.
 
-Testy wymagają działającego Dockera: `PostgreSqlIntegrationTest` uruchamia
+Testy jednostkowe nie wymagają Dockera. Integracje (`mvn -pl backend -am verify`)
+wymagają działającego Dockera: `PostgreSqlIntegrationTest` uruchamia
 PostgreSQL 17 przez Testcontainers, stosuje Liquibase na pustej bazie i sprawdza
-mapowanie Hibernate, precyzję składników oraz ograniczenia i usuwanie powiązań.
+HTTP aplikacji na losowym porcie, mapowanie Hibernate, precyzję składników oraz ograniczenia i usuwanie powiązań.
 Brak Dockera przerywa build; test nie jest pomijany. H2 pozostaje szybkim
 środowiskiem istniejących testów HTTP.
+
+JaCoCo egzekwuje 100% linii z testów jednostkowych. [Joby CI i raporty](../docs/development.md).
 
 ## Uruchomienie w Dockerze
 

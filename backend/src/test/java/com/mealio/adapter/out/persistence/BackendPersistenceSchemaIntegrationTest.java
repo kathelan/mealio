@@ -22,7 +22,7 @@ import org.springframework.test.context.TestPropertySource;
         "spring.jpa.hibernate.ddl-auto=validate",
         "spring.jpa.properties.hibernate.default_schema=backend"
 })
-class BackendPersistenceSchemaTest {
+class BackendPersistenceSchemaIntegrationTest {
 
     @Autowired
     private MealCategoryJpaRepository mealCategoryJpaRepository;

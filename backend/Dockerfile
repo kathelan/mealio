@@ -1,6 +1,7 @@
 FROM maven:3.9.11-eclipse-temurin-25 AS build
 WORKDIR /workspace
 
+COPY config ./config
 COPY pom.xml .
 COPY request-audit/pom.xml ./request-audit/pom.xml
 COPY request-audit/src ./request-audit/src

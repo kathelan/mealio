@@ -73,6 +73,14 @@ Przed rozpoczęciem pracy przeczytaj dokumenty odnoszące się do zadania:
 - Pierwsza iteracja nie ma użytkowników ani auth. Nie dodawaj technicznego użytkownika,
   atrap autoryzacji ani `userId` bez zmiany zaakceptowanej decyzji ADR-0003.
 
+## Pokrycie testami jednostkowymi
+
+Każda nowa funkcja musi mieć 100% pokrycia wykonywalnych linii kodu testami
+jednostkowymi. Dotyczy to również zmienianego istniejącego kodu Java we wszystkich
+modułach. Weryfikuje to bramka JaCoCo zasilana wyłącznie przez Surefire;
+testy integracyjne nie mogą uzupełniać brakującego pokrycia jednostkowego.
+Nie dodawaj wykluczeń klas ani nie obniżaj progu, aby ominąć tę zasadę.
+
 ## Zasady zmian
 
 Przed zmianą:

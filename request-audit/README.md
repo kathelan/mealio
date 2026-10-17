@@ -28,6 +28,9 @@ Budowanie usługi razem z biblioteką:
 mvn -pl asr -am test
 ```
 
+JaCoCo egzekwuje 100% linii z testów jednostkowych (`mvn -pl request-audit verify -DskipITs`).
+[Joby CI i raporty](../docs/development.md).
+
 ## Konfiguracja
 
 ```yaml

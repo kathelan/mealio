@@ -89,10 +89,7 @@ public class HttpAuditSanitizer {
         if (!properties.isIncludeBodies()) {
             return "disabled";
         }
-        if (!isTextLike(contentType)) {
-            return "binary_or_unsupported_content_type";
-        }
-        return null;
+        return "binary_or_unsupported_content_type";
     }
 
     private boolean isTextLike(MediaType contentType) {

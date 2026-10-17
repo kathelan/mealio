@@ -5,10 +5,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.1.0</version>
-        <relativePath/>
+        <groupId>com.mealio</groupId>
+        <artifactId>mealio</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <groupId>com.mealio</groupId>
@@ -16,11 +16,6 @@
     <version>0.0.1-SNAPSHOT</version>
     <name>request-audit</name>
     <description>Reusable HTTP request and response audit library</description>
-
-    <properties>
-        <java.version>25</java.version>
-        <maven.compiler.release>25</maven.compiler.release>
-    </properties>
 
     <dependencies>
         <dependency>
