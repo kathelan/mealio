@@ -1,14 +1,15 @@
 # Mealio
 
-Mealio to platforma do monitorowania żywienia, projektowana przede wszystkim dla urządzeń
-mobilnych. Pierwszy etap backendu obejmuje małe, przejrzyste API przepisów, ogólnych
-kategorii posiłków i kontroli stanu, zbudowane w architekturze heksagonalnej i przygotowane
-do wdrożenia na OpenShift.
+Mealio to aplikacja do prowadzenia dziennika żywieniowego, projektowana przede wszystkim
+dla urządzeń mobilnych. Klient iOS jest budowany w SwiftUI, backend działa w Javie i Spring
+Boot, a dane trwałe przechowuje PostgreSQL. Backend udostępnia wersjonowane HTTP API i
+rozwija się jako modularny monolit z granicami domenowymi oraz architekturą heksagonalną
+wewnątrz modułów.
 
 ## Obecny zakres
 
-- rozpoczęcie prac od backendu
-- API Spring Boot na Javie 25
+- klient iOS w SwiftUI oraz API dla aplikacji mobilnej
+- backend Spring Boot na Javie 25
 - persystencja PostgreSQL
 - środowisko deweloperskie w Dockerze
 - sondy stanu zgodne z OpenShift
@@ -24,6 +25,27 @@ infra/
 docker-compose.yml
 README.md
 ```
+
+`backend/` zawiera modularny monolit API, `asr/` opcjonalny adapter audio na tekst, a
+`infra/` konfigurację środowiskową. Katalog `ios-prototype 3/` zawiera prototyp iOS;
+docelowy klient SwiftUI wywołuje backendowe API i nie powiela logiki domenowej ani
+obliczeń żywieniowych.
+
+## Architektura
+
+Backend pozostaje jednym procesem i wdrożeniem, podzielonym na moduły biznesowe takie jak
+`product`, `diary`, `nutrition` i `mealparser`. Moduły udostępniają małe publiczne API;
+adaptery HTTP i persystencji pozostają wewnątrz granic właściciela. PostgreSQL jest wspólną
+bazą wdrożenia, ale moduły nie odczytują cudzych tabel ani repozytoriów. Liquibase zarządza
+migracjami, a encje JPA pozostają w infrastrukturze właściwego modułu.
+
+Przepływ klienta przebiega przez wersjonowane `/api/v1` API opisane w OpenAPI. Aplikacja
+iOS odpowiada za prezentację i interakcje, backend za walidację przypadków użycia, zapis
+danych i deterministyczne obliczenia. Parser AI może zaproponować strukturę opisu posiłku;
+wartości odżywcze pochodzą z katalogu Mealio albo jawnie wskazanego dostawcy, a użytkownik
+zatwierdza niepewne propozycje.
+
+Szczegóły granic modułów, komunikacji i integracji opisuje [dokument architektury](docs/architecture.md).
 
 ## Uruchomienie lokalne
 

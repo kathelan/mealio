@@ -36,8 +36,11 @@ Root POM jest wspólnym parentem trzech modułów Java.
 | Unit tests and 100% coverage | `mvn --batch-mode --no-transfer-progress clean verify -DskipITs` |
 | Integration tests PostgreSQL | `mvn --batch-mode --no-transfer-progress clean verify -Pintegration-tests -DskipUnitTests` |
 
-Workflow `.github/workflows/verify.yml` wykonuje cztery obowiązkowe joby dla każdego PR
-oraz push. Opcjonalny skan SonarQube jest częścią joba unit.
+Workflow `.github/workflows/mealio-ci.yml` wykonuje cztery obowiązkowe joby dla każdego PR
+oraz push zawierającego pliki inne niż Markdown. Zmiany wyłącznie w plikach `.md`
+omijają build, lint i testy; wymagane checki są wtedy raportowane jako pominięte, czyli
+zaliczone przez GitHub. Job wykrywający zmienione ścieżki uruchamia pełne joby, jeśli sam
+nie może wiarygodnie wykryć zakresu zmian. Opcjonalny skan SonarQube jest częścią joba unit.
 Nazwy checków to `Build (Java)`, `Lint (Checkstyle)`, `Unit tests (Java, 100% lines)`
 i `Integration tests (PostgreSQL/Testcontainers)`. W ustawieniach ochrony gałęzi
 GitHub należy wskazać te nazwy obowiązkowych jobów
