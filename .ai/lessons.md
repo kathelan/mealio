@@ -26,3 +26,8 @@ oraz odnośnik do rozwiniętej notatki, jeśli istnieje. Nie zapisuj sekretów a
   Failsafe zapisuje oddzielny plik JaCoCo; wspólny plik pozwoliłby integracjom
   ukryć brakujące testy jednostkowe. Sprawdzaj bramki próbą negatywną i uruchamiaj
   polecenia workflow lokalnie przed uznaniem konfiguracji CI za zweryfikowaną.
+
+- 2026-10-17 — Czas w testach HTTP/persystencji: Clock.systemUTC może mieć inną
+  precyzję na macOS i Linuksie. Stosuj Clock.fixed z celowo niezerowymi nanosekundami
+  i sprawdzaj oddzielnie czas HTTP oraz zapis zgodny z precyzją kolumny TIMESTAMP.
+  Nie zakładaj, że odczyt z bazy zachowa wszystkie nanosekundy obiektu Instant.

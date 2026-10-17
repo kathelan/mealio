@@ -8,10 +8,17 @@ import com.mealio.asr.infrastructure.persistence.repository.TranscriptionJpaRepo
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -19,6 +26,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.web.client.RestClient;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Import(TranscriptionControllerIntegrationTest.TestClockConfiguration.class)
 @TestPropertySource(properties = {
         "mealio.asr.provider=mock",
         "spring.datasource.url=jdbc:h2:mem:mealio_asr_test;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;INIT=CREATE SCHEMA IF NOT EXISTS asr",
@@ -30,6 +38,17 @@ import org.springframework.web.client.RestClient;
         "spring.jpa.hibernate.ddl-auto=none"
 })
 class TranscriptionControllerIntegrationTest {
+
+    private static final Instant TRANSCRIBED_AT = Instant.parse("2026-10-17T11:21:45.548394163Z");
+
+    @TestConfiguration(proxyBeanMethods = false)
+    static class TestClockConfiguration {
+        @Bean
+        @Primary
+        Clock testClock() {
+            return Clock.fixed(TRANSCRIBED_AT, ZoneOffset.UTC);
+        }
+    }
 
     @LocalServerPort
     private int port;
@@ -64,7 +83,7 @@ class TranscriptionControllerIntegrationTest {
         assertThat(response.getBody().language()).isEqualTo("pl");
         assertThat(response.getBody().provider()).isEqualTo("mock");
         assertThat(response.getBody().confidence()).isNull();
-        assertThat(response.getBody().transcribedAt()).isNotNull();
+        assertThat(response.getBody().transcribedAt()).isEqualTo(TRANSCRIBED_AT);
 
         var savedRecord = transcriptionJpaRepository.findById(response.getBody().id());
         assertThat(savedRecord).isPresent();
@@ -75,7 +94,9 @@ class TranscriptionControllerIntegrationTest {
         assertThat(savedRecord.get().getAudioContentType()).isEqualTo(MediaType.TEXT_PLAIN_VALUE);
         assertThat(savedRecord.get().getAudioSizeBytes()).isEqualTo(18L);
         assertThat(savedRecord.get().getStatus()).isEqualTo("COMPLETED");
-        assertThat(savedRecord.get().getTranscribedAt()).isEqualTo(response.getBody().transcribedAt());
+        // The database column stores six fractional digits; the HTTP Instant retains nanoseconds.
+        assertThat(savedRecord.get().getTranscribedAt())
+                .isEqualTo(Instant.parse("2026-10-17T11:21:45.548394Z"));
     }
 
     @Test
