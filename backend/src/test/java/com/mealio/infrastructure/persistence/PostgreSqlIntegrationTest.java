@@ -47,11 +47,14 @@ class PostgreSqlIntegrationTest {
     }
 
     @Autowired JdbcTemplate jdbc;
+    @Autowired com.mealio.product.application.ProductService products;
     @Autowired ManageCategoriesUseCase categories;
     @Autowired ManageRecipesUseCase recipes;
 
     @BeforeEach
     void clearData() {
+        jdbc.update("DELETE FROM backend.product_versions");
+        jdbc.update("DELETE FROM backend.products");
         jdbc.update("DELETE FROM backend.recipe_ingredients");
         jdbc.update("DELETE FROM backend.recipes");
         jdbc.update("DELETE FROM backend.meal_categories");
@@ -59,7 +62,8 @@ class PostgreSqlIntegrationTest {
 
     @Test
     void migratesEmptyDatabaseAndPreservesRecipeDataAndCategoryCascade() {
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM backend.databasechangelog", Integer.class)).isEqualTo(1);
+        assertThat(jdbc.queryForList("SELECT id FROM backend.databasechangelog", String.class))
+                .containsExactlyInAnyOrder("001-create-recipes-and-categories", "002-create-product-catalog");
         var category = categories.create(new CreateCategoryCommand(null, "Dinner", null, 1));
         var recipe = recipes.create(new CreateRecipeCommand("Rice", null, LocalDate.of(2026, 10, 17),
                 null, Set.of(category.id())));
@@ -91,5 +95,94 @@ class PostgreSqlIntegrationTest {
         assertThatThrownBy(() -> jdbc.update("""
                 INSERT INTO backend.recipe_categories (recipe_id, category_id) VALUES (?, ?)
                 """, recipe.id(), UUID.randomUUID())).isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
+    void productVersionsPreserveSnapshotsAndRejectStaleWrites() {
+        var created = products.create(java.util.Optional.of("5901234123457"), productDraft("Rice", false));
+        var oldSnapshot = products.snapshotVersion(created.id(), 1);
+        var changed = products.revise(created.id(), 1, productDraft("Updated rice", true));
+        assertThat(changed.version().number()).isEqualTo(2);
+        assertThat(products.snapshotVersion(created.id(), 1)).isEqualTo(oldSnapshot);
+        assertThat(products.snapshot(created.id()).verificationStatus()).isEqualTo("USER_CONFIRMED");
+        assertThat(products.byGtin("05901234123457").id()).isEqualTo(created.id());
+        assertThatThrownBy(() -> products.revise(created.id(), 1, productDraft("Stale", true)))
+                .isInstanceOf(com.mealio.product.domain.ProductConflictException.class);
+        assertThatThrownBy(() -> products.create(java.util.Optional.of("05901234123457"), productDraft("Duplicate", true)))
+                .isInstanceOf(com.mealio.product.domain.ProductConflictException.class);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM backend.products", Integer.class)).isEqualTo(1);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM backend.product_versions", Integer.class)).isEqualTo(2);
+    }
+
+    @Test
+    void concurrentCorrectionsHaveOneWinner() throws Exception {
+        var product = products.create(java.util.Optional.empty(), productDraft("Rice", false));
+        var start = new java.util.concurrent.CountDownLatch(1);
+        try (var executor = java.util.concurrent.Executors.newVirtualThreadPerTaskExecutor()) {
+            java.util.concurrent.Callable<String> correction = () -> {
+                start.await();
+                try {
+                    products.revise(product.id(), 1, productDraft("Corrected", true));
+                    return "created";
+                } catch (com.mealio.product.domain.ProductConflictException exception) {
+                    return "conflict";
+                }
+            };
+            var first = executor.submit(correction);
+            var second = executor.submit(correction);
+            start.countDown();
+            assertThat(java.util.List.of(first.get(15, java.util.concurrent.TimeUnit.SECONDS),
+                    second.get(15, java.util.concurrent.TimeUnit.SECONDS)))
+                    .containsExactlyInAnyOrder("created", "conflict");
+        }
+        assertThat(products.get(product.id()).version().number()).isEqualTo(2);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM backend.product_versions", Integer.class)).isEqualTo(2);
+    }
+
+    @Test
+    void failedVersionInsertRollsBackProductIdentity() {
+        jdbc.execute("ALTER TABLE backend.product_versions ADD CONSTRAINT test_reject_version CHECK (name <> 'Rejected')");
+        try {
+            assertThatThrownBy(() -> products.create(java.util.Optional.empty(), productDraft("Rejected", true)))
+                    .isInstanceOf(com.mealio.product.api.ProductUnavailableException.class);
+            assertThat(jdbc.queryForObject("SELECT count(*) FROM backend.products", Integer.class)).isZero();
+            assertThat(jdbc.queryForObject("SELECT count(*) FROM backend.product_versions", Integer.class)).isZero();
+        } finally {
+            jdbc.execute("ALTER TABLE backend.product_versions DROP CONSTRAINT test_reject_version");
+        }
+    }
+
+    @Test
+    void upgradesLegacyDatabaseWithoutLosingExistingData() throws Exception {
+        jdbc.execute("CREATE SCHEMA upgrade_test");
+        try (var connection = java.sql.DriverManager.getConnection(POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword())) {
+            var database = liquibase.database.DatabaseFactory.getInstance().findCorrectDatabaseImplementation(
+                    new liquibase.database.jvm.JdbcConnection(connection));
+            database.setDefaultSchemaName("upgrade_test");
+            try (var migration = new liquibase.Liquibase("db/changelog/db.changelog-master.yaml",
+                    new liquibase.resource.ClassLoaderResourceAccessor(), database)) {
+                migration.setChangeLogParameter("mealioSchema", "upgrade_test");
+                migration.update(1, new liquibase.Contexts(), new liquibase.LabelExpression());
+                try (var statement = connection.createStatement()) {
+                    statement.executeUpdate("INSERT INTO upgrade_test.meal_categories (id,name,slug,path,type,sort_order) "
+                            + "VALUES ('00000000-0000-0000-0000-000000000001','Legacy','legacy','legacy','CUSTOM',0)");
+                }
+                migration.update(new liquibase.Contexts(), new liquibase.LabelExpression());
+            }
+            assertThat(jdbc.queryForObject("SELECT name FROM upgrade_test.meal_categories", String.class)).isEqualTo("Legacy");
+            assertThat(jdbc.queryForObject("SELECT count(*) FROM upgrade_test.products", Integer.class)).isZero();
+            assertThat(jdbc.queryForObject("SELECT count(*) FROM upgrade_test.product_versions", Integer.class)).isZero();
+        } finally {
+            jdbc.execute("DROP SCHEMA upgrade_test CASCADE");
+        }
+    }
+
+    private com.mealio.product.domain.ProductDraft productDraft(String name, boolean complete) {
+        var nutrition = com.mealio.product.domain.NutritionFacts.builder()
+                .basis(com.mealio.product.domain.NutritionBasis.PER_100_G)
+                .energyKcal(java.util.Optional.of(new BigDecimal("123.4567")))
+                .protein(java.util.Optional.of(BigDecimal.ZERO)).fat(java.util.Optional.of(BigDecimal.ZERO));
+        if (complete) nutrition.carbohydrates(java.util.Optional.of(BigDecimal.ZERO));
+        return com.mealio.product.domain.ProductDraft.builder().name(name).nutrition(nutrition.build()).build();
     }
 }

@@ -126,3 +126,23 @@ Następna faza: 4 (iOS). Kontrola środowiska: `xcodebuild -version` zgłasza,
 że aktywne Command Line Tools nie zawierają Xcode; `xcrun --sdk iphoneos --show-sdk-path`
 zwraca `SDK "iphoneos" cannot be located`. Swift 6.4 jest dostępny, ale sam
 kompilator nie pozwala zweryfikować builda aplikacji iOS. Faza 4 nie jest ukończona.
+
+## Faza 5 — kolejność wdrożeń backendu
+
+Na polecenie użytkownika z 2026-10-17 faza 5 jest realizowana przed ukończeniem iOS.
+
+- [x] 5.1 Lokalny katalog product, walidacja GTIN, źródła ręczne i niezmienne wersje:
+  wdrożona specyfikacja `implemented/2026-10-17-product-catalog.md`.
+- [ ] 5.2 Nutrition: deterministyczne obliczenia, jednostki i kompletność.
+- [ ] 5.3 Diary: dziennik dnia, wpisy, snapshoty, edycja i atomowe potwierdzanie.
+- [ ] 5.4 Kandydaci zewnętrzni: lokalny katalog -> Open Food Facts -> ręczne dane;
+  opcjonalny FatSecret zgodnie z zaakceptowanymi warunkami integracji.
+- [ ] 5.5 Mealparser: port interpretacji tekstu, jawna niepewność i potwierdzenie.
+
+Aktualne standardy dla agentów: `../docs/engineering-standards.md` (ścieżka względem
+tej specyfikacji). Osobny research `2026-10-17-engineering-stack-research.md` opisuje
+rekomendacje; nie zmienia automatycznie stacku ani zaakceptowanych ADR.
+
+Etap 5.1 ukończony 2026-10-17: katalog ręczny, GTIN, wersje i snapshoty źródła.
+Pełne mvn clean verify: 111 testów bez błędów i pominięć, JaCoCo 88,76%.
+Następny etap: 5.2 nutrition. Cała faza 5 oraz faza 4 pozostają nieukończone.

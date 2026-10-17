@@ -91,6 +91,14 @@ Produkt może być `INCOMPLETE`, jeśli brakuje co najmniej jednej wartości wym
 podsumowania: energii, białka, tłuszczu albo węglowodanów. Uzupełnienie danych tworzy nową
 wersję; nie nadpisuje snapshotów użytych przez historyczne wpisy.
 
+Lokalny katalog jest wdrożony: ręczne utworzenie produktu i kolejne wersje mają
+UUID, jawne wartości BigDecimal, status kompletności i czas pochodzenia danych.
+GTIN jest walidowany z cyfrą kontrolną i normalizowany do 14 cyfr. Ręczne źródło
+to `USER_LABEL` przy GTIN i `USER_INPUT` bez kodu. Korekta wymaga zgodnego numeru
+wersji; wcześniejsze dane są nadal dostępne. W domenie brak danych reprezentuje
+Optional; złożone obiekty powstają przez buildery chroniące niezmienniki.
+Przeliczniki porcji i potwierdzanie kandydatów zewnętrznych pozostają kolejnymi krokami.
+
 ## FoodEntry i DailyDiary
 
 `FoodEntry` reprezentuje fakt spożycia określonej ilości produktu w danym dniu i sekcji

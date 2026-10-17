@@ -100,6 +100,47 @@ Jednostki można przesłać jako skróty (`g`, `t`, `w`, `ml`, `pcs`) albo nazwy
 Błędy przepisów używają tej samej struktury co kategorie, z kodami takimi jak
 `RECIPE_NOT_FOUND`, `INVALID_RECIPE_REQUEST` i `RECIPE_PERSISTENCE_ERROR`.
 
+## Lokalny katalog produktów
+
+- `POST /api/v1/products` — ręczne utworzenie produktu i pierwszej wersji,
+- `GET /api/v1/products?query=rice&page=0&size=20` — bieżące wersje pasujące do nazwy,
+- `GET /api/v1/products/{id}` — bieżąca wersja,
+- `GET /api/v1/products/by-gtin/{gtin}` — odczyt wyłącznie lokalnego katalogu,
+- `POST /api/v1/products/{id}/versions` — korekta przez utworzenie nowej wersji,
+- `GET /api/v1/products/{id}/versions/{version}` — niezmienna wersja historyczna.
+
+Przykład ręcznego potwierdzenia etykiety:
+
+```json
+{
+  "name": "Mleko",
+  "brand": "Przykładowa marka",
+  "gtin": "5901234123457",
+  "basis": "PER_100_ML",
+  "energyKcal": 62.25,
+  "protein": 3,
+  "fat": 3,
+  "carbohydrates": 4
+}
+```
+
+Wymagane są nazwa i podstawa `PER_100_G` lub `PER_100_ML`. Każda wartość odżywcza
+jest opcjonalna; null jest brakiem danych. Komplet energii i trzech makroskładników
+daje `USER_CONFIRMED`, pozostałe rekordy `INCOMPLETE`. Wartości są nieujemne i mieszczą
+się w numeric(12,4). GTIN-8/12/13/14 musi mieć poprawną cyfrę kontrolną; przechowywany
+i zwracany jest jako tekst o 14 cyfrach. Brak GTIN jest dozwolony dla produktów generycznych.
+
+Nowa wersja przyjmuje ponownie pola danych oraz `expectedVersion`; GTIN pozostaje
+przypisany do tożsamości. Odpowiedzi 201 mają Location. Równoczesna lub nieaktualna
+korekta oraz duplikat GTIN zwracają 409. Nieznane pola żądania zwracają 400.
+Wyszukiwanie traktuje `%`, `_` i `!` dosłownie; size ma zakres 1–100, offset mieści
+się w int. Wynik jest tablicą uporządkowaną po nazwie i UUID.
+
+Odpowiedź zawiera versionId/versionNumber, źródło USER_LABEL albo USER_INPUT,
+recordedAt i verificationStatus. Snapshot ręczny zachowuje pola wprowadzonej wersji.
+Błędy produktu mają code/message/timestamp/requestId; błędy bazy nie ujawniają SQL.
+404 przy odczycie po GTIN nie oznacza sprawdzenia Open Food Facts ani innych dostawców.
+
 ## Planowane API wprowadzania posiłków
 
 Backend przyjmie wpisany tekst lub transkrypcję i zwróci proponowane produkty, ilości,
@@ -109,8 +150,8 @@ zatwierdzonych danych katalogowych.
 Wynik pozostaje propozycją do czasu zatwierdzenia przez użytkownika. Operacje zatwierdzające
 powinny być idempotentne, aby ponowienia nie tworzyły duplikatów.
 
-Planowane operacje katalogu produktów obejmują wyszukiwanie tekstowe, odczyt po GTIN oraz
-utworzenie lub korektę produktu przez użytkownika. Szczegóły źródeł opisuje
+Ręczny katalog powyżej jest dostępny. Pobieranie i potwierdzanie kandydatów
+zewnętrznych jest kolejnym krokiem. Szczegóły źródeł opisuje
 [strategia danych produktowych](product-data-strategy.md).
 
 ## Planowane API dziennika
