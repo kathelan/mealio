@@ -2,7 +2,15 @@
 
 ## Cel produktu
 
-Mealio to aplikacja iOS wspierana przez backend do rejestrowania jedzenia oraz obliczania kalorii i makroskładników. MVP obejmuje ręczne dodawanie produktów, skanowanie kodów kreskowych oraz zamianę opisu posiłku na ustrukturyzowane pozycje. ASR jest opcjonalnym wejściem `audio -> tekst`; nie interpretuje posiłków i nie oblicza kalorii.
+Mealio to aplikacja iOS z klientem napisanym w SwiftUI, wspierana przez backend Spring Boot w Javie oraz bazę PostgreSQL. Służy do rejestrowania jedzenia i obliczania kalorii oraz makroskładników. MVP obejmuje ręczne dodawanie produktów, skanowanie kodów kreskowych oraz zamianę opisu posiłku na ustrukturyzowane pozycje. ASR jest opcjonalnym wejściem `audio -> tekst`; nie interpretuje posiłków i nie oblicza kalorii.
+
+## Stos i podział odpowiedzialności
+
+- Klient iOS używa SwiftUI do widoków i interakcji. Reguły żywieniowe oraz źródła danych pozostają po stronie backendu; klient komunikuje się z nim przez wersjonowane HTTP API opisane w OpenAPI.
+- Backend działa w Spring Boot i Javie. Jest modularnym monolitem podzielonym według domen biznesowych, z granicami i kierunkiem zależności opisanymi w `docs/architecture.md`.
+- PostgreSQL jest trwałym magazynem danych. Migracje schematu prowadzi Liquibase, a każda tabela i migracja ma wskazanego właściciela domenowego.
+- Wartości odżywcze i ich obliczenia pochodzą z katalogu lub zweryfikowanego dostawcy; model AI może interpretować tekst, ale nie ustala wartości odżywczych.
+- Zmiany kontraktów API wymagają aktualizacji OpenAPI i dokumentacji. Klient iOS nie powinien odtwarzać reguł domenowych backendu.
 
 ## Praca z pamięcią i specyfikacjami AI
 
