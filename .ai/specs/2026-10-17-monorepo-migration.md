@@ -31,7 +31,7 @@ ASR pozostaje opcjonalnym wejściem audio -> tekst. AI nie dostarcza wartości o
      oddzielić DTO błędów recipe od kategorii, odwrócić zależności health,
      przenieść adaptery webowe do infrastruktury i usunąć zbędne globalne pakiety.
    - Zlikwidować wyjątki ArchUnit; zachować API i schemat; pełne `mvn verify` przechodzi.
-3. [ ] PostgreSQL i powtarzalna weryfikacja (krok 7).
+3. [x] PostgreSQL i powtarzalna weryfikacja (krok 7).
    - Testcontainers sprawdza migracje od pustej bazy, ograniczenia i persystencję PostgreSQL.
    - Wspólne polecenia i automatyzacja uruchamiają testy wszystkich modułów bez pomijania
      testów integracyjnych; `mvn verify` przechodzi z dostępnym Dockerem.
@@ -99,3 +99,30 @@ Health nie zależy w aplikacji od konfiguracji ani DTO HTTP.
 `mvn clean verify`: BUILD SUCCESS, 67 testów (46 backend, 10 ASR, 11 request-audit),
 bez błędów i pominięć. Próg JaCoCo 80% zachowany. OpenAPI i change sety bez zmian.
 Następna faza: 3 (PostgreSQL/Testcontainers i automatyzacja pełnej weryfikacji).
+
+## Realizacja fazy 3 — plan techniczny
+
+Baseline: faza 2, `mvn clean verify` przechodzi (67 testów).
+Docker jest dostępny (29.2.1); PostgreSQL w testach używa wersji 17 jak Docker Compose.
+
+1. Dodać zależności Testcontainers zarządzane przez istniejący BOM Spring Boot
+   do backendu i ASR; testy PostgreSQL należą do standardowego `mvn test/verify`,
+   brak Dockera powoduje błąd zamiast pomijania testów.
+2. Sprawdzić migracje i Hibernate validate na pustych bazach, zapis i odczyt recipe,
+   precyzję składników, unikalność kategorii i kaskadowe usuwanie powiązań.
+   Osobny test ASR sprawdza zapis rekordu i migrację jego schematu.
+3. Dodać `make verify` i CI z Java 25 oraz Dockerem uruchamiające pełny reaktor;
+   udokumentować wymagania i polecenia. Nie zmieniać schematu ani OpenAPI.
+4. Uruchomić pełne `mvn clean verify`, przejrzeć diff i zapisać wyniki oraz commit.
+
+Faza 3 ukończona 2026-10-17: PostgreSQL/Testcontainers dla backendu i ASR,
+`make verify` i workflow CI dodane. Pełne `mvn clean verify` poza sandboxem:
+BUILD SUCCESS, 70 testów (48 backend, 11 ASR, 11 request-audit), bez błędów
+ani pominięć; pokrycie linii backendu 86,57%. Rzeczywiste testy użyły PostgreSQL 17.11.
+Migracje od pustych baz, Hibernate validate, powiązania recipe i kaskady przeszły.
+CI sprawdzono lokalnie pod względem konfiguracji; nie uruchamiano zdalnego workflow.
+
+Następna faza: 4 (iOS). Kontrola środowiska: `xcodebuild -version` zgłasza,
+że aktywne Command Line Tools nie zawierają Xcode; `xcrun --sdk iphoneos --show-sdk-path`
+zwraca `SDK "iphoneos" cannot be located`. Swift 6.4 jest dostępny, ale sam
+kompilator nie pozwala zweryfikować builda aplikacji iOS. Faza 4 nie jest ukończona.

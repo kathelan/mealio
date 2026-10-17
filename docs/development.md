@@ -23,9 +23,19 @@ początkowo jako moduły modularnego monolitu, a nie osobne usługi REST.
 ## Polecenia
 
 ```bash
-cd backend
-mvn test
+make verify
 ```
+
+Wymagane: Java 25, Maven i działający Docker. Cel wykonuje `mvn clean verify`
+z katalogu głównego: testy wszystkich modułów, granice ArchUnit i bramkę JaCoCo
+backendu oraz testy PostgreSQL 17 przez Testcontainers. Pierwszy przebieg pobiera
+obrazy PostgreSQL i kontenera sprzątającego Ryuk. Testy nie korzystają z lokalnej
+bazy Compose ani jej danych i nie są pomijane przy braku Dockera.
+
+Szybsze sprawdzenie zmienianego modułu: `make test-backend` albo `make test-asr`.
+Oba polecenia również obejmują jego testy PostgreSQL. Po przenoszeniu klas lub
+wykryciu powielonych plików w `target` uruchom pełne `make verify` z czyszczeniem.
+Workflow `.github/workflows/verify.yml` uruchamia tę samą pełną bramkę na push i PR.
 
 ```bash
 docker compose up --build

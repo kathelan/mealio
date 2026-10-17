@@ -32,6 +32,11 @@ API pozostają za adapterami wyjściowymi.
 
 ## Uruchomienie
 
+Testy uruchamiaj z katalogu głównego: `mvn -pl asr -am test`.
+Wymagają działającego Dockera: Testcontainers uruchamia PostgreSQL 17, sprawdza
+migrację pustej bazy, Hibernate validate i zapis rekordu transkrypcji. Brak Dockera
+powoduje błąd builda. `make verify` uruchamia pełne sprawdzenia wszystkich modułów.
+
 Tryb domyślny używa dostawcy mock:
 
 ```bash

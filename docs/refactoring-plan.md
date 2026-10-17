@@ -28,7 +28,7 @@ Backend spełnia obecny próg JaCoCo 80%. Testy integracyjne persystencji używa
 - Health zwraca wynik aplikacyjny, a konfiguracja i mapowanie HTTP należą do infrastruktury.
 - ArchUnit kontroluje granice bez wyjątków migracyjnych.
 - Pozostają szerokie porty `Manage*UseCase`; ich podział wymaga konkretnej potrzeby.
-- Testy zgodności PostgreSQL wymagają jeszcze wdrożenia w fazie 3.
+- Testy Testcontainers/PostgreSQL 17 dla backendu i ASR są częścią standardowej bramki.
 
 ## Kolejność prac
 
@@ -38,7 +38,7 @@ Backend spełnia obecny próg JaCoCo 80%. Testy integracyjne persystencji używa
 4. [x] Zabezpieczyć testami `recipe`, przenieść jego model i persystencję do właściciela.
 5. [x] Zastąpić dostęp `recipe` do persystencji kategorii małym publicznym API `category`.
 6. [x] Usunąć pozostałości globalnych pakietów dopiero po migracji wszystkich użytkowników.
-7. [ ] Dodać testy PostgreSQL przez Testcontainers i zweryfikować migracje od pustej bazy.
+7. [x] Dodać testy PostgreSQL przez Testcontainers i zweryfikować migracje od pustej bazy.
 8. [ ] Implementować moduły MVP: `product`, `diary`, `nutrition`, `mealparser`.
 
 ASR pozostaje niezależnym wejściem audio i nie blokuje przepływu tekstowego.

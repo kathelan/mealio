@@ -67,6 +67,16 @@ spring.jpa.hibernate.ddl-auto: none
 
 Zmiany schematu są wykonywane przez changesety Liquibase.
 
+## Weryfikacja migracji
+
+`make verify` uruchamia testy Testcontainers na PostgreSQL 17 dla backendu i ASR.
+Każdy moduł dostaje pustą, odizolowaną bazę z własnym schematem. Liquibase stosuje
+pełny changelog, a Hibernate sprawdza zgodność mapowania (`ddl-auto=validate`).
+Test backendu sprawdza także zapis przepisu i składników, precyzję liczb, unikalność
+ścieżek kategorii oraz klucze obce i kaskadowe usuwanie powiązań. Test ASR zapisuje
+rekord transkrypcji i metadane audio. Wymagany jest dostęp do Dockera i możliwość
+pobrania obrazów przy pierwszym uruchomieniu; testy nie modyfikują bazy deweloperskiej.
+
 ## Uruchomienie lokalne
 
 Uruchomienie całego stosu:

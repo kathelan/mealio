@@ -1,4 +1,7 @@
-.PHONY: test test-asr test-backend test-audit run-asr run-backend install-local-libs
+.PHONY: verify test test-asr test-backend test-audit run-asr run-backend install-local-libs
+
+verify:
+	mvn clean verify
 
 test:
 	mvn test
