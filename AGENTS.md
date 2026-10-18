@@ -91,6 +91,26 @@ Nie dodawaj wykluczeń klas ani nie obniżaj progu, aby ominąć tę zasadę.
 
 ## Zasady zmian
 
+- Tytuły i opisy issues oraz PR-ów, komentarze, review, uzasadnienia etykiet,
+  instrukcje testowania i raporty QA publikowane w trackerze pisz po polsku.
+  Zachowaj wymagane techniczne znaczniki i ich wartości, np. `Closes #4`,
+  `Tracking plan:`, `Status:`, `Review verdict: APPROVED`, `Review head:`,
+  `QA verdict: PASS`, `QA head:`, `PR:` i `Issue:`. Nie tłumacz nazw etykiet,
+  poleceń, identyfikatorów ani nazw API. Reguła dotyczy wszystkich skilli,
+  także tworzenia issue i zamykania go po merge.
+- Repozytorium pracuje w trybie solo określonym przez `delivery.mode` w
+  `.ai/agentic.config.json`. Przed użyciem skilli OM przeczytaj sekcję
+  „Solo delivery policy” w `SDLC.md` oraz lokalne rozszerzenie
+  `.ai/skills/<nazwa-skilla>/SKILL.md`, jeśli istnieje. Jest to zatwierdzona przez
+  maintenera polityka: zastępuje wymaganie drugiej osoby, zakaz agentowego QA dla
+  `risk-high` i wymóg formalnego self-approval GitHuba w pobranych skillach.
+  Testy, dowody QA, aktualność SHA, blokady oraz wymagane checki pozostają obowiązkowe.
+  Nie traktuj braku drugiej osoby jako powodu do zatrzymania procesu ani do
+  nadania zatwierdzenia bez wykonania weryfikacji.
+- Po zakończeniu implementacji przez skille create/continue/fix i ostatnim pushu
+  kontynuuj przez `om-pr-autopilot <PR> --allow-merge`: review, lokalne QA, checki,
+  squash merge. Samo przygotowanie issue, specyfikacji lub odczyt statusu nie
+  upoważnia do implementacji ani merge. Szczegóły przekazań są w `SDLC.md`.
 - Każdą zmianę w repozytorium realizuj na osobnej gałęzi i dostarczaj przez pull request.
   Nie twórz commitów bezpośrednio na `main`; commity przypisane do zadania zapisuj
   na jego gałęzi przed otwarciem lub aktualizacją pull requesta.

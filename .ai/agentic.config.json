@@ -50,6 +50,10 @@
     ]
   },
   "qaGate": true,
+  "delivery": {
+    "mode": "solo",
+    "policy": "SDLC.md"
+  },
   "ci": {
     "maxWaitMinutes": 40
   },

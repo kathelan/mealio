@@ -7,6 +7,8 @@ account for review or QA. Preserve CI, unit coverage, compatibility and data saf
 
 ## Scope
 
+Tracker titles, bodies and comments are Polish; exact technical markers stay unchanged.
+
 Repository delivery policy, opt-in configuration and repo-local skill extensions.
 The downloaded skill collection and application code remain outside this task.
 
@@ -33,12 +35,14 @@ separately from checks actually performed locally.
 
 ## Progress
 
+PR: #8
+
 > Convention: `- [ ]` pending, `- [x]` done. Append ` — <commit sha>` when a step lands.
 
 ### Phase 1: Policy and integration
 
-- [ ] 1.1 Define solo delivery policy and configure the repository.
-- [ ] 1.2 Connect review, local QA and merge through local extensions.
+- [x] 1.1 Define solo delivery policy and configure the repository.
+- [x] 1.2 Connect review, local QA and merge through local extensions.
 
 ### Phase 2: Verification and delivery
 

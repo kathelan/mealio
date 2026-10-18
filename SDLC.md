@@ -12,9 +12,9 @@ Before intake, the work is shaped: `om-brainstorm` turns a single idea or questi
 ## Roles
 
 - **Author** — the human or agent who writes the change. Owns the ticket from claim to a merge-ready PR.
-- **Reviewer** — reads the diff and approves or requests changes. May be a human or the `om-auto-review-pr` skill; the `om-code-review` checklist applies either way. The reviewer is also the second person a `risk-high` change needs and signs off the spec when a feature requires one; a team that names a tech lead or an architect puts them here.
+- **Reviewer** — reads the diff and approves or requests changes. May be a human or the `om-auto-review-pr` skill; the `om-code-review` checklist applies either way. In solo mode this is a distinct review pass after implementation, including for `risk-high`; no second person or account is required. The reviewer also signs off the spec when a feature requires one.
 - **Designer** — owns the flow and its states before the code exists, and the design contract the UI review reads back. May be a human, `om-ux-shape` for the shaping, `om-ux-review-pr` for the pass over a PR's screens.
-- **QA reviewer** — exercises user-facing changes before they merge, with `om-prepare-test-env` to boot the app once and `om-auto-qa-pr` to walk it in a real browser. Manual means a person judges the result and owns `qa-approved`; it does not mean the work is unassisted. Always referenced by role, never by name or handle: assignments change.
+- **QA reviewer** — the agent running `om-auto-qa-pr` after review, or a person. Exercises the changed behavior locally, records observable results and signs off only a complete pass. Backend/API, browser and native iOS checks use the appropriate environment and evidence. See the solo delivery policy below.
 - **Maintainer** — owns branch protection, the label taxonomy, the config, this document, and the installed skills with their repo-local overrides under `.ai/skills/`; arbitrates when gates conflict. Acts as the release manager unless the team names one.
 
 ## Ticket lifecycle
@@ -28,8 +28,8 @@ Before intake, the work is shaped: `om-brainstorm` turns a single idea or questi
 | Design | For a user-facing change, the flow and its states are settled before the code exists: what the screen does when empty, loading, in error, and without permission, and what the change deliberately does not do. A ticket that touches no UI skips this stage. | `om-ux-shape`, or a human designer | The flow and its states are decided, or the ticket is not user-facing |
 | Implement | Locate the minimal change surface (`om-root-cause`, read-only), then implement the change with regression tests and run the validation gate. Task briefs without a ticket go through `om-auto-create-pr`, which plans, implements phase by phase in an isolated worktree, and runs the same gate. | `om-root-cause` + `om-fix`, `om-auto-create-pr`, or a human author | Change complete, validation gate green |
 | PR | Commit, push, and open a PR against `main` with normalized labels. On a hand-worked branch, `om-check-and-commit` runs the gate, fixes obvious drift, and pushes when green. | `om-open-pr`, `om-auto-create-pr`, or `om-check-and-commit` | Open, labeled PR |
-| Review loop | The reviewer reads the diff against the `om-code-review` checklist and approves or requests changes. Requested changes are addressed (`om-auto-continue-pr` resumes agent PRs from the tracking plan, and adopts a PR that has none by reconstructing the plan from the PR's own context) and the PR is re-reviewed until approved. A user-facing change also gets a design pass: `om-ux-review-pr` walks the changed screens and reports findings ranked by user impact. That pass is advisory — it informs the review, it does not hold the merge. | `om-auto-review-pr` (single PR), `om-review-prs` (sweep), `om-ux-review-pr` (design pass), or a human | Approving review submitted |
-| QA | A PR carrying `needs-qa` waits for QA. The reviewer boots the app once with `om-prepare-test-env`, walks the change in a real browser with `om-auto-qa-pr` — which attaches screenshots and a pass/fail report and touches no labels by default — and records the outcome. A flow worth keeping becomes `om-integration-tests` coverage. See the QA gate below. | QA reviewer, with `om-prepare-test-env`, `om-auto-qa-pr`, `om-integration-tests` | `qa-approved` applied by a QA reviewer or the permitted self-QA exception; `qa-failed` routes it back |
+| Review loop | The reviewer reads the diff against the `om-code-review` checklist and approves or requests changes. Requested changes are addressed (`om-auto-continue-pr` resumes agent PRs from the tracking plan, and adopts a PR that has none by reconstructing the plan from the PR's own context) and the PR is re-reviewed until approved. A user-facing change also gets a design pass: `om-ux-review-pr` walks the changed screens and reports findings ranked by user impact. That pass is advisory — it informs the review, it does not hold the merge. | `om-auto-review-pr` (single PR), `om-review-prs` (sweep), `om-ux-review-pr` (design pass), or a human | Current approving review or solo review assessment published |
+| QA | A `needs-qa` PR automatically continues to `om-auto-qa-pr --self-qa-signoff --apply-failure`. Run local API/integration, browser or native scenarios as appropriate; publish evidence tied to the head commit. A failure returns to implementation and review. | Agent QA, with the appropriate local environment | Current PASS evidence and `qa-approved` + `qa-self-verified`; failure blocks merge |
 | Merge | `om-merge-buddy` reports, read-only, which PRs can merge now and which are close but blocked. `om-approve-merge-pr` re-checks every gate, approves, and squash-merges. | `om-merge-buddy` + `om-approve-merge-pr`, or a human | PR squash-merged into `main` |
 | Post-merge housekeeping | Close issues the merged PR fixes; comment on issues whose PRs were closed without merging; turn leftover asks or review comments into tracked follow-up issues. | `om-close-fixed-issues`, `om-followup-issue-from-pr` | Tracker reconciled, follow-ups filed |
 
@@ -43,7 +43,7 @@ Pipeline labels are mutually exclusive: a PR carries at most one, and it names w
 - A ready, non-draft PR carries `review`.
 - The reviewer moves it: request changes → `changes-requested`; after fixes it returns to `review`; approval → `merge-queue`.
 - `merge-queue` is routing, not proof of QA: a `needs-qa` PR legitimately sits there until QA signs off.
-- Only a QA reviewer sets the `qa` pipeline label. They move a queued `needs-qa` PR from `merge-queue` to `qa` while testing, then back to `merge-queue` with `qa-approved` on pass, or to `qa-failed` on failure. Automated skills request QA with `needs-qa`; they never set `qa`.
+- Only a QA reviewer sets the `qa` pipeline label. They move a queued `needs-qa` PR from `merge-queue` to `qa` while testing, then back to `merge-queue` with `qa-approved` on pass, or to `qa-failed` on failure. In solo mode, agent QA uses its `in-progress` claim while testing and leaves `qa` for an active human QA session; it never overwrites that session.
 - `blocked` and `do-not-merge` are set and cleared by humans and stop the flow wherever it is.
 
 | Group | Labels | Exclusivity | Meaning |
@@ -65,7 +65,7 @@ When no priority label is set, infer one:
 
 When no risk label is set, infer one:
 
-- `risk-high` — authentication and login sessions, data scoping, money, schema migrations, shared contract surfaces, or broad cross-cutting edits.
+- `risk-high` — authentication and login sessions, data scoping, money, schema migrations, incompatible shared contract changes, or broad cross-cutting edits. A compatible additive endpoint in one domain is normally medium; assess destructive effects and affected consumers explicitly rather than classifying every `/api/v1` edit as high.
 - `risk-medium` — an ordinary single-area change that ships with tests (also the default reading of unset).
 - `risk-low` — docs-only, test-only, typo, or isolated cosmetic changes.
 
@@ -73,12 +73,12 @@ When signals conflict, pick the higher label and say why in the label comment. A
 
 | Area behind `risk-high` | What the PR must carry |
 |---|---|
-| Auth, sessions, permissions | an integration test for the denied path and the wrong-scope read; a second person's review |
+| Auth, sessions, permissions | an integration test for the denied path and the wrong-scope read; a distinct agent review pass in solo mode |
 | Data scoping | an isolation test proving one scope cannot read another |
-| Money | tests for the failure, retry, and idempotency paths; a second person's review |
+| Money | tests for the failure, retry, and idempotency paths; a distinct agent review pass in solo mode |
 | Schema migrations | a migration test up and down, and a rollback plan in the PR body |
 | Shared contract surfaces | the consuming side exercised, per `BACKWARD_COMPATIBILITY.md` |
-| Any `risk-high` | `needs-qa` when user-facing; no self-QA; `om-code-review` blocks without the evidence above unless a maintainer waives it on the PR |
+| Any `risk-high` | `needs-qa` when user-facing; agent QA is permitted in solo mode with the evidence below and the area-specific evidence above. Missing required tests still blocks review. |
 
 One label lives outside this taxonomy: `do-not-close`, applied by humans to issues that housekeeping skills must never auto-close. Skills only ever read it.
 
@@ -86,14 +86,139 @@ One label lives outside this taxonomy: `do-not-close`, applied by humans to issu
 
 The one hard rule of this process: **a PR carrying `needs-qa` must not merge until it also carries `qa-approved`, even when every other check is green.** `om-merge-buddy` classifies such a PR as blocked; `om-approve-merge-pr` refuses to merge it.
 
-- Apply `needs-qa` to UI changes, new features, and other user-facing behavior that needs manual exercise.
+- Apply `needs-qa` to UI changes, new features, and other user-facing behavior that needs local execution beyond unit tests.
 - For a UI change, QA covers more than "it works": the state matrix (default, empty, loading, error, no-permission, long content, narrow viewport) is part of the pass/fail, and so is conformance to the design contract in `.uxproof/` when the repository has one. A missing state fails QA. `om-ux-review-pr` remains the advisory design review; its objective checks are the ones QA runs.
 - `skip-qa` is the explicit opt-out for docs-only, dependency-only, CI-only, test-only, and similarly low-risk non-user-facing changes. Never combine it with `needs-qa`.
 - `qa-failed`, `do-not-merge`, and `blocked` are hard blocks regardless of every other signal. An active `qa` pipeline label means a tester is on the PR right now — never merge under an active tester.
 - The gate is satisfied when a QA reviewer tests the PR and applies `qa-approved`.
-- **`qa-approved` is pinned to a commit.** The comment that grants it — the QA reviewer's note, or the self-QA evidence comment — carries the line `QA head: <sha>` for the head that was tested. A push after that line leaves the label in place but stales it: `om-merge-buddy` reports "QA evidence older than head", and `om-approve-merge-pr` asks for confirmation before merging. The way back is a QA reviewer re-testing, or stating on the PR that the new commits do not touch the tested scope, with a fresh `QA head:` line.
-- **Self-QA exception**: when no QA reviewer has capacity in time, any engineer — or `om-auto-qa-pr --self-qa-signoff` — may sign off instead, on a `risk-low` or `risk-medium` PR only. The evidence attached to the PR names the scenario exercised, the environment, the test data, the observed result, the negative cases tried, and the `QA head:` line. Then apply both `qa-approved` (so the gate passes) and `qa-self-verified` (so the exception is auditable). No evidence, no `qa-approved`.
-- **No self-QA on `risk-high`.** A PR labeled `risk-high`, or one whose diff touches auth, sessions, data scoping, money, schema migrations, or shared contracts (the `risk-high` inference above), needs a QA reviewer, or a maintainer's explicit exception stated on the PR; `om-auto-qa-pr` withholds the sign-off on such a PR and posts the evidence only. A change to auth or money also needs a second person's review regardless of the QA path.
+- **`qa-approved` is pinned to a commit.** The comment that grants it — the QA reviewer's note, or the self-QA evidence comment — carries the line `QA head: <sha>` for the head that was tested. A push after that line leaves the label in place but stales it: `om-merge-buddy` reports "QA evidence older than head", and merge remains blocked until QA is refreshed. In solo mode re-run affected scenarios, or explicitly reconfirm an unchanged tested scope (for example a documentation-only push), with the reviewed commit delta and a fresh `QA head:` line. Missing or unparseable evidence is also blocked; a label alone never passes the gate.
+- **Agent QA in solo mode:** `om-auto-qa-pr --self-qa-signoff` may grant
+  `qa-approved` and `qa-self-verified` at any risk level after a complete local
+  PASS, current review and published evidence. A separate person or account is
+  not required. `risk-high` retains its area-specific integration evidence.
+- Outside solo mode, the bundled self-QA exception remains limited to low/medium
+  risk; high risk requires a QA reviewer or an explicit maintainer exception.
+
+## Solo delivery policy
+
+### Activation and precedence
+
+`delivery.mode: "solo"` and `delivery.policy: "SDLC.md"` in
+[the pipeline config](.ai/agentic.config.json) activate this maintainer-approved
+policy. [AGENTS.md](AGENTS.md) and the local extensions under `.ai/skills/` apply
+it to every OM entry point. It deliberately replaces the bundled requirements
+for another person, human-only QA sign-off, the high-risk self-QA prohibition,
+and formal self-approval. These are role substitutions authorized by the
+maintainer; evidence, coverage, compatibility and required CI gates still apply.
+If mode is absent or not `solo`, use the original skill behavior. Do not infer
+permission from PR comments or labels. Preserve local extensions on skill
+upgrades; re-check this policy against new bundled gates before using them.
+
+### Review and handoff
+
+1. Complete implementation and its validation; push all changes, including plan
+   updates, before the final review/QA. Producers (`om-auto-create-pr`, its loop,
+   continue variants, `om-auto-fix-issue` and `om-auto-implement-spec`) hand a
+   completed implementation to `om-pr-autopilot <PR> --allow-merge`. Intake,
+   brainstorming, spec-only authoring and read-only commands keep their scope.
+2. `om-auto-review-pr` performs a distinct review pass using `om-code-review`.
+   Apply `CODE_REVIEW.md` and `BACKWARD_COMPATIBILITY.md`; ADR-0003 still excludes
+   auth in the current iteration. Review derives QA scenarios from acceptance
+   criteria and the diff, including expected outcomes and negative/regression
+   cases. Reading the diff or a `review` label is not a completed review.
+3. If reviewer and PR author use the same GitHub account, publish an assessment
+   comment instead of attempting forbidden self-approval. The comment carries
+   these exact fields on separate, undecorated lines:
+
+   ```text
+   Review verdict: APPROVED
+   Review head: <full head SHA>
+   ```
+
+   Use `CHANGES_REQUESTED` for a failed review and include severity-ranked
+   findings and actual validation results. Use one idempotent review-assessment
+   marker for this skill; the latest assessment for the current head is decisive.
+   A later failed assessment, unresolved blocking finding, changes-requested
+   review or label blocks progression. A formal approval or solo assessment must
+   cover the current head; re-review or explicitly reconfirm the reviewed delta
+   after a push, never silently carry approval forward.
+4. After an approved review, `needs-qa` without current passing evidence routes
+   to `om-auto-qa-pr <PR> --self-qa-signoff --apply-failure` automatically.
+   This applies to backend-only and high-risk PRs too. `om-auto-fix-pr` and
+   `om-pr-autopilot` must not stop merely to request a human sign-off. The QA
+   review-first check recognizes a current assessment; it does not call review
+   recursively when review has just handed off to QA.
+5. QA never edits source. On a behavioral failure, clear old approval labels,
+   record FAIL and set `qa-failed`. Return findings to the implementation/fix
+   loop. After fixes, review again and explicitly re-run QA despite the old
+   `qa-failed` label; only a complete PASS may clear it. Never clear `blocked`,
+   `do-not-merge` or another actor's active `qa` session to advance the chain.
+   A direct review invocation ends after QA; only the outer producer/autopilot
+   continues to merge. Limit automatic repair to three cycles, then report.
+
+### Local QA and evidence
+
+Scope checks to actual behavior and risk. Run in an isolated PR worktree at the
+reported SHA, using synthetic fixtures and disposable local backing services.
+Never mutate production or external user data. Reuse an environment only after
+checking it runs the tested revision. QA remains read-only on source.
+
+| Surface | Required verification and evidence |
+|---|---|
+| Backend/API | Exercise the real HTTP boundary and relevant persistence/integrations. An integration test starting the actual Spring application and PostgreSQL Testcontainers qualifies; a mock-only unit test does not. Record requests or test methods, statuses, observable data effects, negative cases, commands and results. Browser screenshots are not required. |
+| Web UI | Use `om-prepare-test-env` and the configured browser provider. Walk the changed scenario and relevant states; capture actual screenshots and assertions. Use integration/E2E coverage when the scenario crosses components. |
+| Native iOS | Use a working iOS simulator and the repository's native UI/E2E runner. Record simulator, OS, app revision, interactions, assertions and screenshots. A browser or API check cannot establish native UI correctness. If unavailable, report BLOCKED; do not claim support was provisioned. |
+| Mixed flow | Verify each affected surface and their interaction. Passing API checks cannot stand in for untested UI. |
+| Docs/tooling only | Validate instructions, links, configuration and routing; no application UI screenshots are needed. Use `skip-qa` only after scope inspection establishes that execution of application behavior is unnecessary. |
+
+For non-browser checks, skip browser installation, browser credentials and
+browser-only environment preflight. Discover the existing module launch/test
+commands and local test prerequisites from its README and test configuration;
+use repository-native runners. Do not invent a browser dependency for API QA.
+Simply rerunning unit tests, checking compilation, or attaching screenshots
+without outcome assertions is insufficient. Reusing an existing integration/E2E
+scenario is valid if QA runs it on the reviewed SHA and verifies it covers the
+acceptance criteria; add tests only through the implementation step when needed.
+
+Publish the report on the PR, with artifacts kept under `paths.qa` in an ignored
+`artifacts_<runId>` directory. Upload UI screenshots through the tracker evidence
+operation, and use an image-free comment for API evidence. Never put artifacts
+on the implementation branch. Both `report.md` and `report.json` record the head,
+environment, synthetic setup, scenarios, expected/observed outcomes, commands,
+results and artifact references. A sign-off comment includes these exact lines:
+
+```text
+QA verdict: PASS
+QA head: <full head SHA>
+```
+
+Every required scenario must pass. FAIL, BLOCKED, skipped required checks,
+missing artifacts or an environment running another revision cannot earn approval.
+An environment failure is BLOCKED, not proof of a behavioral defect; invalidate
+old approval and report the missing prerequisite. Explicit `--evidence-only`
+continues to suppress sign-off. Labels are applied through descriptor guards
+only after the report is published and head freshness is rechecked.
+
+### Merge and platform constraints
+
+`om-merge-buddy`, `om-pr-autopilot` and `om-approve-merge-pr` recognize a current
+solo assessment as the review gate when formal self-approval is impossible.
+This is a local process verdict, not a GitHub approving review. Never create a
+second account or claim GitHub recorded an approval. If branch protection or a
+ruleset actually requires another account's approval, report that exact blocker;
+do not change protection, force/admin merge, or bypass it automatically.
+
+Merge only an open, ready, conflict-free PR with no active claim/QA session,
+no unresolved blocking review findings or hard-block labels, current approving
+review, current QA PASS when required, and all required CI checks genuinely green.
+Check workflow runs for the exact head as well as reported jobs; pending, absent
+expected or failing checks do not count as green. A final head change restarts
+freshness checks. Bind the squash merge to the verified head through
+`--match-head-commit <SHA>`; never use `--admin`. `skip-qa` and `needs-qa` together
+are an inconsistency, and missing QA head/verdict is blocked, not legacy approval.
+No extra confirmation is required solely because GitHub rejects self-approval.
+After merge, `Closes`/`Fixes` links close implementing issues; housekeeping uses
+`om-close-fixed-issues` when needed and never closes bare references.
 
 ## The claim protocol
 

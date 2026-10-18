@@ -36,6 +36,12 @@ Upstream references: cli/cli#11983 (`gh pr edit` aborts without any project flag
 
 ## Conventions
 
+- All tracker-facing titles, descriptions, comments, review findings, label
+  rationales and QA reports are written in Polish, as required by `AGENTS.md`.
+  Keep machine markers (`Closes`, `Tracking plan:`, `Status:`, `Review verdict:`,
+  `Review head:`, `QA verdict:`, `QA head:`, `PR:`, `Issue:`), label names, SHAs,
+  commands and API identifiers unchanged. Apply this when rendering every skill
+  template, including issue creation and post-merge closing comments.
 - Issue and PR identifiers are numbers; in text they are written `#123`.
 - A `--json` field list must never include `projectCards`: it is a Projects (classic) relic that errors on every client version (see above). Request only the fields the calling skill names.
 - A PR is linked to the issue it resolves with `Fixes #{issueId}` (or `Closes #{issueId}`) in the PR body; GitHub then closes the issue on merge. To reference without auto-closing, use a plain issue link.

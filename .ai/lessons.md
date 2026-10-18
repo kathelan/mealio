@@ -31,3 +31,11 @@ oraz odnośnik do rozwiniętej notatki, jeśli istnieje. Nie zapisuj sekretów a
   precyzję na macOS i Linuksie. Stosuj Clock.fixed z celowo niezerowymi nanosekundami
   i sprawdzaj oddzielnie czas HTTP oraz zapis zgodny z precyzją kolumny TIMESTAMP.
   Nie zakładaj, że odczyt z bazy zachowa wszystkie nanosekundy obiektu Instant.
+
+- 2026-10-18 — Proces solo: review i QA to odrębne przebiegi agenta z dowodami
+  przypiętymi do SHA; formalny self-approval GitHuba nie jest możliwy. Polityka
+  w SDLC.md i rozszerzenia w .ai/skills/ zastępują wymaganie drugiej osoby,
+  zachowując testy i CI. QA backendu wymaga dowodów HTTP/persystencji, a UI
+  rzeczywistego przejścia i screenshotów. Treści trackera publikujemy po polsku,
+  zachowując dokładne znaczniki techniczne. Przy aktualizacji skilli zachowuj
+  lokalne rozszerzenia i sprawdzaj ich zgodność z nowymi bramkami.
