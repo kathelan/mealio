@@ -21,8 +21,12 @@ keep exact technical markers unchanged.
 - When GitHub identity equals PR author, publish the current-head assessment
   specified in SDLC.md instead of submitting a forbidden formal self-review.
   Use the idempotent marker `🤖 om-auto-review-pr — solo assessment`.
-  A failed assessment still sets `changes-requested` and runs the normal autofix
-  loop only when authorized; do not turn platform rejection into an approval.
+  A failed assessment sets `changes-requested` unless a QA failure state must
+  be preserved below, and runs the normal autofix loop only when authorized; do not turn platform rejection into an approval.
+- If `qa-failed` is present, publish the code-review verdict but preserve that
+  pipeline state until QA completes its re-test. Do not use the bundled
+  `set_pipeline_label merge-queue` transition to remove a QA failure early.
+  `blocked`, `do-not-merge` and an active human `qa` session remain untouched.
 - After a clean final review, derive and publish concrete QA scenarios and run
   `om-auto-qa-pr <PR> --self-qa-signoff --apply-failure` if QA is required and
   current evidence is missing. Backend-only and `risk-high` are included.
