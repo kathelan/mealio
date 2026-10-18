@@ -36,6 +36,15 @@ Upstream references: cli/cli#11983 (`gh pr edit` aborts without any project flag
 
 ## Conventions
 
+- Repository delivery gates use the maintainer-approved solo policy in `SDLC.md`
+  when enabled by `delivery.mode`/`delivery.policy`; use the local skill extensions
+  for assessment fallback, surface-specific QA and exact-head merge.
+- All tracker-facing titles, descriptions, comments, review findings, label
+  rationales and QA reports are written in Polish, as required by `AGENTS.md`.
+  Keep machine markers (`Closes`, `Tracking plan:`, `Status:`, `Review verdict:`,
+  `Review head:`, `QA verdict:`, `QA head:`, `PR:`, `Issue:`), label names, SHAs,
+  commands and API identifiers unchanged. Apply this when rendering every skill
+  template, including issue creation and post-merge closing comments.
 - Issue and PR identifiers are numbers; in text they are written `#123`.
 - A `--json` field list must never include `projectCards`: it is a Projects (classic) relic that errors on every client version (see above). Request only the fields the calling skill names.
 - A PR is linked to the issue it resolves with `Fixes #{issueId}` (or `Closes #{issueId}`) in the PR body; GitHub then closes the issue on merge. To reference without auto-closing, use a plain issue link.
@@ -212,8 +221,12 @@ gh api repos/{owner}/{repo}/issues/comments/{commentId} --jq '{body,user:.user.l
 #### list-issue-comments
 `{issueId or prNumber}` → conversation comments (PR conversation comments are issue comments on GitHub).
 ```bash
-gh api repos/{owner}/{repo}/issues/{number}/comments --jq '.[] | {id,user:.user.login,body}'
+gh api --paginate repos/{owner}/{repo}/issues/{number}/comments --jq '.[] | {id,user:.user.login,body,createdAt:.created_at,updatedAt:.updated_at,url:.html_url}'
 ```
+
+Preserve the timestamps and pagination: solo review/QA gates compare the latest
+qualified record, including updates to an idempotent comment. A truncated page or
+missing ordering metadata cannot establish that an approval is current.
 
 #### update-comment
 `{commentId}`, new body → rewrite an existing conversation comment in place (works for issue and PR conversation comments alike). This is how marker-idempotent comments (label rationale, verification, claim take-overs) are updated on re-runs: find your `🤖 …` marker via **list-issue-comments**, then update that comment instead of posting a new one. Use a body file so multi-line bodies survive.
