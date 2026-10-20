@@ -1,5 +1,9 @@
 # E02 — potrawy wielokrotnego użytku i dziennik
 
+Data: 2026-10-20. Status: kompletna mapa zakresu do review; story-SDD i implementacja pozostają osobną pracą.
+Source issue: [#11](https://github.com/kathelan/mealio/issues/11).
+Fundamenty: [E01](2026-10-20-e01-reusable-foundations.md).
+
 ## 📝 TLDR
 
 E02 łączy zapisane przepisy z dziennikiem dnia i tygodnia. Ta mapa dzieli epic #11 na
@@ -22,12 +26,10 @@ Przepis zapisuje składniki z wybranych wersji produktów i udostępnia wynik pr
 Moduł `diary` zapisuje jeden wpis na produkt lub porcję przepisu i pobiera dane wyłącznie
 przez publiczne API `product`, `nutrition` i `recipe`.
 
-OpenNutriTracker łączy wyszukiwarkę składników, edytor receptury i wartości na porcję;
-Mealio może reuse'ować wybór produktu, zachowując obliczenia w backendzie. Jego dziennik
-korzysta z konfigurowalnego podziału posiłków. W E02 personalizacja sekcji jest regułą
-produktu, a płaskie etykiety przepisu pozostają od nich niezależne.
-Źródła: [OpenNutriTracker — funkcje i wiki](https://github.com/simonoppowa/OpenNutriTracker/wiki),
-[Kcal — model przepisów i dziennika](https://github.com/kcal-app/kcal).
+Istniejące projekty [OpenNutriTracker](https://github.com/simonoppowa/OpenNutriTracker)
+i [Kcal](https://github.com/kcal-app/kcal) są odniesieniami do dziennika i ponownego użycia
+potraw; sam link do wiki nie dowodzi zachowania konfigurowalnych sekcji. Źródłem reguł
+Mealio pozostają D09–D11, a nie niezweryfikowane szczegóły konkurencji.
 
 ## 📝 Architecture
 
@@ -40,14 +42,15 @@ przez `product.api` i z czystych funkcji sumowania/skali przez `nutrition.api`.
 Istniejąca `category.api` i hierarchiczne kategorie pozostają odrębne od płaskich etykiet
 przepisu i własnych sekcji dnia. Zmiany w istniejącym `recipe` ograniczamy do koniecznych dla
 tej funkcji; refaktoryzacja legacy nie wchodzi do zakresu. Spring składa adaptery, a nowe
-porty i domeny pozostają wolne od frameworków. API, Liquibase i wersjonowanie szczegółowo
+api/application/domain pozostają wolne od Spring/JPA/HTTP; konfiguracja i dekoratory
+transakcyjne są adapterami infrastructure jak w E01. Transakcja obejmuje cały przypadek użycia. API, Liquibase i wersjonowanie szczegółowo
 opisuje każda story-SDD.
 
 ## 📝 Data Model
 
 Model koncepcyjny do potwierdzenia w poszczególnych SDD. `Recipe` i `RecipeIngredient` już
 istnieją w module `recipe`; ich migracja lub rozszerzenie wymaga osobnej, addytywnej migracji.
-SDD #15 definiuje niezmienną `RecipeRevision` z liczbą porcji oraz składnikami wskazującymi
+Planowana SDD #15 ma zdefiniować niezmienną `RecipeRevision` z liczbą porcji oraz składnikami wskazującymi
 wersje produktów, tak by #17 mogło utrwalić użyty skład i wyliczenie. `RecipeLabel` jest
 płaską etykietą, niezależną od `MealSection`. Dopiero #22 dodaje składniki odwołujące się do
 innych `RecipeRevision` i blokadę cykli; ta relacja jest planowana, nie częścią #15.
@@ -95,6 +98,11 @@ zostaną potwierdzone przez SDD właściciela danych.
   ilości tylko dla bieżącego dodania i nie zmienia szablonu.
 - Użycie przepisu jako składnika nie może tworzyć cyklu ani odwołania do zmiennej wersji.
 - Zapis wpisów jako przepisu nie dodaje ponownie spożycia ani nie zmienia bilansu dnia.
+- Usunięcie sekcji z wpisami i późniejsza edycja spożycia nie są rozstrzygnięte tą mapą.
+  SDD #16/#17 muszą określić zachowanie bez utraty historii; ograniczenie makiety do pustych
+  sekcji jest założeniem, nie zatwierdzoną regułą. Zmiana nazwy nie zmienia tożsamości sekcji.
+- Sumy dnia/sekcji/tygodnia obejmują znane wartości i metadane braków; PARTIAL nie usuwa
+  znanych sum ani nie zmienia null w zero.
 - Tydzień obejmuje jawne dni kalendarzowe; strefa serwera nie przesuwa `LocalDate`.
 
 ## 📝 Decisions in play
@@ -134,3 +142,17 @@ poza tym grafem. UI stories #26–29 pozostają przy odpowiadających im przepł
    `mvn clean verify`; UI wymaga testów i QA na symulatorze zgodnie z instrukcjami repozytorium.
 
 Każdy krok wdrożenia ma zostawić aplikację uruchamialną. Mapa nie autoryzuje implementacji.
+
+## 🧪 Kryteria ukończenia mapy i zgodność
+
+- Każde #15/#16/#17/#21/#22/#23 oraz #26–29 ma właściciela i zależności; mapa
+  nie jest SDD wykonawczą żadnej z tych stories. E01 dostarcza typy, normalizację,
+  kalkulator i picker; E02 nie implementuje ich drugi raz.
+- R06–R08, N01/N03, niezmienna historia i brak zgadywania jednostek są zachowane
+  zarówno w tekście, ADR-0004, jak i [modelu](../data-model/2026-10-20-e02-recipes-and-diary.html).
+- Fizyczne FK nie przechodzą między tabelami właścicieli na podstawie diagramu;
+  granice przekraczają identyfikatory/snapshoty z publicznych API.
+- Nie ma zmian kodu, API, zastosowanych migracji ani danych legacy. Każda przyszła SDD
+  określi addytywną migrację, kompatybilność istniejących klientów i plan cofnięcia.
+- Dokument sprawdzamy przez odnośniki, zgodność z decyzjami i diagramy. Build/testy przyszłej
+  funkcji nie są wykonane; testy `mvn clean verify` i iOS dotyczą implementacyjnych PR-ów.
