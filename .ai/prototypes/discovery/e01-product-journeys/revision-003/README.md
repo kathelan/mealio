@@ -43,7 +43,7 @@ nowego badania użytkownika; browser PASS nie jest potwierdzeniem skuteczności 
 Otwórz index.html lokalnie. Reset przywraca trzy produkty, trzy wpisy i 895 kcal.
 Sprawdzono w izolowanym `agent-browser` v0.35.2 / Chrome na file://, bez instalacji zależności.
 Snapshoty accessibility dostarczały referencje akcji; asercje sprawdzały tekst i stan pamięci.
-Poniższe scenariusze rzeczywiście przeszły; dowody PNG są w evidence/:
+Poniższe 18 scenariuszy oraz dwa dodatkowe sprawdzenia po niezależnym review rzeczywiście przeszły; dowody PNG są w evidence/:
 
 - start: 895 kcal — PASS.
 - niepełny produkt: null i jawne zero — PASS.
@@ -70,3 +70,6 @@ candidate-confirmed.png, provider-fallback.png, gtin-conflict.png, pieces.png, m
 Kontrola statyczna: samodzielny HTML bez zasobów sieciowych, składnia JavaScript,
 odnośniki kontekstu oraz zgodność hashy manifestu. Build/testów Java i iOS nie wykonywano:
 artefakt nie zmienia aplikacji i nie jest dowodem działania aparatu lub HTTP/PostgreSQL.
+
+Dodatkowy review: źródła są widoczne w wynikach wyszukiwania, a usunięte pole pokazuje
+„brak wartości” bez pozornego źródła wartości — oba scenariusze PASS; cleared-field.png.
