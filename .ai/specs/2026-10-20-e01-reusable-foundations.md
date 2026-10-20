@@ -34,7 +34,7 @@ Nazwy to docelowe role, nie obowiązek utworzenia osobnej klasy dla każdego wie
 | Element / kontrakt | Właściciel i pierwsza dostawa | Kolejni konsumenci | Korzyść i weryfikacja |
 |---|---|---|---|
 | Quantity, QuantityUnit, NutritionBasis, ServingConversion | product.api, #13 | #14/#15/#17/#21/#22 | Jeden kontrakt ilości i jawnych przeliczników; test 3 szt. po 55 g = 165 g |
-| NutritionFacts, ProductSnapshot | product.api, #13 | #14/#15/#17/#20 | Niezmienny zestaw faktów z rewizją, nie encja; brak pola pozostaje Optional |
+| NutritionFacts, ProductSnapshot | product.api, #13 | #14/#15/#17/#20 | Niezmienny zestaw faktów z rewizją, brak pola pozostaje Optional; ProductView dołącza bieżące sklepy; snapshot zachowuje pochodzenie per pole |
 | ProductCatalog.findCurrent/findVersion i SearchProducts | product.api, #13 | #15/#17/#20/#21; UI #24–#28 | Konsumenci nie importują repository; testy z fake publicznego portu |
 | NormalizeQuantity, lokalna implementacja czysta | product.api, #14 | #15/#17/#22 | Jedno przeliczenie jednostek; brak sieci/bazy; zgodne wymiary i brak konwersji testowane |
 | NutritionCalculator.calculate | nutrition.api, #14 | #15/#17/#21/#22 | Obliczenia niezależne od HTTP/JPA; ten sam snapshot daje ten sam wynik |
@@ -185,6 +185,13 @@ Sumowanie metadanych składników nie może zmieniać liczby wpisów dziennika: 
 Historia konsumuje jawny versionId i utrwalony wynik. Zmiana danych nie modyfikuje rewizji.
 Nie przenosimy legacy recipe.calories do faktów PER_100_G bez źródła lub decyzji o migracji.
 
+Ustalenia właściciela po grill-me: GTIN wskazuje jeden produkt; przy konflikcie UI pyta,
+czy użyć istniejącego produktu, poprawić jego dane, czy anulować. Korekta zapisuje nową,
+niezmienną ProductVersion i zachowuje pochodzenie osobno dla każdego pola. Sklep jest
+opcjonalną listą ręcznie wpisywanych nazw przy Product, widoczną w wyszukiwaniu; zmiana
+tej listy nie tworzy wersji żywieniowej i nie zmienia tożsamości produktu. Skan znanego
+produktu zwraca go od razu, z osobną akcją korekty zamiast pytania przy każdym skanie.
+
 ## 📝 API Contracts, UI/UX i failure modes
 
 Kontrakty HTTP projektują osobne SDD; przy implementacji aktualizują OpenAPI w tej samej
@@ -198,8 +205,9 @@ po niejednoznacznym błędzie; skaner ma jawny kontrakt idempotencji.
 
 Odczyt ma loading/empty/content/error, zapis zachowuje draft przy błędzie i blokuje równoległy
 submit. Komponenty mają VoiceOver, Dynamic Type i czytelne etykiety jednostek. Tokeny opisują
-role koloru/typografii/odstępów, a nie zatwierdzony finalny wygląd. Mockupy wymagają osobnej
-rozmowy i akceptacji; ten PR ich nie tworzy ani nie zastępuje.
+role koloru/typografii/odstępów, a nie zatwierdzony finalny wygląd. Klikalna makieta low-fi
+dla #24/#25 jest osobnym artefaktem discovery; nie zatwierdza finalnego wyglądu ani nie
+zastępuje implementacji.
 
 ## 📝 Risks & Impact Review
 
@@ -210,6 +218,8 @@ rozmowy i akceptacji; ten PR ich nie tworzy ani nie zastępuje.
 - Docelowy target iOS trzeba utworzyć i zweryfikować; zapis pliku Swift nie jest działającą aplikacją.
 - Nieznane wartości i spóźnione odpowiedzi mogą fałszować UI: wymagane testy obu przypadków.
 - Product jest bez auth wyłącznie lokalny/kontrolowane demo; brak userId zgodnie z ADR-0003.
+- Dostępność źródła zewnętrznego nie przesądza o istnieniu produktu: ręczne dodanie jest
+  dostępne również po błędzie lub limicie, z zachowaniem widocznego stanu awarii.
 
 D01/D08–D11, R01–R03/R06–R08 i N01/N03 z briefu są zachowane. Q02 kalkulatora nie dotyczy
 tego projektu; Q1 podziału dokumentów został rozstrzygnięty przez właściciela. Nie wprowadzamy
@@ -246,8 +256,14 @@ reuse opisują jako planowanych konsumentów; ich implementacja nie jest objęta
 - Każdy element tabeli ma właściciela, pierwszego/kolejnego konsumenta i sprawdzalną korzyść.
 - Diagram zależności jest acykliczny, a domeny/klient nie odtwarzają cudzych reguł.
 - Cztery SDD mają własne API/flow, failure modes, plan testów i osobne kroki dostawy.
+- Przed implementacją UI powstaną klikalne low-fi dla #24 i #25; backendowe SDD #13/#14
+  nie czekają na makiety. Makieta nie zatwierdza finalnego stylu ani nie dowodzi popytu.
 - Nie ma pustych bazowych serwisów, sztucznych domen ani zmian istniejących kontraktów bez przejścia.
 - Review dokumentów nie jest przedstawiane jako wykonane testy przyszłej implementacji.
 
 Badania i uzasadnienia: [notatka źródłowa](research/2026-10-20-e01-foundations-research.md).
 [Review i zamknięte ustalenia](research/2026-10-20-e01-foundations-review.md).
+[Ustalenia właściciela po grill-me](research/decisions/2026-10-20-e01-product-corrections.md).
+
+Aktualna makieta po review: [revision-003](../prototypes/discovery/e01-product-journeys/revision-003/README.md).
+Rewizje 001/002 pozostają historią; poprawki zgodności nie oznaczają wdrożenia dziennika w E01.

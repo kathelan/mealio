@@ -1,0 +1,66 @@
+{
+  "format": "discovery-prototype-v1",
+  "skill": "om-mockup-prototype",
+  "slug": "e01-product-journeys",
+  "revision": 3,
+  "revisionPath": ".ai/prototypes/discovery/e01-product-journeys/revision-003",
+  "previousRevision": ".ai/prototypes/discovery/e01-product-journeys/revision-002",
+  "brief": ".ai/specs/product-brief.md",
+  "flow": "Dziennik → produkt/skan → ilość → jeden wpis i jawne sumy częściowe",
+  "panelReport": null,
+  "verification": "passed",
+  "files": [
+    {
+      "path": "README.md",
+      "sha256": "069808a33160905b07dae755d29e0f7c9554efd768e8c814b0e1180e2cd30613"
+    },
+    {
+      "path": "evidence/candidate-confirmed.png",
+      "sha256": "35e10eff5d3d93dbf3c70533ce69f74513e35a23daba72084fa1a3ae5ff9f1c0"
+    },
+    {
+      "path": "evidence/cleared-field.png",
+      "sha256": "723c0b931024e2255cd81a0e001c464660cd76c081d635c07b5e7ae1f92503d3"
+    },
+    {
+      "path": "evidence/correction.png",
+      "sha256": "f15c9d27d895b01a14c0705b6e8fe3e2504be0822e8893ef78a545bd2c9d8e5d"
+    },
+    {
+      "path": "evidence/diary.png",
+      "sha256": "96d19b59c147d651a385d99ad4f1b8814fa61811a298fb7c79bdb4bf3635add1"
+    },
+    {
+      "path": "evidence/gtin-conflict.png",
+      "sha256": "f6579061306b3951f827040e707f7216d99d0b1a61c28e83f6171e92b5d7d87f"
+    },
+    {
+      "path": "evidence/history.png",
+      "sha256": "45299ca4b9fb551e10c3d173f63522289c8ea9195387525e9c27f8e730e31aa1"
+    },
+    {
+      "path": "evidence/incomplete-product.png",
+      "sha256": "cfd406b08fdb962e1edb66bbe4236fc29d3ae3670174b549eee08146738d2aa6"
+    },
+    {
+      "path": "evidence/mobile.png",
+      "sha256": "5d00f8d0717893312c93b73159908a1119c3b918d0792df4a29a606af193e0a9"
+    },
+    {
+      "path": "evidence/partial-diary.png",
+      "sha256": "94a16d0eda620ae49dbb59b0f1e28cbe2e21bea44470e9ab07b09036e1472c03"
+    },
+    {
+      "path": "evidence/pieces.png",
+      "sha256": "aee06eb2f3be12dd134231d041dab4d295d3dc0dc7e2d9a88791455052804f5d"
+    },
+    {
+      "path": "evidence/provider-fallback.png",
+      "sha256": "3bf6a7b4d40c9ea540ad7b53b8bef7a7e8a20562895e2c279358e479f60de2e7"
+    },
+    {
+      "path": "index.html",
+      "sha256": "40117a3d7846a921e21e4a55d9409daff58538227cafa7ae4d45ba2f1cadc840"
+    }
+  ]
+}

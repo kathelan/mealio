@@ -1,0 +1,50 @@
+{
+  "format": "discovery-prototype-v1",
+  "skill": "om-mockup-prototype",
+  "slug": "e01-product-journeys",
+  "revision": 1,
+  "revisionPath": ".ai/prototypes/discovery/e01-product-journeys/revision-001",
+  "previousRevision": null,
+  "brief": ".ai/specs/product-brief.md",
+  "flow": "Wybór, skanowanie, potwierdzenie, ręczne dodanie i korekta produktu",
+  "panelReport": null,
+  "verification": "passed",
+  "files": [
+    {
+      "path": "README.md",
+      "sha256": "92c8ab3ab4c854162296d2be0a3251405b516c7135b6b3ab8431dbba9153ddf1"
+    },
+    {
+      "path": "evidence/correction.png",
+      "sha256": "1d6e67c98d494cd05983fb93a06865e14bd874d20116621458a0cf689a33761f"
+    },
+    {
+      "path": "evidence/gtin-conflict.png",
+      "sha256": "c2476897f873e9f3535dc6591878513e3d4aee09f008a9aaa536edebe625dd7f"
+    },
+    {
+      "path": "evidence/home.png",
+      "sha256": "3dc4123d2ca84f9b14344affaa00e64ba6d66376d4927b3d1c04c5a67a522d61"
+    },
+    {
+      "path": "evidence/mobile-keyboard.png",
+      "sha256": "0b6ce83c97fa0dc50a6202b956b68e5064c8711a933ed3312729028ca8f52cc6"
+    },
+    {
+      "path": "evidence/provider-unavailable.png",
+      "sha256": "84417633c54560b3e863dc5a325595c23b0a843efa91d94d48c25564b096c223"
+    },
+    {
+      "path": "evidence/search.png",
+      "sha256": "2c433d4800cde6d236f59f2460b8e089b285a21c2aac81389634fd437c8b242a"
+    },
+    {
+      "path": "evidence/validation.png",
+      "sha256": "ae5adaa056d0a622adf62f0240b2f74b0d49c76880e1bae8d159ead99ad00ee5"
+    },
+    {
+      "path": "index.html",
+      "sha256": "3b483f0dcd09ff24ee13d0677e77a85eafc8109f1e273c66df306ef4a1a76135"
+    }
+  ]
+}

@@ -28,7 +28,8 @@ przez tę funkcję. Kamera i opis uprawnienia dochodzą dopiero w SDD skanera.
 |---|---|
 | APITransport | send(HTTPRequest) async throws -> HTTPResponse; body Data, status i niezbędne headers; URLSessionTransport implementuje transport, nie retry zapisów |
 | ProductSearching | search(query, page, size) async throws -> ProductPage |
-| ProductRegistering | register(draft) async throws -> ProductSnapshot |
+| ProductRegistering | register(draft, gtin, stores, sourceReferences) async throws -> ProductView |
+| ProductRevising / ProductStoreUpdating | revise(id, expectedVersionId, draft, sourceReferences) / replaceStores(id, stores); osobne akcje i stany zapisu |
 | ProductCalculating | preview(productId, versionId, quantity) async throws -> CalculationResult |
 | RemoteProductAdapter | mapuje endpointy, DTO/napisy dziesiętne i kody błędów; korzysta z transportu; nie zawiera reguł nutrition |
 | ProductPickerModel | @MainActor @Observable; stan wyszukiwania, draft i wynik wyboru; dostaje porty przez konstruktor |
@@ -72,7 +73,8 @@ powstaje przyszły IngredientEditor (#26), ale picker można osadzić w dwóch t
 hostach „wybór do przepisu” i „wybór do dziennika”, bez implementacji tych modułów.
 Nie dodajemy pustych zakładek Przepisy/Dziennik ani aktywnego przycisku AI.
 
-Flow: lista/search -> szczegóły i opcjonalna ilość -> zwrot wyboru. Utwórz produkt ->
+Flow: lista/search -> szczegóły i opcjonalna ilość -> zwrot wyboru. Wynik pokazuje markę,
+sklepy, pochodzenie pól, podstawę, kompletność i przelicznik, jeśli są dostępne. Utwórz produkt ->
 formularz -> zapis API -> powrót do tego samego flow wyboru. Paginacja ma jawną akcję
 wczytania kolejnej strony. Stany braku sieci/błędu/ładowania/braku wyników są osobne.
 Wyjście z widoku anuluje zadania. Debounce wyszukiwania jest wstrzykiwalny w testach;
@@ -82,6 +84,14 @@ ignoruje cancellation. Tak samo działa preview po zmianie ilości.
 VoiceOver, Dynamic Type, brak polegania tylko na kolorze i przyciski z opisami. Po błędzie
 save tekst pozostaje. Niejednoznaczny błąd zapisu nie uruchamia automatycznego POST ponownie;
 przy GTIN można wskazać istniejący produkt, bez GTIN komunikat uprzedza o możliwym zapisie.
+Formularz pozwala zapisać niepełne dane; puste kcal lub makro oznacza unknown, jawne 0
+pozostaje zerem. Podstawa 100 g/100 ml jest wymagana, PIECE wymaga jawnego przelicznika.
+Edycja produktu pozwala ręcznie poprawić pola i opcjonalną referencję dla zmienionych pól;
+serwer nadaje typ pochodzenia, klient nie może deklarować dostawcy; lista
+sklepów jest edytowalna niezależnie od wersji żywieniowej. Korekta danych tworzy nową wersję.
+Przed implementacją UI powstanie klikalne low-fi dla wyszukiwania/utworzenia, skanu,
+awarii dostawcy, lokalnego wyniku, konfliktu GTIN, korekty i powrotu do hosta. Low-fi nie
+przesądza finalnego stylu ani nie zastępuje testów na urządzeniu.
 Wyliczenia żywieniowe i jednostkowe wykonuje backend, klient jedynie formatuje otrzymane dane.
 
 ## 📝 API Contracts i zgodność
@@ -110,9 +120,11 @@ Jeden wynik: działający klient z wyborem produktu. Etapy: target, transport, f
    uszkodzonej odpowiedzi, anulowania, dokładnego Decimal i Optional/null. Brak automatycznego retry POST.
 3. Picker i formularz z komponentami. Unit tests port fakes, parser locale, brak/pusta ilość,
    walidacja, stary wynik po nowym, zachowanie draftu, double-submit i cancellation.
-4. Preview po SDD #14, dwa hosty pickera i testy kontraktu JSON; UI tests search -> wybór,
+4. Testy niepełnego produktu, korekty z expectedVersionId/409, źródeł niezmienionych makr,
+   niezależnej edycji wielu sklepów oraz trybów productOnly/productWithQuantity.
+5. Preview po SDD #14, dwa hosty pickera i testy kontraktu JSON; UI tests search -> wybór,
    create -> wybór, błąd/empty/loading i brak zapisu dziennika przez picker.
-5. xcodebuild test ze scheme Mealio i konkretnym dostępnym symulatorem wybranym z
+6. xcodebuild test ze scheme Mealio i konkretnym dostępnym symulatorem wybranym z
    xcrun simctl list devices available. Raport zapisuje Xcode/OS/urządzenie, interakcje,
    asercje i screenshoty, w tym długie nazwy i Dynamic Type. Dostępny backend uruchomiony
    z rewizji #13/#14 sprawdzany w scenariuszu integracji — sam fake nie dowodzi integracji.
@@ -121,3 +133,6 @@ Kroki utrzymują uruchamialną aplikację. Java nie jest zmieniana, jej bramki p
 obowiązkowe, jeśli implementacja wymaga korekt backendu. Każda nowa funkcja otrzymuje
 unit tests; pełne pokrycie nowych wykonywalnych linii klienta sprawdzane raportem coverage.
 N01/N03 i backendowa własność reguł pozostają zachowane. Badania: notatka źródłowa mapy.
+
+Aktualne low-fi: [revision-003](../prototypes/discovery/e01-product-journeys/revision-003/README.md);
+revision-001/002 są zachowanymi historycznymi artefaktami, nie wzorcem reguł braków i korekty.

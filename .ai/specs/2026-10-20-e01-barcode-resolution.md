@@ -14,7 +14,7 @@ Q1 split potwierdzony. ADR-0007/0008 wyznaczają reguły; nie ma nowego pytania 
 
 ## 📝 Architecture i kontrakty
 
-product.api.ResolveBarcode.resolve(Gtin) zwraca lokalny ProductSnapshot, ExternalCandidate
+product.api.ResolveBarcode.resolve(Gtin) zwraca LocalProduct z niezmiennym ProductSnapshot i bieżącymi stores (ProductView), ExternalCandidate
 albo NotFound; niedostępność i limit są typowanymi wynikami błędu aplikacyjnego.
 ProductCatalog pozostaje lokalnym odczytem — nigdy nie uruchamia zewnętrznego importu.
 Prywatny ExternalProductProvider w product.application.port.out zwraca typy Mealio,
@@ -23,6 +23,8 @@ nie DTO Open Food Facts. Adaptery są w product.infrastructure.provider.
 Orkiestracja: lokalny zatwierdzony produkt -> Open Food Facts -> opcjonalny skonfigurowany
 FatSecret tylko po NOT_FOUND -> ręczny formularz. Brak FatSecret to pełnoprawne MVP.
 Awaria/limit nie oznacza braku; nie uruchamia cichego łańcucha maskującego problem.
+Użytkownik może jednak przejść do ręcznego formularza po awarii dostawcy. Interfejs
+zachowuje PROVIDER_UNAVAILABLE/PROVIDER_RATE_LIMITED i nie pokazuje ich jako NOT_FOUND.
 Zewnętrzne HTTP odbywa się poza transakcją zapisu. Odczyty lokalne są niezależne od dostępności OFF.
 
 OFF adapter używa API v3 i minimalnych fields oraz własnego User-Agent. Request timeout,
@@ -76,15 +78,20 @@ POST /api/v1/products/resolve-barcode, request { gtin: "..." }.
 Błędny GTIN nie wywołuje dostawcy. Formaty liczb i błędów są zgodne z mapą/katalogiem.
 
 POST /api/v1/product-candidates/{id}/confirm: expectedRevision, correctedFields jako
-pełny ProductDraft z SDD katalogu oraz wymagany Idempotency-Key UUID w header.
+pełny ProductDraft z SDD katalogu, opcjonalne stores i sourceReferences
+(z tymi samymi ograniczeniami co rejestracja), oraz wymagany Idempotency-Key UUID w header.
 Wymagana nazwa i basis, opcjonalna marka, cztery opcjonalne fakty i konwersja;
 pominięte/null pole opcjonalne oznacza brak, nie zachowanie pola kandydata. Formularz
 zaczyna od jego danych, lecz wysyła cały poprawiony stan. Nie wolno przesłać/zmienić
-GTIN, źródła lub statusu; GTIN i pochodzenie pochodzą z niezmiennego kandydata. 201 dla pierwszego zapisu,
+GTIN, źródła lub statusu; GTIN pochodzi z niezmiennego kandydata. Serwer porównuje draft z jego snapshotem:
+niezmienione pola zachowują pochodzenie dostawcy, poprawione/uzupełnione pola otrzymują
+USER_LABEL i opcjonalną referencję użytkownika. Zmiana basis zmienia również znaczenie
+faktów/konwersji zgodnie z katalogiem. Nigdy nie przypisujemy dostawcy ręcznej korekcie. 201 dla pierwszego zapisu,
 200 dla powtórzenia z tym samym kluczem i payloadem; oba zwracają ten sam productId/versionId.
 Tożsamość operacji obejmuje candidateId ze ścieżki, expectedRevision i cały
-kanoniczny ProductDraft (jednostki i liczby normalizowane, kolejność pól JSON nieistotna,
-brak i null zgodne z semantyką draftu). Hash obejmuje całą tę tożsamość.
+kanoniczny ProductDraft, sourceReferences i znormalizowane stores (jednostki i liczby normalizowane, kolejność pól JSON nieistotna,
+brak i null zgodne z semantyką draftu; stores sortowane po znormalizowanej nazwie,
+sourceReferences po ścieżce pola). Hash obejmuje całą tę tożsamość.
 Inny kandydat, rewizja lub draft przy tym samym kluczu: 409 IDEMPOTENCY_CONFLICT. Nieaktualna rewizja:
 409 CANDIDATE_VERSION_CONFLICT; wygasły kandydat: 410 CANDIDATE_EXPIRED; brak: 404.
 
@@ -97,8 +104,17 @@ Nieudane transakcje nie pozostawiają receipt sukcesu. Klient zachowuje klucz pr
 próby i zmienia dopiero dla innego potwierdzanego payloadu.
 
 Ręczny fallback korzysta z POST /products z SDD #13, zachowując GTIN, źródło USER_LABEL
-i brakujące wartości. Nie dodajemy obowiązkowego OCR. Aktualizacja źródła nie nadpisuje
-lokalnej wersji — jawne odświeżenie pozostaje osobnym późniejszym przypadkiem użycia.
+i brakujące wartości. Pozostaje dostępny również przy PROVIDER_UNAVAILABLE lub
+PROVIDER_RATE_LIMITED, bez twierdzenia, że produktu nie znaleziono. Nie dodajemy
+obowiązkowego OCR ani automatycznego odpytania kolejnych źródeł przy korekcie lokalnego
+produktu; użytkownik może ręcznie wpisać poprawne dane i ich pochodzenie.
+
+Skan lokalnego produktu zwraca go od razu. Ekran udostępnia osobną akcję „Dane są
+nieprawidłowe? Popraw produkt”; dopiero po jej wybraniu użytkownik widzi formularz korekty.
+Nie ma popupu przy każdym skanie ani zapytań do dostawców w tle. Przy próbie użycia
+sprzecznych danych dla zajętego GTIN UI pyta, czy użyć istniejącego produktu, poprawić jego
+pola jako nową wersję, czy anulować. Pochodzenie jest zachowywane dla każdego pola, a lista
+sklepów stanowi edytowalne metadane produktu.
 
 ## 📝 UI/UX
 
@@ -140,9 +156,11 @@ Jeden wynik: skan prowadzi do trwałego produktu. Etapy: resolution, adapter dos
    404/status aplikacyjny, 429/retry-after, 5xx i nieoczekiwany redirect. CI nie zależy od live OFF.
 3. Candidate/receipt i nowa migracja. PostgreSQL: pusta i istniejąca baza, atomiczność,
    równoległy GTIN/key, ten sam/inny payload, identyczne body dla innego candidateId, expiry/cleanup, niezmienność lokalnej wersji.
-4. HTTP/OpenAPI i realne integracje Spring/PostgreSQL, 100% linii unit tests, ArchUnit
+4. Testy zachowania pochodzenia przy potwierdzeniu bez korekt, poprawie marki/makro/basis,
+   usunięciu pola; inna referencja lub sklepy z tym samym kluczem daje IDEMPOTENCY_CONFLICT.
+5. HTTP/OpenAPI i realne integracje Spring/PostgreSQL, 100% linii unit tests, ArchUnit
    oraz pełne mvn clean verify. Dostawca testowy izoluje zewnętrzną sieć.
-5. SwiftUI adapter aparatu i flow nad gotowym #24: unit fakes, UI na symulatorze dla
+6. SwiftUI adapter aparatu i flow nad gotowym #24: unit fakes, UI na symulatorze dla
    fallbacku/states/confirmation/zwrotu do dwóch hostów. Build i xcodebuild test według SDD iOS.
    Rzeczywiste rozpoznanie aparatu dodatkowo na zgodnym fizycznym urządzeniu; fixture ani
    symulator nie są dowodem pracy aparatu. Raport oddziela te wyniki i zapisuje screenshoty.
