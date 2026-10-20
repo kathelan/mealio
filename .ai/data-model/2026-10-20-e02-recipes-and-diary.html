@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="pl">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Model E02 — przepisy i dziennik</title>
+<style>
+  :root { color-scheme: light; font: 16px system-ui, sans-serif; }
+  body { margin: 0; color: #172033; background: #f8fafc; }
+  header { padding: 1rem 1.5rem; }
+  p { max-width: 70rem; }
+  svg { display: block; width: 100%; height: calc(100vh - 9rem); min-height: 34rem; background: white; border-block: 1px solid #cbd5e1; touch-action: none; }
+  .edge { stroke: #64748b; stroke-width: 2; marker-end: url(#arrow); }
+  .planned { stroke-dasharray: 7 6; }
+  .edge-label { fill: #475569; font-size: 13px; text-anchor: middle; }
+  .node rect { rx: 10; stroke-width: 2; }
+  .new rect { fill: #2f6feb; stroke: #1b4fb0; }
+  .existing rect { fill: #e5e7eb; stroke: #9ca3af; }
+  .external rect { fill: #f3f4f6; stroke: #9ca3af; stroke-dasharray: 5 4; }
+  .node text { fill: #fff; font-size: 15px; font-weight: 600; text-anchor: middle; }
+  .existing text, .external text { fill: #111827; }
+  .node { cursor: pointer; }
+  .dim { opacity: .16; }
+  footer { padding: .5rem 1.5rem; color: #475569; }
+</style>
+<header>
+  <h1>Model E02 — przepisy i dziennik</h1>
+  <p>Model koncepcyjny ze <code>.ai/specs/2026-10-20-e02-recipes-and-diary.md</code>. Przeciągnij tło, aby przesunąć diagram; użyj kółka, aby przybliżyć. Kliknij element, aby wyróżnić jego bezpośrednie relacje.</p>
+</header>
+<svg id="graph" viewBox="0 0 1100 620" role="img" aria-label="Powiązania przepisu, składników, etykiet, sekcji i wpisów dziennika">
+  <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/></marker></defs>
+  <g id="viewport">
+    <g class="edges">
+      <line class="edge" data-from="recipe" data-to="revision" x1="200" y1="120" x2="360" y2="120"/><text class="edge-label" x="280" y="108">1–n wersji</text>
+      <line class="edge" data-from="revision" data-to="component" x1="470" y1="150" x2="470" y2="280"/><text class="edge-label" x="550" y="220">1–n składników</text>
+      <line class="edge" data-from="revision" data-to="label" x1="420" y1="150" x2="230" y2="280"/><text class="edge-label" x="290" y="210">n–n etykiet</text>
+      <line class="edge" data-from="component" data-to="product" x1="580" y1="285" x2="790" y2="170"/><text class="edge-label" x="680" y="260">wersja produktu</text>
+      <path class="edge planned" data-from="component" data-to="revision" fill="none" d="M 360 315 C 325 315 325 120 360 120"/><text class="edge-label" x="275" y="250">baza #22</text>
+      <line class="edge" data-from="entry" data-to="section" x1="890" y1="340" x2="890" y2="480"/><text class="edge-label" x="965" y="410">n–1 sekcja</text>
+      <line class="edge" data-from="entry" data-to="revision" x1="790" y1="300" x2="580" y2="140"/><text class="edge-label" x="680" y="190">snapshot przepisu</text>
+      <line class="edge" data-from="entry" data-to="product" x1="890" y1="280" x2="890" y2="170"/><text class="edge-label" x="985" y="230">snapshot produktu</text>
+    </g>
+    <g class="node existing" data-id="recipe" transform="translate(50 90)"><rect width="150" height="60"/><text x="75" y="36">Recipe (legacy)</text></g>
+    <g class="node new" data-id="revision" transform="translate(360 90)"><rect width="220" height="60"/><text x="110" y="36">RecipeRevision</text></g>
+    <g class="node new" data-id="label" transform="translate(140 280)"><rect width="180" height="60"/><text x="90" y="36">RecipeLabel</text></g>
+    <g class="node new" data-id="component" transform="translate(360 280)"><rect width="220" height="60"/><text x="110" y="36">RecipeComponent</text></g>
+    <g class="node external" data-id="product" transform="translate(760 90)"><rect width="220" height="80"/><text x="110" y="33">ProductSnapshot</text><text x="110" y="55">product.api</text></g>
+    <g class="node new" data-id="entry" transform="translate(790 280)"><rect width="200" height="60"/><text x="100" y="36">FoodEntry</text></g>
+    <g class="node new" data-id="section" transform="translate(790 480)"><rect width="200" height="60"/><text x="100" y="36">MealSection</text></g>
+  </g>
+</svg>
+<footer>Relacja przepisu jako składnika jest planowana w #22. Wersje i wpisy są modelem koncepcyjnym; własność tabel pozostaje w domenowym module.</footer>
+<script>
+  const svg = document.getElementById('graph');
+  const viewport = document.getElementById('viewport');
+  const nodes = Array.from(svg.querySelectorAll('.node'));
+  const relations = {
+    recipe: ['revision'], revision: ['recipe', 'component', 'label', 'entry'],
+    component: ['revision', 'product'], label: ['revision'], product: ['component', 'entry'],
+    entry: ['revision', 'product', 'section'], section: ['entry']
+  };
+  let scale = 1, x = 0, y = 0, drag = null;
+  const render = () => viewport.setAttribute('transform', `translate(${x} ${y}) scale(${scale})`);
+  nodes.forEach(node => {
+    node.setAttribute('tabindex', '0');
+    node.setAttribute('role', 'button');
+    node.setAttribute('aria-label', node.textContent.trim());
+    node.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); node.dispatchEvent(new MouseEvent('click', { bubbles: true })); } });
+    node.addEventListener('click', event => {
+    event.stopPropagation();
+    const id = node.dataset.id;
+    nodes.forEach(other => other.classList.toggle('dim', other !== node && !relations[id].includes(other.dataset.id)));
+    });
+  });
+  svg.addEventListener('click', () => nodes.forEach(node => node.classList.remove('dim')));
+  svg.addEventListener('pointerdown', event => {
+    if (event.target.closest('.node')) return;
+    drag = { px: event.clientX, py: event.clientY, x, y };
+    svg.setPointerCapture(event.pointerId);
+  });
+  svg.addEventListener('pointermove', event => {
+    if (!drag) return;
+    const box = svg.getBoundingClientRect();
+    x = drag.x + (event.clientX - drag.px) * 1100 / box.width;
+    y = drag.y + (event.clientY - drag.py) * 620 / box.height;
+    render();
+  });
+  svg.addEventListener('pointerup', () => { drag = null; });
+  svg.addEventListener('wheel', event => {
+    event.preventDefault();
+    scale = Math.max(.6, Math.min(2.2, scale * (event.deltaY < 0 ? 1.1 : .9)));
+    render();
+  }, { passive: false });
+</script>
+</html>
