@@ -3,15 +3,21 @@
 - Date: 2026-10-20
 - Mode: existing + sprawdzenie założeń własnej potrzeby; Owner: właściciel produktu prowadzący sesję; Pass: full
 - Evidence basis: dwie rozmowy z tym samym właścicielem korzystającym z Fitatu, nie dwa niezależne wywiady. Brak relacji drugiej osoby, pomiarów i testu nowego przepływu. Decyzje są potwierdzone, oszczędność pracy nie jest zmierzona.
-- Coverage: 30 claims — 29 sourced (interview 2, data 0, document 23, product 4, benchmark 0), 0 synthetic, 1 assumed
+- Coverage: 39 claims — 38 sourced (interview 2, data 0, document 32, product 4, benchmark 0), 0 synthetic, 1 assumed
 - Synthetic hypotheses outside Coverage: 0
 - Definition of Ready signed by: właściciel potwierdził Q35 i odświeżenie briefu/backlogu; gotowe do planowania produktów, przepisów i dziennika. Kalkulator blokuje Q02; całość nie jest gotowa do bezpośredniej implementacji.
+- Refresh po review E01/E02/E03: synchronizacja potwierdzonych decyzji E01-C1–C4 i dziennika jako ekranu startowego; brak nowego badania.
 - Refresh: [sesja grill-me](research/interviews/2026-10-20-owner-personal-mvp.md), [decyzja](research/decisions/2026-10-20-personal-mvp.md), [zakres](2026-10-20-personal-mvp.md).
 - Sources: [relacja](research/interviews/2026-10-20-owner-food-diary.md), [decyzja](research/decisions/2026-10-20-mvp-development-stages.md), [research](research/README.md), [MVP](../../docs/mvp.md), [backend](../../backend/README.md), [ASR](../../asr/README.md).
 
 ## Decision summary
 
-Budujemy osobiste narzędzie ograniczające powtarzanie wpisywania jedzenia. Nowe D08–D12 doprecyzowują wcześniejsze decyzje: jeden dziennik, osobne przepisy, parametry ilości na porcję i opcjonalna masa końcowa. Współdzielenie nie rozwiąże jeszcze problemu obu osób — świadomie pozostaje poza MVP. Właściciel zatwierdził i opublikowano odświeżony backlog wraz z osobno zleconymi zadaniami SwiftUI; dalszy krok to osobne SDD. Q02 blokuje kalkulator, nie podstawowy przepływ jedzenia; korzyść sprawdzi A01.
+Budujemy osobiste narzędzie ograniczające powtarzanie wpisywania jedzenia. E01-C1–C4
+uzupełniają zasady produktów i skanu (D13–D16), a D17 zapisuje potwierdzony ekran startowy
+dziennika. Mapy E01/E02/E03 i low-fi doprecyzowują projekt; nie są wdrożeniem ani badaniem
+skuteczności. Dalszy krok to dostawy z osobnych SDD, z reuse fundamentów E01 i bez
+rozszerzania pickera o dziennik. Q02 nadal blokuje wyłącznie cel kalorii. A01 pozostaje
+nieprzetestowane; mamy relacje jednego właściciela, bez pomiaru oszczędności pracy.
 
 ## Vision
 
@@ -63,6 +69,8 @@ Definicje: D09–D12; transkrypcja pozostaje poza MVP. Granice modułów wymagaj
 
 Produkt lub skan → zapisany przepis → sekcja i liczba zjadanych porcji → ilości wymagane checkboxem → jeden wpis z kcal/makro. Produkty można też dodawać bez przepisu; wybrane pozycje dziennika zapisać jako przepis bez dublowania spożycia. Szczegóły i przykłady: [zakres](2026-10-20-personal-mvp.md).
 
+Dziennik startowy → wybrana sekcja → wyszukanie/skan → wybór produktu i ilości → powrót do tej sekcji. Ten sam picker zwraca wybór również edytorowi przepisu, bez samodzielnego zapisu spożycia. [DOCUMENT] [D17](../prototypes/discovery/e01-product-journeys/revision-002/README.md), [granice E01](2026-10-20-e01-ios-product-foundations.md).
+
 ## Business rules
 
 | Id | Rule | Applies to | Source | Status | Review by | Required path to change | Owner | Supersedes |
@@ -75,6 +83,9 @@ Produkt lub skan → zapisany przepis → sekcja i liczba zjadanych porcji → i
 | R06 | Liczba porcji obowiązkowa, masa końcowa opcjonalna; kcal/makro ze składników. Checkbox pyta o ilość na jedną porcję, spożyta liczba porcji ją mnoży. | przepisy | [DOCUMENT] [D09](research/decisions/2026-10-20-personal-mvp.md) | active | przed SDD | akceptacja i SDD | właściciel | R05 |
 | R07 | Przepis daje jeden wpis dziennika; korekta przy dodaniu nie zmienia szablonu ani historii. Aktualizacja szablonu jest osobną akcją. | dziennik | [DOCUMENT] [D09–D10](research/decisions/2026-10-20-personal-mvp.md) | active | przed SDD | akceptacja i SDD | właściciel | none |
 | R08 | Etykiety są opcjonalne i płaskie, niezależne od własnych sekcji dnia. | organizacja | [DOCUMENT] [D10](research/decisions/2026-10-20-personal-mvp.md) | active | przed SDD | akceptacja i SDD | właściciel | none |
+| R09 | GTIN jest unikalny; konflikt daje użyj istniejącego / popraw / anuluj. Korekta tworzy niezmienną wersję z pochodzeniem per pole; lokalny skan nie wymaga popupu i nie odpytuje źródeł w tle. | katalog/skan | [DOCUMENT] [E01-C2](research/decisions/2026-10-20-e01-product-corrections.md) | active | przed implementacją #13/#20 | akceptacja właściciela i SDD | właściciel | none |
+| R10 | Wiele własnych nazw sklepów jest metadanymi produktu odrębnymi od marki, pochodzenia i wersji żywieniowej. | katalog | [DOCUMENT] [E01-C3](research/decisions/2026-10-20-e01-product-corrections.md) | active | przed implementacją #13/#24 | akceptacja właściciela i SDD | właściciel | none |
+| R11 | Awaria/limit nie oznacza NOT_FOUND; ręczny formularz pozostaje dostępny z zachowaniem przyczyny. FatSecret jest opcjonalny. | skan | [DOCUMENT] [E01-C1](research/decisions/2026-10-20-e01-product-corrections.md) | active | przed implementacją #20/#25 | akceptacja właściciela i SDD | właściciel | none |
 
 ## Non-goals
 
@@ -102,6 +113,11 @@ Właściciel produktu, 2026-10-20. D01–D07 zachowują historię poprzedniej se
 | D10 | 2026-10-20 | Domyślne sekcje śniadanie, drugie śniadanie, obiad, lunch, kolacja i przekąski; użytkownik może zmienić nazwy i liczbę sekcji; widok dnia/tygodnia, osobna zakładka przepisów i płaskie etykiety | własna organizacja | właściciel | active | przed SDD | potwierdzenie i SDD | [DOCUMENT] [sesja](research/decisions/2026-10-20-personal-mvp.md) | D02 |
 | D11 | 2026-10-20 | Przepis bazowy może być składnikiem innego przepisu | ponowne użycie bulionu | właściciel | active | przed SDD baz | potwierdzenie i SDD | [DOCUMENT] [sesja](research/decisions/2026-10-20-personal-mvp.md) | none |
 | D12 | 2026-10-20 | Cel kalorii ze wzoru z ręczną korektą; wzór pozostaje Q02 | kontrola redukcji, później utrzymania/rekompozycji | właściciel | active | przed kalkulatorem | potwierdzenie i SDD | [DOCUMENT] [sesja](research/decisions/2026-10-20-personal-mvp.md) | część D05 |
+| D13 | 2026-10-20 | Ręczny fallback zgodnie z R11 | brak zależności ręcznego wpisu od dostawcy | właściciel | active | przed #20/#25 | akceptacja i SDD | [DOCUMENT] [E01-C1](research/decisions/2026-10-20-e01-product-corrections.md) | none |
+| D14 | 2026-10-20 | Konflikt i świadoma korekta zgodnie z R09 | zachowanie tożsamości i historii bez popupu przy każdym skanie | właściciel | active | przed #13/#20 | akceptacja i SDD | [DOCUMENT] [E01-C2](research/decisions/2026-10-20-e01-product-corrections.md) | none |
+| D15 | 2026-10-20 | Sklepy zgodnie z R10 | rozróżnianie produktów bez centralnego słownika | właściciel | active | przed #13/#24 | akceptacja i SDD | [DOCUMENT] [E01-C3](research/decisions/2026-10-20-e01-product-corrections.md) | none |
+| D16 | 2026-10-20 | Klikalne low-fi przed implementacją #24/#25; backend #13/#14 może postępować niezależnie | sprawdzenie przepływu bez zatwierdzania finalnego stylu | właściciel | active | przed implementacją iOS | akceptacja i SDD | [DOCUMENT] [E01-C4](research/decisions/2026-10-20-e01-product-corrections.md) | none |
+| D17 | 2026-10-20 | Start aplikacji to dziennik z sekcjami i sumą spożytych kcal na dole; wdrożenie #17/#27 | dostęp do codziennego rejestrowania | właściciel | active | przed SDD #27 | akceptacja i SDD | [DOCUMENT] [potwierdzenie w kontekście low-fi](../prototypes/discovery/e01-product-journeys/revision-002/README.md) | none |
 
 ## Riskiest assumptions
 
@@ -128,7 +144,12 @@ Nie przeprowadzono panelu syntetycznego.
 
 ## Definition of Ready addendum (existing)
 
-Własna relacja wspiera problem pierwszego użytkownika, bez dowodu popytu szerokiego rynku. Q35 potwierdza zakres, nie skuteczność aplikacji. Można odświeżyć backlog i planować osobne SDD, a kalkulator czeka na Q02. Specyfikacje muszą uzgodnić ADR-0004/0005 i kontrakty przed implementacją; ADR-0003 pozostaje w mocy. Nie ma repozytoryjnej Definition of Ready ani konfiguracji discovery. Nowe szczegóły baz przepisów wymagają projektu technicznego, nie założenia przelicznika ml/g.
+Własna relacja wspiera problem pierwszego użytkownika, bez dowodu popytu szerokiego rynku. Q35 potwierdza zakres, nie skuteczność aplikacji. Można zsynchronizować istniejący backlog z D13–D17 i planować dostawy z osobnych SDD.
+E01 ma projekty katalogu, obliczeń, skanera i klienta; E02 jest mapą wymagającą story-SDD.
+Aktualna [revision-003](../prototypes/discovery/e01-product-journeys/revision-003/README.md)
+przeszła kontrolę techniczną, co nie oznacza osobnej akceptacji przepływu przez właściciela
+ani dowodu ograniczenia pracy. Kalkulator czeka na Q02. ADR-0004 uzgodniono w mapie E02; ADR-0005 wymaga uzgodnienia PIECE przy implementacji.
+Kontrakty i migracje weryfikują osobne dostawy; ADR-0003 pozostaje w mocy. Nie ma repozytoryjnej Definition of Ready ani konfiguracji discovery. Nowe szczegóły baz przepisów wymagają projektu technicznego, nie założenia przelicznika ml/g.
 
 ## Collection plan
 
