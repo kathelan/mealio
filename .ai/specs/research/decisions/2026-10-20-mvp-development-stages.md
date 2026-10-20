@@ -3,7 +3,7 @@
 - Data: 2026-10-20.
 - Właściciel i potwierdzający: użytkownik prowadzący sesję, właściciel produktu Mealio.
 - Źródło: rozmowa discovery; podsumowanie etapów agenta potwierdzone słowami „wyglada ok”.
-- Status: active.
+- Status: historyczny; zastąpiony w odpowiednim zakresie przez [sesję grill-me](2026-10-20-personal-mvp.md).
 
 ## Zatwierdzona kolejność
 

@@ -29,3 +29,10 @@ Nowy zapis warsztatu powinien zawierać datę, temat, odnośnik do źródła, ob
 rozważone opcje, decyzje, pytania otwarte i dalsze zadania. Rozdzielaj wypowiedzi uczestników
 od interpretacji. Nie zapisuj danych osobowych, nagrań ani sekretów. Nie uzupełniaj braków
 wymyślonymi cytatami, personami lub wynikami badań.
+
+## Aktualizacja po sesji grill-me
+
+- [Decyzje osobistego MVP](decisions/2026-10-20-personal-mvp.md) zastępują wskazane
+  wcześniejsze ustalenia. Starsze kompilacje materiałów pozostają zapisem historycznym.
+- [Zatwierdzone odświeżenie backlogu](2026-10-20-backlog-refresh-proposal.md) zawiera
+  kryteria opublikowanych stories oraz zlecone osobno zadania SwiftUI. Numery są w mapie backlogu.
