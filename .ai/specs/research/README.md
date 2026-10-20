@@ -36,3 +36,11 @@ wymyślonymi cytatami, personami lub wynikami badań.
   wcześniejsze ustalenia. Starsze kompilacje materiałów pozostają zapisem historycznym.
 - [Zatwierdzone odświeżenie backlogu](2026-10-20-backlog-refresh-proposal.md) zawiera
   kryteria opublikowanych stories oraz zlecone osobno zadania SwiftUI. Numery są w mapie backlogu.
+
+## Fundamenty techniczne E01
+
+- [Mapa fundamentów](../2026-10-20-e01-reusable-foundations.md) odsyła do czterech
+  osobnych SDD i przypisuje komponenty do właścicieli i konsumentów z backlogu.
+- [Badania](2026-10-20-e01-foundations-research.md) i
+  [review](2026-10-20-e01-foundations-review.md) opisują źródła oraz granice weryfikacji.
+  To projekt do review, bez implementacji i bez zatwierdzania mockupów.
