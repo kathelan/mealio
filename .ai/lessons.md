@@ -56,3 +56,7 @@ oraz odnośnik do rozwiniętej notatki, jeśli istnieje. Nie zapisuj sekretów a
   mogą oznaczać różne marki lub własne pozycje z odrębnym przelicznikiem (np. jajko).
   Wyniki wyszukiwania rozróżniają je przez markę, pochodzenie, kompletność i konwersję;
   GTIN pozostaje unikalny. [SDD katalogu](specs/2026-10-20-e01-product-catalog.md).
+- 2026-10-20 — Domyślne sekcje dziennika to śniadanie, drugie śniadanie, obiad, lunch,
+  kolacja i przekąski; użytkownik może zmieniać ich nazwy i liczbę. Sekcje należą do
+  dziennika i pozostają niezależne od płaskich etykiet przepisów.
+  [Mapa E02](specs/2026-10-20-e02-recipes-and-diary.md).
