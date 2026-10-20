@@ -1,0 +1,42 @@
+{
+  "format": "discovery-prototype-v1",
+  "skill": "om-mockup-prototype",
+  "slug": "e01-product-journeys",
+  "revision": 2,
+  "revisionPath": ".ai/prototypes/discovery/e01-product-journeys/revision-002",
+  "previousRevision": ".ai/prototypes/discovery/e01-product-journeys/revision-001",
+  "brief": ".ai/specs/product-brief.md",
+  "flow": "Dziennik dnia → dodanie produktu do wybranej sekcji przez wyszukiwanie lub skan → powrót z aktualnymi sumami kcal i makr",
+  "panelReport": null,
+  "verification": "passed",
+  "files": [
+    {
+      "path": "README.md",
+      "sha256": "bc50aa8564a3d86b2202f76c5079f7832b5ba46ed3e187e187e84da0f9a447f3"
+    },
+    {
+      "path": "evidence/customize-sections.png",
+      "sha256": "019a1bea9d3adbba3f6012e7cdcc4f908c3cf41348d09844aa555ac5e2986bb4"
+    },
+    {
+      "path": "evidence/diary-after-add.png",
+      "sha256": "98dffd2e22f975225d0a822bad746570339e7e882dd32a28bf9f9ecb4d7113ef"
+    },
+    {
+      "path": "evidence/diary-home.png",
+      "sha256": "3737c3b8546f7c9331a0d3c98e861d92acb3272c769555ec409e117a870cfbf0"
+    },
+    {
+      "path": "evidence/diary-mobile.png",
+      "sha256": "eaa39bbf2ec5ff9647a516b067ff624affe6c326df5fdd3214027b6980d77c11"
+    },
+    {
+      "path": "evidence/picker-from-lunch.png",
+      "sha256": "8d5605b4cc825866655bca97afaf526b892b8e6116828f70f768abfcd983c39c"
+    },
+    {
+      "path": "index.html",
+      "sha256": "ca4a89c8c1beb74d1f899dd5022a6855a3e3f8eb05eab780e78e56be9d48222e"
+    }
+  ]
+}
