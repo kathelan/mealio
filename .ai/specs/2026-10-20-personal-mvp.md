@@ -19,10 +19,10 @@ techniczne następuje przed zmianami kodu.
 
 ## Dziennik
 
-- Osobna strona/zakładka, domyślnie wybrany dzień; dostępny również widok tygodnia.
+- Osobna strona/zakładka, domyślnie wybrany dzień; przełączenie na tydzień pokazuje wykres dziennych kcal. Brak wpisów nie oznacza potwierdzonego braku spożycia, a niekompletne dane są jawne.
 - Dowolna liczba i nazwy sekcji posiłków. Domyślnie: śniadanie, drugie śniadanie, obiad,
   lunch, kolacja i przekąski. Nazwy i liczba nie są zamkniętą listą domenową.
-- Do sekcji można dodawać produkty ręcznie lub skanerem oraz zapisane przepisy.
+- Do sekcji można dodawać produkty ręcznie lub skanerem oraz zapisane przepisy. Zmiana nazwy obowiązuje także w historii. Usunięcie usuwa sekcję z wyboru, zachowując wcześniejsze wpisy pod jej ostatnią nazwą; brak przywracania. Nowa o tej samej nazwie jest odrębna. Zmiana kolejności pozostaje propozycją.
 - Przepis widnieje jako jeden wpis: nazwa, kcal i makroskładniki. Nie rozwija się na osobne
   wpisy produktów. Historia zachowuje wartości użyte w chwili zapisu.
 - Domyślnie dodawana jest jedna porcja; można wybrać np. pół albo dwie porcje.
@@ -31,11 +31,10 @@ techniczne następuje przed zmianami kodu.
 
 - Osobna zakładka do tworzenia i wyszukiwania przepisów. Składniki wybiera się z produktów
   albo skanuje, podając ilości. Przepis ma nazwę i obowiązkową dodatnią liczbę porcji, także 1.
-- Opcjonalne własne etykiety wybiera się z listy. Są niezależne od sekcji dziennika,
+- Wiele opcjonalnych własnych etykiet wybiera się z listy; można nie przypisać żadnej. Startowe Śniadanie, Obiad, Kolacja, Przekąska można zmieniać i uzupełniać. Filtry działają w bibliotece i przy wybieraniu przepisu, z opcją wszystkich przepisów. Etykiety są niezależne od sekcji dziennika,
   bez obowiązkowej hierarchii i podkategorii posiłków. Jajecznica może trafić do dowolnej sekcji.
 - Ragu, bolognese i carbonara mogą być oddzielnymi przepisami.
-- Własna baza, np. bulion, może być składnikiem innego przepisu. Szczegóły jednostek bazy,
-  wersjonowania zależności i ochrony przed cyklami wymagają projektu technicznego.
+- Własna baza sosu może być składnikiem innego przepisu w g/ml z jawnym przelicznikiem. Jego źródło pozostaje otwarte (Q06). Bulion odkładamy do kolejnej fazy. Zmiana/usunięcie bazy nie zmienia wersji użytej w istniejącym przepisie; nową wersję wybiera się świadomie. SDD określi ochronę przed cyklami.
 - Wskazane pozycje dziennika można zapisać jako przepis bez ponownego dodania spożycia.
   Przepis można również utworzyć niezależnie od dziennika.
 - W MVP brak publikacji, moderacji i obowiązkowych zdjęć.
@@ -47,7 +46,7 @@ mięsa zgodnie z danymi produktu. Dzielimy je przez liczbę porcji. Końcowa wag
 opcjonalna: dodana woda zmienia masę i wynik na 100 g, ale nie sumę kalorii garnka.
 Nie zastępujemy danych konkretnego produktu ogólnym założeniem, że wszystko ważone jest na sucho.
 
-Przy składniku można zaznaczyć „Zapytaj o ilość”. Podczas dodawania przepisu podaje się ilość
+Przy składniku można zaznaczyć checkbox zmiennego inputu i wybrać gramaturę albo liczbę sztuk. Podczas dodawania przepisu podaje się ilość
 na jedną porcję, np. liczbę jajek. Pozostałe składniki korzystają z ilości na porcję wynikających
 z zapisanego przepisu. Liczba zjadanych porcji mnoży te ilości; nie zmienia bazowego przepisu.
 Nie ma osobnego systemu formuł ani ekranów definiowania parametrów.
@@ -55,7 +54,7 @@ Nie ma osobnego systemu formuł ani ekranów definiowania parametrów.
 Przed zapisem spożycia można zwyczajnie zmienić ilość, zamienić produkt, dodać lub usunąć
 składnik. Zmiany dotyczą tego dodania. Osobna świadoma akcja aktualizuje przepis albo zapisuje
 nowy. Checkbox usprawnia częste zmiany ilości, podmiana produktu jest zwykłą edycją.
-Nie ustalono zakresu późniejszej edycji już zapisanego spożycia; nie jest ona podstawą parametryzacji.
+Po zapisaniu można zmieniać ilość produktu, porcje i skład konkretnego spożycia przepisu, także w starszych dniach. Zmiana dotyczy tylko tego wpisu i jego bilansu. Wpis można przenieść do innej sekcji/daty bez zmiany wartości oraz usunąć z Cofnij. Wybór wersji danych przy świadomej korekcie starego wpisu wymaga SDD (Q05).
 
 Przykłady akceptacyjne:
 
@@ -79,7 +78,7 @@ to odrębne od niepotrzebnej moderacji przepisów przez administratora.
 
 ## Cel kalorii
 
-Na początek wyliczenie ze wzoru i ręczna korekta. Obecna potrzeba to redukcja, następnie
+Na początek wyliczenie ze wzoru i ręczna korekta. W MVP można aktualizować masę ciała w ustawieniach jednego dziennika i ponownie wyliczać propozycję celu. Nowa propozycja wymaga zatwierdzenia, z możliwością zachowania ręcznej korekty; wcześniejsze dni zachowują wcześniejszy cel. Nie dodajemy kont ani userId. Obecna potrzeba to redukcja, następnie
 utrzymanie lub rekompozycja. Samo określenie rekompozycji nie ustala nowego algorytmu.
 Wybór wzoru, danych wejściowych i modelu aktywności pozostaje otwarty. Można planować
 podstawowy przepływ jedzenia bez tych decyzji; implementacja kalkulatora wymaga ich rozstrzygnięcia.
@@ -93,8 +92,9 @@ technicznego użytkownika ani fikcyjnej autoryzacji.
 ## Otwarte kwestie przed implementacją odpowiedniego zakresu
 
 - Kalkulator: wzór, dane wejściowe, model aktywności; właściciel zatwierdza propozycję opartą na źródłach.
-- Nierozpoznany kod: szczegóły formularza do uzgodnienia; dotychczasowy fallback ręczny pozostaje w dokumentacji.
-- Bazy przepisów: jednostki, dostępność przelicznika ml/g, cykle i zachowanie przy zmianie bazy.
+- Nierozpoznany kod: ręczny fallback jest potwierdzony przez E01-C1/D13; szczegóły implementacji opisują SDD katalogu/skanera.
+- Bazy sosów: źródło jawnego przelicznika g/ml i zachowanie przy jego braku (Q06), cykle; zasady wersji/usunięcia są potwierdzone. Bulion później.
+- Korekta starych wpisów: wybór wersji danych i uzupełnianie braków (Q05).
 - Projekt UI, błędy, walidacje, API, migracje i zaokrąglenia należą do poszczególnych SDD.
 
 ## Etapy przygotowania wdrożenia
@@ -106,6 +106,8 @@ technicznego użytkownika ani fikcyjnej autoryzacji.
 
 To grupy prac do specyfikacji, nie narzucona kolejność implementacji. Dawna kolejność
 D01–D06 nie jest nowym harmonogramem; szczegóły przydziela odświeżony backlog.
-Przed kodem trzeba uzgodnić ADR-0004/0005 z rozszerzonym zakresem, zachować ADR-0003,
+ADR-0004 uzgodniono z zakresem; przed kodem trzeba uzgodnić ADR-0005 dla PIECE, zachować ADR-0003,
 OpenAPI i granice modułów. Weryfikacja kodu obejmuje 100% linii jednostkowych,
 integracje PostgreSQL, testy architektury i pełne `mvn clean verify`.
+
+Uzupełnienie zakresu: [decyzje sesji grilling](research/decisions/2026-10-20-diary-and-recipe-details.md), brief D18–D24/R12–R18.

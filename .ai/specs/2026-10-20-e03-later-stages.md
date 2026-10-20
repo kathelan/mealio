@@ -8,9 +8,9 @@ Source issue: [#12](https://github.com/kathelan/mealio/issues/12).
 ## 📝 TLDR
 
 #12 pozostaje zaparkowanym kontenerem odrębnych kierunków, zgodnie z decyzją właściciela.
-Konta/współdzielenie i Garmin są późniejsze, AI jest poza MVP bez terminu powrotu.
+Konta/współdzielenie, Garmin oraz obsługa bulionu są późniejsze, AI jest poza MVP bez terminu powrotu.
 Kalkulator celu pozostaje częścią docelowego MVP (D12), ale Q02 blokuje jego projekt
-i implementację; umieszczenie w kontenerze nie wyłącza go z MVP ani nie blokuje E01/E02.
+i implementację. D24 dodaje aktualizację masy do osobistego MVP; analiza/SDD jest śledzona w [E02-T01 #37](https://github.com/kathelan/mealio/issues/37), a nie odkładana wraz z kontami. Q02 nie blokuje pozostałego E01/E02.
 
 ## ❓ Open Questions
 
@@ -32,7 +32,8 @@ różnych celów i nierozstrzygniętych zależności. Dokument zachowuje rozró�
 |---|---|---|---|
 | Konta i współdzielenie | później, N01 | cel, własność/prywatność danych, zaproszenia, migracja danych bez właściciela; zaakceptowane zastąpienie ADR-0003 | właściciel; maintainer projektuje bezpieczeństwo |
 | Garmin | później, N03 | przypadek importu/eksportu, dostęp do integracji, zgody, tokeny, retencja i awarie | właściciel; maintainer sprawdza wykonalność |
-| Cel kalorii | docelowe MVP, D12 | zamknięte Q02; wzór i dane wejściowe ze źródłami oraz ręczna korekta celu | właściciel zatwierdza propozycję maintainera |
+| Cel kalorii | MVP, D12/D24; analiza [E02-T01 #37](https://github.com/kathelan/mealio/issues/37) | zamknięte Q02, aktualizacja masy jednego dziennika, zatwierdzana propozycja i ręczna korekta; bez kont | właściciel zatwierdza propozycję maintainera |
+| Bulion | kolejna faza, D23 | osobny projekt uzysku/odcedzania i wiarygodnego przelicznika; brak obowiązkowego mierzenia gotowego przepisu w obecnym MVP | właściciel i maintainer |
 | AI/głos | poza MVP, N03 | nowa zatwierdzona decyzja zakresu; nie automatyczna kontynuacja istniejącego ASR | właściciel |
 
 ## 📝 Granice, zgodność i ryzyka

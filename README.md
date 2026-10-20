@@ -110,10 +110,9 @@ cd asr && mvn test
 
 ## Następny krok
 
-Dodanie strukturalnej interpretacji posiłków na podstawie transkrypcji ASR:
-
-- przekształcanie tekstu transkrypcji w proponowane produkty i ilości
-- rozpoznawanie produktów i danych żywieniowych bez wiązania logiki z dostawcą ASR
-- obliczanie kalorii z zachowaniem pewności i pochodzenia każdej propozycji
-- wymaganie potwierdzenia użytkownika przed zapisaniem kategorii, przepisów lub posiłków
-- publikacja kontraktów OpenAPI usług i integracja przez generowane klienty REST
+Bieżący kierunek opisują [brief](.ai/specs/product-brief.md),
+[osobiste MVP](.ai/specs/2026-10-20-personal-mvp.md) i [backlog](.ai/specs/backlog.md).
+E01 ma projekty katalogu, obliczeń, skanu i klienta; E02 wymaga osobnych SDD przepisów,
+edytowalnego dziennika, etykiet, zmiennych inputów i baz sosów. Cel kalorii z aktualizacją
+masy wymaga analizy Q02. Bulion, konta i Garmin są późniejsze; AI i głos poza MVP.
+Dokumentacja określa kierunek, nie deklaruje wdrożenia tych funkcji.
