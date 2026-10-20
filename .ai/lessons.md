@@ -45,3 +45,10 @@ oraz odnośnik do rozwiniętej notatki, jeśli istnieje. Nie zapisuj sekretów a
   pyta o ilość składnika na jedną porcję. Przepis pozostaje pojedynczym wpisem,
   a jego późniejsze zmiany nie przeliczają historii. Źródło:
   [zatwierdzony zakres](specs/2026-10-20-personal-mvp.md).
+
+- 2026-10-20 — Projektując E01 właściciel potwierdził heksagonalność ze Springiem.
+  Nowe porty i core application/domain pozostają niezależne od Spring/JPA/HTTP;
+  Spring składa zależności i obsługuje transakcje przez adaptery infrastructure.
+  Transakcja obejmuje cały przypadek użycia, nie pojedyncze repository; HTTP dostawcy
+  pozostaje poza transakcją. Legacy nie refaktoryzujemy przy okazji.
+  [Mapa fundamentów](specs/2026-10-20-e01-reusable-foundations.md).
