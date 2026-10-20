@@ -31,6 +31,8 @@ To niemutowalne typy biznesowe, nie HTTP DTO. NutritionFacts zawiera NutritionBa
 i cztery Optional<BigDecimal>;
 ProductSnapshot zawiera productId, versionId, versionNumber, nazwę, opcjonalną markę/GTIN,
 podstawę, fakty, konwersje, kompletność oraz metadane źródła.
+Wynik wyszukiwania zawiera także listę sklepów powiązanych z produktem. To opcjonalne,
+własne nazwy wpisywane przez użytkownika; nie ma centralnego słownika sklepów.
 
 ProductDraft to pełny stan danych: name (wymagane), brand (opcjonalne), basis (wymagane),
 nutrition { energyKcal, proteinGrams, fatGrams, carbohydrateGrams } z czterema
@@ -69,9 +71,16 @@ z następnym wolnym ID i include w istniejącym changelogu; zastosowany 001 bez 
 Backend nadaje ręcznemu zapisowi USER_LABEL, jeśli ma GTIN, a USER_INPUT bez GTIN.
 Klient nie nadaje źródła dostawcy ani statusu USER_CONFIRMED; status wynika z obecności
 czterech wartości i podstawy.
-Snapshot pochodzenia jest częścią ProductVersion (source, sourceRef opcjonalny,
-confirmedAt, dozwolone znormalizowane pola jako JSONB), nie pełną odpowiedzią dostawcy.
-Rewizja po zapisie jest niezmienna. Nie ma userId ani technicznego właściciela.
+Przy korekcie istniejącego produktu serwer zachowuje pochodzenie pól niezmienionych,
+a zmienione pola oznacza jako USER_LABEL lub USER_INPUT (odpowiednio do GTIN), z opcjonalną
+referencją podaną przez użytkownika. Klient nie może zadeklarować zewnętrznego dostawcy jako
+źródła korekty. Nazwa sklepu pozostaje osobną relacją/metadanym produktu, nie pochodzeniem.
+Pochodzenie danych jest częścią ProductVersion i zapisuje się osobno dla każdego pola
+(typ źródła oraz opcjonalna referencja/identyfikator; dozwolone znormalizowane wartości,
+bez pełnej odpowiedzi dostawcy). Dzięki temu np. ręcznie poprawiona marka nie przypisuje
+pochodzenia użytkownika do wartości odżywczych, które nadal pochodzą z etykiety. Rewizja
+po zapisie jest niezmienna. Lista sklepów jest odrębnym, edytowalnym metadanym Product;
+jej aktualizacja nie tworzy nowej wersji żywieniowej. Nie ma userId ani technicznego właściciela.
 
 ```mermaid
 flowchart LR
@@ -89,12 +98,13 @@ Nie tworzymy relacji do legacy recipe_ingredients: tamte calories nie opisują f
 
 | Operacja | Kontrakt |
 |---|---|
-| POST /products | nazwa, optional brand/gtin, basis, nutrition, optional pieceConversion; 201 + Location i ProductSnapshot |
+| POST /products | nazwa, optional brand/gtin, basis, nutrition, optional pieceConversion i stores; 201 + Location i ProductSnapshot |
 | GET /products?query=&page=0&size=20 | dosłowna fraza nazwy bez case, stabilny sort name/brand/id; size 1–100; wyniki, total, page/size |
 | GET /products/{id} | bieżący snapshot; 404 PRODUCT_NOT_FOUND |
 | GET /products/{id}/versions/{versionId} | historyczny snapshot należący do produktu; 404 VERSION_NOT_FOUND |
 | POST /products/{id}/versions | expectedVersionId i komplet nowych danych; 201; nieaktualna wersja 409 PRODUCT_VERSION_CONFLICT |
 | GET /products/by-gtin/{gtin} | wyłącznie lokalny katalog; 404 nie oznacza sprawdzenia dostawcy |
+| PUT /products/{id}/stores | pełna lista własnych nazw sklepów; aktualizuje metadane Product niezależnie od wersji żywieniowej |
 
 W powyższej tabeli ścieżki są względne do /api/v1. Kwoty/ilości to kanoniczne napisy
 np. "55", "12.500000", maks. 6 cyfr części całkowitej i 6 ułamkowej, bez exponentu;
@@ -112,10 +122,17 @@ Tożsamość i GTIN nie są zmieniane przez nową wersję; request rewizji nie p
 Nazwa nie jest kluczem unikalności. Produkty bez GTIN mogą mieć tę samą lub bardzo podobną
 nazwę i zostać zapisane jako osobne pozycje; dotyczy to np. mrożonych ziemniaków różnych
 marek oraz własnego produktu jajka z indywidualnym przelicznikiem. Marka pozostaje osobnym
-polem, a źródło opisuje pochodzenie danych — żadne z nich samo nie definiuje tożsamości.
-Wyniki wyszukiwania z tą samą nazwą pozostają osobnymi wynikami i udostępniają markę,
-źródło/pochodzenie, podstawę, kompletność oraz przelicznik sztuki, gdy występuje, aby klient
-mógł je rozróżnić. Jawny GTIN nadal jest unikalny i jego konflikt zwraca 409.
+polem; pochodzenie opisuje dane, a sklep — sieć, z którą produkt jest powiązany. Żadne z nich
+samo nie definiuje tożsamości. Wyniki wyszukiwania z tą samą nazwą udostępniają markę,
+sklepy, pochodzenie pól, podstawę, kompletność oraz przelicznik sztuki, gdy występuje.
+Ten sam produkt może mieć wiele nazw sklepów. Jawny GTIN nadal jest unikalny i jego konflikt
+zwraca 409.
+
+Przy konflikcie GTIN interfejs pyta użytkownika, czy użyć istniejącego produktu, przejść do
+korekty jego danych, czy anulować. Korekta nigdy nie nadpisuje ProductVersion: tworzy nową
+wersję z pochodzeniem zapisanym oddzielnie dla zmienianych pól. Sklepy można dodać lub usunąć
+niezależnie od wersji żywieniowej. Nie pobieramy automatycznie dodatkowych katalogów w tej
+ścieżce; użytkownik może ręcznie wpisać poprawne dane i ich pochodzenie.
 UI nie ponawia zapisu automatycznie po utracie odpowiedzi; trwały klucz idempotencji
 potwierdzania jest osobnym zakresem SDD skanera.
 

@@ -72,7 +72,8 @@ powstaje przyszły IngredientEditor (#26), ale picker można osadzić w dwóch t
 hostach „wybór do przepisu” i „wybór do dziennika”, bez implementacji tych modułów.
 Nie dodajemy pustych zakładek Przepisy/Dziennik ani aktywnego przycisku AI.
 
-Flow: lista/search -> szczegóły i opcjonalna ilość -> zwrot wyboru. Utwórz produkt ->
+Flow: lista/search -> szczegóły i opcjonalna ilość -> zwrot wyboru. Wynik pokazuje markę,
+sklepy, pochodzenie pól, podstawę, kompletność i przelicznik, jeśli są dostępne. Utwórz produkt ->
 formularz -> zapis API -> powrót do tego samego flow wyboru. Paginacja ma jawną akcję
 wczytania kolejnej strony. Stany braku sieci/błędu/ładowania/braku wyników są osobne.
 Wyjście z widoku anuluje zadania. Debounce wyszukiwania jest wstrzykiwalny w testach;
@@ -82,6 +83,11 @@ ignoruje cancellation. Tak samo działa preview po zmianie ilości.
 VoiceOver, Dynamic Type, brak polegania tylko na kolorze i przyciski z opisami. Po błędzie
 save tekst pozostaje. Niejednoznaczny błąd zapisu nie uruchamia automatycznego POST ponownie;
 przy GTIN można wskazać istniejący produkt, bez GTIN komunikat uprzedza o możliwym zapisie.
+Edycja produktu pozwala ręcznie poprawić pola i zapisać pochodzenie każdego z nich; lista
+sklepów jest edytowalna niezależnie od wersji żywieniowej. Korekta danych tworzy nową wersję.
+Przed implementacją UI powstanie klikalne low-fi dla wyszukiwania/utworzenia, skanu,
+awarii dostawcy, lokalnego wyniku, konfliktu GTIN, korekty i powrotu do hosta. Low-fi nie
+przesądza finalnego stylu ani nie zastępuje testów na urządzeniu.
 Wyliczenia żywieniowe i jednostkowe wykonuje backend, klient jedynie formatuje otrzymane dane.
 
 ## 📝 API Contracts i zgodność

@@ -56,3 +56,7 @@ oraz odnośnik do rozwiniętej notatki, jeśli istnieje. Nie zapisuj sekretów a
   mogą oznaczać różne marki lub własne pozycje z odrębnym przelicznikiem (np. jajko).
   Wyniki wyszukiwania rozróżniają je przez markę, pochodzenie, kompletność i konwersję;
   GTIN pozostaje unikalny. [SDD katalogu](specs/2026-10-20-e01-product-catalog.md).
+- 2026-10-20 — E01: sklep jest ręcznie wpisywaną, wielowartościową metadaną produktu,
+  odrębną od marki i pochodzenia danych. GTIN pozostaje unikalny; korekta tworzy
+  niezmienną wersję z pochodzeniem per pole, a błąd dostawcy nie blokuje ręcznego wpisu.
+  [Decyzje E01](specs/research/decisions/2026-10-20-e01-product-corrections.md).

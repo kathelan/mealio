@@ -23,6 +23,8 @@ nie DTO Open Food Facts. Adaptery są w product.infrastructure.provider.
 Orkiestracja: lokalny zatwierdzony produkt -> Open Food Facts -> opcjonalny skonfigurowany
 FatSecret tylko po NOT_FOUND -> ręczny formularz. Brak FatSecret to pełnoprawne MVP.
 Awaria/limit nie oznacza braku; nie uruchamia cichego łańcucha maskującego problem.
+Użytkownik może jednak przejść do ręcznego formularza po awarii dostawcy. Interfejs
+zachowuje PROVIDER_UNAVAILABLE/PROVIDER_RATE_LIMITED i nie pokazuje ich jako NOT_FOUND.
 Zewnętrzne HTTP odbywa się poza transakcją zapisu. Odczyty lokalne są niezależne od dostępności OFF.
 
 OFF adapter używa API v3 i minimalnych fields oraz własnego User-Agent. Request timeout,
@@ -97,8 +99,17 @@ Nieudane transakcje nie pozostawiają receipt sukcesu. Klient zachowuje klucz pr
 próby i zmienia dopiero dla innego potwierdzanego payloadu.
 
 Ręczny fallback korzysta z POST /products z SDD #13, zachowując GTIN, źródło USER_LABEL
-i brakujące wartości. Nie dodajemy obowiązkowego OCR. Aktualizacja źródła nie nadpisuje
-lokalnej wersji — jawne odświeżenie pozostaje osobnym późniejszym przypadkiem użycia.
+i brakujące wartości. Pozostaje dostępny również przy PROVIDER_UNAVAILABLE lub
+PROVIDER_RATE_LIMITED, bez twierdzenia, że produktu nie znaleziono. Nie dodajemy
+obowiązkowego OCR ani automatycznego odpytania kolejnych źródeł przy korekcie lokalnego
+produktu; użytkownik może ręcznie wpisać poprawne dane i ich pochodzenie.
+
+Skan lokalnego produktu zwraca go od razu. Ekran udostępnia osobną akcję „Dane są
+nieprawidłowe? Popraw produkt”; dopiero po jej wybraniu użytkownik widzi formularz korekty.
+Nie ma popupu przy każdym skanie ani zapytań do dostawców w tle. Przy próbie użycia
+sprzecznych danych dla zajętego GTIN UI pyta, czy użyć istniejącego produktu, poprawić jego
+pola jako nową wersję, czy anulować. Pochodzenie jest zachowywane dla każdego pola, a lista
+sklepów stanowi edytowalne metadane produktu.
 
 ## 📝 UI/UX
 
