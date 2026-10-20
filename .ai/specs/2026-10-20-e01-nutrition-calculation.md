@@ -44,7 +44,7 @@ przez 100 są dokładne. Wejściowe dane katalogu mają 12 cyfr/6 miejsc; wynik 
 miejsc ułamkowych po normalizacji i obliczeniu i jest wysyłany dokładnie, bez zaokrąglania
 na potrzeby ekranu. To nie zmienia precision źródłowych tabel. Serializacja używa napisu
 z kropką bez exponentu. Limit wejścia utrzymuje wynik pojedynczego obliczenia w maksymalnie
-36 cyfrach znaczących, zgodnych z Decimal klienta; normalizacja PIECE może dać 20 miejsc ułamkowych. Testy obejmują maksymalną precyzję oraz odrzucenie nadmiaru wejścia.
+36 cyfrach znaczących, zgodnych z Decimal klienta; obliczenie z ilością PIECE może dać 20 miejsc ułamkowych. Testy obejmują maksymalną precyzję oraz odrzucenie nadmiaru wejścia.
 
 Każde nieznane pole pozostaje Optional.empty. Znane 0 pozostaje 0. Nie stosujemy 4/4/9,
 nie wyliczamy automatycznie energii z makro. COMPLETE wymaga czterech znanych pól.
