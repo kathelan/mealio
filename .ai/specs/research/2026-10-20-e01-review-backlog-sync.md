@@ -1,8 +1,9 @@
 # Synchronizacja backlogu po review E01/E02/E03
 
-Status: propozycja przedstawiona właścicielowi; zapis do trackera oczekuje na potwierdzenie.
+Status: zatwierdzone przez właściciela („aktualizuj backlog”), zastosowane w istniejących issues.
+Potwierdzenie i wykonanie: 2026-10-20; brak nowej decyzji o zakresie produktu.
 
-2026-10-20. Projekt aktualizacji istniejących issues; bez nowych numerów, wdrożenia i zamykania funkcji.
+2026-10-20. Aktualizacja istniejących issues; bez nowych numerów, wdrożenia i zamykania funkcji.
 Źródła: potwierdzone E01-C1–C4, diary-home w README revision-002, R02/R03 i SDD po review.
 Dodatkowe reguły briefu: R09–R11 i D13–D17; stare identyfikatory oraz historia pozostają.
 
@@ -69,3 +70,16 @@ Bez nowych funkcji: nie ustalamy usuwania zajętej sekcji, późniejszej edycji 
 układu paneli makr ani celu/pozostałego budżetu. Q02 blokuje wyłącznie kalkulator.
 Wszędzie zachowujemy Backlog source, pełne Backlog id, Epic/Story i checklisty.
 Aktualizacja treści zachodzi tylko po ponownej kontroli tożsamości i aktywnych blokad.
+
+## Wynik zastosowania
+
+Zmieniono opisy #10, #11, #12, #13, #14, #20, #17, #24, #25, #26 i #27.
+Dodano 15 zatwierdzonych kryteriów w sześciu issues oraz zależność #24 → #14.
+Pozostałe #15, #16, #21, #22, #23, #28 i #29 zachowały treść. Wszystkie 18 pozostało
+otwartych; tytuły, pełne IDs, rodzice, dotychczasowe checkboxy, etykiety i przypisania
+pozostawiono bez zmian. Linki do map E02/E03 nie oznaczają gotowości do implementacji.
+Zakres danych backendu #17 i prezentacji #27 oraz skanera #25 i hostów E02 opisano osobno.
+
+Weryfikacja: ponowny odczyt source/id i blokad przed każdym zapisem, porównanie zapisanej
+treści po odczycie z API oraz ponowne wyliczenie transformacji (bez kolejnych zmian).
+[Raport przebiegu](../../runs/2026-10-20-e01-backlog-sync.md).
