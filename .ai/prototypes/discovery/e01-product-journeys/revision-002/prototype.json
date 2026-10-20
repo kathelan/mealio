@@ -12,11 +12,11 @@
   "files": [
     {
       "path": "README.md",
-      "sha256": "cf397b51b8f56d2ed3e51c94364a74c35ae5582aa7f7d6840205c308a3631ac8"
+      "sha256": "94e0b870646b700ea012341841b927437a8a963432e2c1f6e84e69ca9861e46e"
     },
     {
       "path": "evidence/custom-product-in-breakfast.png",
-      "sha256": "c4b135f2fac01e86e1cabc032237f75b335a52e4a38840b7cf61470e9c67e7e0"
+      "sha256": "95d378d63dbfc924be27c1060aee5c5edbbbb745f1746abcf8fd687fc76d3762"
     },
     {
       "path": "evidence/customize-sections.png",
@@ -39,8 +39,12 @@
       "sha256": "8d5605b4cc825866655bca97afaf526b892b8e6116828f70f768abfcd983c39c"
     },
     {
+      "path": "evidence/quantity-preview.png",
+      "sha256": "251997efadbcf3bd6ec559be19ae964c68245e991931cce841d3e377c69743e4"
+    },
+    {
       "path": "index.html",
-      "sha256": "b1fb149c768b48f8caf6e1c693fe50a4b41b1f4b14bbf47e0dd98a39a7690b12"
+      "sha256": "9695e159713649f9777eb90c2c4a168a6a976e5a616794535548dc850e80c750"
     }
   ]
 }

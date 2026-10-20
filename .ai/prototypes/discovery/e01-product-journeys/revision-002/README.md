@@ -23,17 +23,17 @@ Właściciel produktu doprecyzował w rozmowie 2026-10-20, że ekran startowy ap
 
 ## Zakres symulacji
 
-Włączone: dzień z sześcioma domyślnymi sekcjami, przykładowe wpisy i suma kcal; dodawanie, skanowanie i personalizowanie sekcji; cały poprzedni przepływ katalogu/skanera/korekty. Wartości żywieniowe i nazwy są fikcyjne.
+Włączone: dzień z sześcioma domyślnymi sekcjami, przykładowe wpisy i sumy kalorii/makr; picker z edytowalną ilością w gramach i podglądem obliczonych wartości, ręczne dodawanie produktu z jego makrami, skanowanie i personalizowanie sekcji; cały poprzedni przepływ katalogu/skanera/korekty. Wartości żywieniowe i nazwy są fikcyjne.
 
 Poza zakresem: prawdziwe zapisywanie posiłków, tygodniowy dziennik, backendowe sumy, cele kaloryczne, kamera, zewnętrzne katalogi i finalny styl. Wpisane ręcznie wartości makr są w tej makiecie używane w symulacji dla produktu i wybranego posiłku. Dane katalogowe pozostałych fikcyjnych produktów także są przykładowe; właściwe źródło i backendowe obliczenia dziennika realizuje późniejszy E02 (#17/#27). Ładowanie nie występuje, ponieważ lokalna symulacja nie wykonuje asynchronicznych odczytów.
 
 ## Założenia i ograniczenia
 
 - **[ASSUMPTION] A1** — dzienny widok nie zawiera na tym etapie celu kcal ani wartości „pozostało”; właściciel poprosił o sumę spożycia. Można to sprawdzić przy specyfikacji #27.
-- **[ASSUMPTION] A2** — ekran potwierdzenia wyboru zapisuje fikcyjną porcję 100 g, aby zademonstrować zmianę kalorii. Właściwe ilości i obliczenia dostarcza późniejsza integracja z #14/#17.
+- **[ASSUMPTION] A2** — ekran ilości zaczyna z fikcyjną wartością 100 g, którą można edytować przed dodaniem produktu. Wartości preview liczone są proporcjonalnie od danych na 100 g; w działającym produkcie wyliczenie musi pochodzić z #14.
 - **[ASSUMPTION] A3** — przykładowy dzienny widok zaczyna się z trzema wpisami (895 kcal); nie reprezentuje rzeczywistych danych ani nowego stanu konta.
 - **[ASSUMPTION] A4** — usunięcie pustej sekcji jest dozwolone; sekcji z wpisami makieta nie pozwala usunąć, aby nie wymyślać zachowania przenoszącego wpisy. Regułę należy ustalić w SDD #27.
-- **[ASSUMPTION] A5** — wybrany produkt jest dodawany jako fikcyjna porcja 100 g; wartości ręcznie wpisane na 100 g stają się wartościami tej pozycji. Dla pozycji bez danych makr makieta pokazuje „—”, nigdy domyślne zero; suma makra pozostaje nieznana, gdy choć jeden wpis nie ma tej wartości.
+- **[ASSUMPTION] A5** — wartości ręcznie wpisane na 100 g są podstawą, a edytowana ilość ustala wartości pozycji w makiecie. Dla pozycji bez danych makr makieta pokazuje „—”, nigdy domyślne zero; suma makra pozostaje nieznana, gdy choć jeden wpis nie ma tej wartości.
 
 ## Mapa ekranów i zachowań
 
@@ -42,9 +42,10 @@ Poza zakresem: prawdziwe zapisywanie posiłków, tygodniowy dziennik, backendowe
 | `home` — dziennik | Pokaż sekcje i dzienną sumę; wybierz „Dodaj produkt”/skan w sekcji | sekcje z MVP, #17/#27 |
 | `manage` | Zmień nazwę, dodaj nową lub usuń pustą sekcję; zapis wraca do dziennika | własne sekcje, A4 |
 | `search` | Wybór produktu lub rozpoczęcie dodania własnego zachowuje wybraną sekcję | E01-C3, A2/A5 |
+| `quantity` | Zmień gramy, zobacz kcal i makra dla tej ilości, potwierdź albo anuluj | E01 #14, symulacja matematyki, A2 |
 | `create` / `detail` | Wymagaj nazwy oraz kcal i trzech makr na 100 g; pokaż podgląd produktu, a „Dodaj do posiłku” zapisuje go w wybranej sekcji | symulacja E01, A2/A5 |
 | `scan` lokalny | Produkt lokalny wraca bez pytania; osobna akcja rozpoczyna korektę | E01-C2 |
-| `scan` kandydat | Potwierdzenie przypisuje do wybranej sekcji | E01-C1, A2/A5 |
+| `scan` kandydat | Potwierdzenie otwiera ilość; dopiero zatwierdzenie gramów dodaje pozycję do wybranej sekcji | E01-C1, A2/A5 |
 | `scan` NOT_FOUND | Ręczny formularz → `create` | E01-C1 |
 | `scan` niedostępny/limit | Stan błędu zachowany; możliwy wpis ręczny | E01-C1 |
 | `scan` odmowa aparatu | Szukaj lub dodaj ręcznie | E01 |
@@ -61,9 +62,10 @@ Sprawdzenie w odizolowanej sesji `agent-browser` na `file://`:
 
 - Dziennik na starcie: sześć sekcji, trzy fikcyjne wpisy, 895 kcal oraz 28,4 g białka, 24,2 g tłuszczów i 133 g węglowodanów; `evidence/diary-home.png`. Każdy niepusty posiłek ma odrębny panel „Suma całego posiłku” z czterema wartościami; zrzut `evidence/diary-home.png` potwierdza czytelność panelu przy śniadaniu, drugim śniadaniu i obiedzie.
 - Dodanie ziemniaków z sekcji Obiad zachowuje kontekst sekcji, wraca do dziennika i aktualizuje sumy: 895 → 1047 kcal, białko 28,4 → 30,8 g, tłuszcze 24,2 → 29,3 g, węglowodany 133 → 156 g; `evidence/diary-after-add.png`.
-- Ręczne dodanie „Moje musli” z 410 kcal, 12,5 g białka, 8 g tłuszczów i 64 g węglowodanów: formularz → karta produktu → dodanie do Śniadania. Wpis pokazuje indywidualne wartości, subtotal śniadania zmienia się na 730 kcal / 22,5 g / 16 g / 114 g, a sumy dnia na 1305 kcal / 40,9 g / 32,2 g / 197 g; `evidence/custom-product-in-breakfast.png`.
+- Ręczne dodanie „Moje musli” z 410 kcal, 12,5 g białka, 8 g tłuszczów i 64 g węglowodanów: formularz → karta produktu → dodanie do Śniadania. Wpis pokazuje indywidualne wartości; subtotal śniadania zmienia się na 730 kcal / 22,5 g / 16 g / 114 g; `evidence/custom-product-in-breakfast.png`.
+- Ilość: dla produktu z danymi 410 kcal / 12,5 g / 8 g / 64 g na 100 g zmiana ilości na 50 g daje preview 205 kcal / 6,3 g / 4 g / 32 g i te wartości trafiają do wpisu; `evidence/quantity-preview.png` oraz `evidence/custom-product-in-breakfast.png`.
 - Personalizacja: zmiana „Lunch” na „Późny posiłek” i dodanie „Koktajle” zachowują edycje i odświeżają sekcje; `evidence/customize-sections.png`.
 - Poprzednie stany wyszukiwarki, konflikt GTIN, korekty i awarii są odtworzone w revision-001. Ta rewizja pozostaje źródłem dowodów dla zachowań niezmienionych.
 - Reset, historia wstecz/dalej, nieznany hash i dostęp klawiaturą pozostają w tej rewizji; widok dziennika przy szerokości 390 px; `evidence/diary-mobile.png`.
 
-Makieta sprawdza wyłącznie lokalną symulację. Dziennik, jego API, bilans i klient iOS pozostają poza E01; przed implementacją #27 należy zweryfikować reguły dla ilości, bilansu częściowego i usuwania sekcji z wpisami.
+Makieta sprawdza wyłącznie lokalną symulację. To makieta przepływów E01; dziennik jest jedynie kontekstowym hostem. Obliczenia produkcyjne ilości realizuje E01 #14. Trwałe sekcje i zapis dziennika/klient iOS pozostają w E02 #16/#17/#27.
