@@ -65,3 +65,7 @@ oraz odnośnik do rozwiniętej notatki, jeśli istnieje. Nie zapisuj sekretów a
   wartości z PARTIAL; brak pola nie zeruje ani nie ukrywa znanej sumy. Niezmienny snapshot
   wersji oddzielaj od edytowalnych sklepów; pierwsze potwierdzenie kandydata nie jest
   rewizją lokalnego produktu. Pochodzenie zmienionych pól ustala serwer.
+- 2026-10-20 — Domyślne sekcje dziennika to śniadanie, drugie śniadanie, obiad, lunch,
+  kolacja i przekąski; użytkownik może zmieniać ich nazwy i liczbę. Sekcje należą do
+  dziennika i pozostają niezależne od płaskich etykiet przepisów.
+  [Mapa E02](specs/2026-10-20-e02-recipes-and-diary.md).

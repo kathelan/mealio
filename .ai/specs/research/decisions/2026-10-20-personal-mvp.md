@@ -15,6 +15,10 @@ od własnych sekcji dziennika. Odkłada AI, użytkowników, współdzielenie i G
 Kody kreskowe i cele są częścią docelowego MVP; nie ustalono nowego harmonogramu dostawy.
 Wzór kalkulatora pozostaje otwarty, więc jego implementacja nie jest gotowa do rozpoczęcia.
 
+Domyślny zestaw sekcji dziennika to śniadanie, drugie śniadanie, obiad, lunch, kolacja
+i przekąski. Użytkownik może zmienić ich nazwy i liczbę, także ograniczyć dzień do trzech
+własnych posiłków.
+
 Nowe identyfikatory briefu: D08 (zakres osobisty), D09 (porcje i parametry),
 D10 (etykiety i dziennik), D11 (bazy przepisów), D12 (cel ze wzoru i ręczna korekta).
 D08 zastępuje D03–D06 jako dotychczasowy podział „później” i harmonogram; nie usuwa
