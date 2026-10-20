@@ -1,5 +1,12 @@
 # MVP
 
+> Aktualizacja kierunku 2026-10-20: właściciel zatwierdził
+> [osobiste MVP](../.ai/specs/2026-10-20-personal-mvp.md) i
+> [odświeżony brief](../.ai/specs/product-brief.md). Ten dokument zachowuje wcześniejszy
+> zakres bazowy. Nowe ustalenia mają pierwszeństwo dla docelowego zakresu: przepisy,
+> własne sekcje, opcjonalna masa porcji, cel kalorii i brak AI w MVP. Nie jest to
+> deklaracja wdrożenia; odpowiednie ADR i kontrakty wymagają uzgodnienia w SDD przed kodem.
+
 Mealio jest dziennikiem żywieniowym. Umożliwia użytkownikowi aplikacji iOS szybkie zapisanie
 zjedzonych produktów w wybranym dniu oraz otrzymanie powtarzalnego podsumowania kalorii i
 makroskładników.

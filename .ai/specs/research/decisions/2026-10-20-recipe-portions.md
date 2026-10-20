@@ -4,7 +4,7 @@
 - Właściciel i potwierdzający: użytkownik sesji, właściciel produktu Mealio.
 - Źródło: doprecyzowanie w rozmowie backlogu: „przy przepisach dzielisz dania na porcje
   i porcja ma x gram i na podstawie tego wylicza mealio kcal”.
-- Status: active.
+- Status: historyczny; zastąpiony w odpowiednim zakresie przez [sesję grill-me](2026-10-20-personal-mvp.md).
 
 Przepis dzieli się na porcje z określoną masą w gramach. Mealio oblicza kcal i makro
 porcji na podstawie składników oraz tego podziału. Nie przyjęto propozycji agenta,

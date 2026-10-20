@@ -39,3 +39,9 @@ oraz odnośnik do rozwiniętej notatki, jeśli istnieje. Nie zapisuj sekretów a
   rzeczywistego przejścia i screenshotów. Treści trackera publikujemy po polsku,
   zachowując dokładne znaczniki techniczne. Przy aktualizacji skilli zachowuj
   lokalne rozszerzenia i sprawdzaj ich zgodność z nowymi bramkami.
+
+- 2026-10-20 — Po sesji grill-me nie utożsamiaj sekcji dziennika z etykietą przepisu
+  ani liczby porcji z końcową masą. Porcje są obowiązkowe, masa opcjonalna; checkbox
+  pyta o ilość składnika na jedną porcję. Przepis pozostaje pojedynczym wpisem,
+  a jego późniejsze zmiany nie przeliczają historii. Źródło:
+  [zatwierdzony zakres](specs/2026-10-20-personal-mvp.md).
