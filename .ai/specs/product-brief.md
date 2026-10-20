@@ -11,7 +11,7 @@
 
 ## Decision summary
 
-Budujemy osobiste narzędzie ograniczające powtarzanie wpisywania jedzenia. Nowe D08–D12 doprecyzowują wcześniejsze decyzje: jeden dziennik, osobne przepisy, parametry ilości na porcję i opcjonalna masa końcowa. Współdzielenie nie rozwiąże jeszcze problemu obu osób — świadomie pozostaje poza MVP. Dalszy krok to aktualizacja istniejącego backlogu po pokazaniu drzewa właścicielowi, następnie osobne SDD. Q02 blokuje kalkulator, nie podstawowy przepływ jedzenia; korzyść sprawdzi A01.
+Budujemy osobiste narzędzie ograniczające powtarzanie wpisywania jedzenia. Nowe D08–D12 doprecyzowują wcześniejsze decyzje: jeden dziennik, osobne przepisy, parametry ilości na porcję i opcjonalna masa końcowa. Współdzielenie nie rozwiąże jeszcze problemu obu osób — świadomie pozostaje poza MVP. Właściciel zatwierdził i opublikowano odświeżony backlog wraz z osobno zleconymi zadaniami SwiftUI; dalszy krok to osobne SDD. Q02 blokuje kalkulator, nie podstawowy przepływ jedzenia; korzyść sprawdzi A01.
 
 ## Vision
 

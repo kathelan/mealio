@@ -1,10 +1,11 @@
-# Propozycja odświeżenia backlogu — do potwierdzenia
+# Zatwierdzone odświeżenie backlogu
 
 Data: 2026-10-20. Źródło: [brief](../product-brief.md) i
 [zatwierdzony zakres](../2026-10-20-personal-mvp.md).
 
-Status: om-backlog, krok 4 — przedstawienie drzewa i kryteriów przed zapisem do trackera.
-Nie zmieniono issues ani istniejącej mapy backlogu. Nie jest to zlecenie implementacji.
+Status: zatwierdzone przez właściciela słowami „akceptuje wszystko”; opublikowane w trackerze.
+Następnie właściciel jawnie zlecił osobne zadania SwiftUI — lista na końcu dokumentu.
+Zaktualizowano issues i mapę backlogu. Nie jest to zlecenie implementacji.
 SDLC nie ma osobnej Definition of Ready: pominięto tę dodatkową bramkę; może ją dodać
 om-setup-discovery-pipeline. Problem i odbiorca mają wsparcie relacji właściciela.
 Poszczególne implementacje nadal wymagają SDD, uzgodnienia ADR i kontraktów.
@@ -14,7 +15,7 @@ Poszczególne implementacje nadal wymagają SDD, uzgodnienia ADR i kontraktów.
 E01 i E02 zachowują źródło `.ai/specs/product-brief.md` i numery #10/#11. E03 zachowuje #12.
 Sprawdzono wszystkie istniejące pełne identyfikatory i oznaczenia źródła w #10–#17;
 brak aktywnych claimów. Wyszukiwanie po źródle i kilku wariantach nazw nie wykazało
-dodatkowych kandydatów do adopcji. Nowe ID wymagają ponownego sprawdzenia przed zapisem.
+dodatkowych kandydatów do adopcji. Źródło/ID i brak claimów ponownie sprawdzono przy każdym zapisie.
 
 E01 obejmuje produkty/obliczenia i skan. E02 obejmuje ponowne użycie potraw oraz dziennik.
 E03 pozostaje zaparkowany; usuwa z listy „później” skany przeniesione do E01.
@@ -209,9 +210,66 @@ przygotowanej propozycji. Nie tworzymy pozornie gotowego issue implementacyjnego
 Ręczna korekta celu jest wymagana. Utrzymanie i rekompozycja to kierunki, nie ustalone algorytmy.
 Po zamknięciu Q02 ponownie uruchomić om-backlog dla odpowiedniego zakresu.
 
-## Co nastąpi po zatwierdzeniu
+## Publikacja po zatwierdzeniu
 
-Zaktualizować istniejące #10–#17, utworzyć E01-S03 i E02-S04–S06 przez om-prepare-issue,
-odświeżyć checklisty epików oraz `.ai/specs/backlog.md`. Zachować numery i pełne identyfikatory.
-Przed każdym zapisem ponownie sprawdzić źródło, ID i claim. Do tego czasu tracker i mapa
-pozostają wcześniejszym stanem; powyższe kryteria są propozycją, nie opublikowanym backlogiem.
+Zaktualizowano istniejące #10–#17, utworzono E01-S03 i E02-S04–S06 przez om-prepare-issue,
+odświeżono checklisty epików i `.ai/specs/backlog.md`. Zachowano numery i pełne identyfikatory.
+Tabela powyżej zachowuje stan przedstawiony do potwierdzenia; bieżące numery nowych issues
+są w [mapie backlogu](../backlog.md).
+
+## Zadania SwiftUI — dodatkowe jawne zlecenie właściciela
+
+Właściciel poprosił o utworzenie issues SwiftUI po akceptacji drzewa. Zadania rozbijają
+zatwierdzony zakres stories na interfejs iOS; nie dodają nowych funkcji.
+Prototyp w `ios-prototype 3/MealioPrototype.swift` jest punktem odniesienia, nie gotową integracją.
+
+### E01-S01-T01 — SwiftUI: wyszukiwanie i formularz własnego produktu ([#24](https://github.com/kathelan/mealio/issues/24))
+
+Story: #13
+
+- [ ] Wyszukiwanie i formularz produktu korzystają z API; zapisany własny produkt można ponownie znaleźć i wybrać do posiłku lub przepisu.
+- [ ] Formularz obsługuje podstawę 100 g/100 ml oraz opcjonalny jawny przelicznik sztuki na gramy, bez samodzielnego odtwarzania reguł żywieniowych backendu.
+- [ ] Pusty wynik, ładowanie, brak sieci i błędy walidacji mają czytelne stany; błąd nie usuwa wprowadzonych danych.
+
+### E01-S03-T01 — SwiftUI: skaner kodów i potwierdzenie produktu ([#25](https://github.com/kathelan/mealio/issues/25))
+
+Story: #20
+
+- [ ] Rzeczywisty skan działa z dziennika oraz edytora przepisu i wyszukuje produkt przez API; kod zapisany lokalnie nie wymaga ponownego potwierdzania.
+- [ ] Pierwszy kandydat zewnętrzny ma ekran potwierdzenia; przy braku produktu dostępny jest formularz ręczny z zachowanym kodem.
+- [ ] Odmowa dostępu do aparatu, anulowanie skanu, błędny kod i błąd dostawcy mają obsługiwane stany; timeout nie jest przedstawiany jako brak produktu.
+
+### E02-S01-T01 — SwiftUI: biblioteka i edytor przepisów ([#26](https://github.com/kathelan/mealio/issues/26))
+
+Story: #15
+
+- [ ] Przepisy mają osobną zakładkę, listę i formularz nazwy, składników, ilości, obowiązkowej liczby porcji oraz opcjonalnej masy końcowej.
+- [ ] Własne płaskie etykiety można zadeklarować i wybrać z listy niezależnie od nazw posiłków. Składniki można wyszukiwać; dostępny jest punkt wejścia do skanera po E01-S03-T01.
+- [ ] Lista i zapis korzystają z API; braki walidacji oraz stany pusty, ładowania i błędu są widoczne. Zapis nie wymaga zdjęć ani moderacji.
+
+### E02-S03-T01 — SwiftUI: dziennik dnia i tygodnia z własnymi sekcjami ([#27](https://github.com/kathelan/mealio/issues/27))
+
+Story: #17
+
+- [ ] Domyślny widok dnia umożliwia przejście do tygodnia i zmianę daty. Sekcje można nazwać i utworzyć samodzielnie, z zatwierdzonym zestawem początkowym.
+- [ ] Dodaj w sekcji pozwala wybrać produkt lub przepis; domyślnie dodaje jedną porcję z możliwością 0,5 lub 2. Przepis jest jednym wpisem z nazwą, kcal i makro.
+- [ ] Sumy i stan niekompletności pochodzą z API. Widoki puste, ładowania i błędu nie udają poprawnego bilansu.
+- [ ] Wybrane produkty posiłku można zapisać jako przepis zgodnie z E02-S06, bez powtórnego spożycia lub zmiany istniejącego bilansu.
+
+### E02-S04-T01 — SwiftUI: parametry ilości i wariant przepisu przy dodawaniu ([#28](https://github.com/kathelan/mealio/issues/28))
+
+Story: #21
+
+- [ ] W edytorze przepisu można zaznaczyć Zapytaj o ilość przy składniku; podczas dodawania wpisuje się ilość z jednoznacznym opisem na jedną porcję.
+- [ ] Przed zapisem można zamienić produkt oraz zmienić, dodać lub usunąć składnik. Podgląd kcal/makro pochodzi z backendu i uwzględnia liczbę zjadanych porcji.
+- [ ] Domyślny zapis dotyczy tylko danego spożycia. Osobno dostępne akcje aktualizacji przepisu i zapisu nowego nie zmieniają historii. Anulowanie nie zapisuje częściowego wpisu.
+
+### E02-S05-T01 — SwiftUI: wybór własnej bazy jako składnika potrawy ([#29](https://github.com/kathelan/mealio/issues/29))
+
+Story: #22
+
+- [ ] W edytorze zupy można wybrać zapisany bulion jako bazę i podać ilość w jednostce obsługiwanej przez jego API, bez ponownego przepisywania składników.
+- [ ] UI pokazuje brak przelicznika lub niedozwoloną zależność zgłoszoną przez backend, bez zgadywania ml/g.
+- [ ] Podgląd wartości odżywczych korzysta z obliczeń backendu. Błąd odczytu bazy i brak dostępnych baz mają czytelny stan.
+
+Weryfikacja iOS wymaga działającego symulatora, asercji i screenshotów; sam backend nie wystarcza.

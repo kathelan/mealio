@@ -34,5 +34,5 @@ wymyślonymi cytatami, personami lub wynikami badań.
 
 - [Decyzje osobistego MVP](decisions/2026-10-20-personal-mvp.md) zastępują wskazane
   wcześniejsze ustalenia. Starsze kompilacje materiałów pozostają zapisem historycznym.
-- [Odświeżenie backlogu — propozycja](2026-10-20-backlog-refresh-proposal.md) czeka na
-  potwierdzenie przed zmianami issues; nie jest aktualnym stanem trackera.
+- [Zatwierdzone odświeżenie backlogu](2026-10-20-backlog-refresh-proposal.md) zawiera
+  kryteria opublikowanych stories oraz zlecone osobno zadania SwiftUI. Numery są w mapie backlogu.
