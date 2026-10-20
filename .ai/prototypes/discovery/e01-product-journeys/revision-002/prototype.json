@@ -12,7 +12,7 @@
   "files": [
     {
       "path": "README.md",
-      "sha256": "bc50aa8564a3d86b2202f76c5079f7832b5ba46ed3e187e187e84da0f9a447f3"
+      "sha256": "98518b1f7d78c0c01b0fe4b8a55f59e0bd497d2232c3fd44bdba20a5ee1ed070"
     },
     {
       "path": "evidence/customize-sections.png",
@@ -24,11 +24,11 @@
     },
     {
       "path": "evidence/diary-home.png",
-      "sha256": "3737c3b8546f7c9331a0d3c98e861d92acb3272c769555ec409e117a870cfbf0"
+      "sha256": "b5fa9ae590e69681a79de4b8a0c179db85c2d58a01a58b0b5ce6462dfb5f19a2"
     },
     {
       "path": "evidence/diary-mobile.png",
-      "sha256": "eaa39bbf2ec5ff9647a516b067ff624affe6c326df5fdd3214027b6980d77c11"
+      "sha256": "2b2c48c7b6c766704f2b19bbf7d2d5276e0e79e795a386a5a045e4faed1479b4"
     },
     {
       "path": "evidence/picker-from-lunch.png",
@@ -36,7 +36,7 @@
     },
     {
       "path": "index.html",
-      "sha256": "ca4a89c8c1beb74d1f899dd5022a6855a3e3f8eb05eab780e78e56be9d48222e"
+      "sha256": "e8041d7b844629c4520276a015a5617e19bd6bf6bdfe9f004c262eec4ca18222"
     }
   ]
 }

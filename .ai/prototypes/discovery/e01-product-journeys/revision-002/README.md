@@ -7,7 +7,7 @@
 
 ## Co się zmieniło względem revision-001
 
-Ekran początkowy przedstawia dziennik dnia zamiast samego wejścia do katalogu. Zawiera sześć domyślnych sekcji, fikcyjne wpisy oraz podsumowanie dnia z kaloriami i sumą białka, tłuszczów oraz węglowodanów. Makra są widoczne przy posiłkach i w sumie dnia. Dodanie produktu z sekcji zachowuje wybrany posiłek i aktualizuje dzienną sumę w pamięci makiety. Dodano ekran personalizacji nazw/liczby sekcji. Wcześniejsze ręczne dodanie, rozróżnianie produktów, skan, obsługa błędów dostawcy, konflikt GTIN i korekta pozostają dostępne.
+Ekran początkowy przedstawia dziennik dnia zamiast samego wejścia do katalogu. Zawiera sześć domyślnych sekcji, fikcyjne wpisy oraz podsumowanie dnia z kaloriami i sumą białka, tłuszczów oraz węglowodanów. Pod każdym posiłkiem jest teraz osobny, wyróżniony panel „Suma całego posiłku” z kcal, białkiem, tłuszczami i węglowodanami; podsumowanie dnia pokazuje te same cztery wartości dla całego dnia. Dodanie produktu z sekcji zachowuje wybrany posiłek i aktualizuje dzienną sumę w pamięci makiety. Dodano ekran personalizacji nazw/liczby sekcji. Wcześniejsze ręczne dodanie, rozróżnianie produktów, skan, obsługa błędów dostawcy, konflikt GTIN i korekta pozostają dostępne.
 
 ## Uczestnik, granice i reguły
 
@@ -58,7 +58,7 @@ Otwórz lokalnie `index.html` w przeglądarce. „Reset makiety” przywraca sze
 
 Sprawdzenie w odizolowanej sesji `agent-browser` na `file://`:
 
-- Dziennik na starcie: sześć sekcji, trzy fikcyjne wpisy, 895 kcal oraz 28,4 g białka, 24,2 g tłuszczów i 133 g węglowodanów; `evidence/diary-home.png`. Makra są też rozbite przy każdym posiłku.
+- Dziennik na starcie: sześć sekcji, trzy fikcyjne wpisy, 895 kcal oraz 28,4 g białka, 24,2 g tłuszczów i 133 g węglowodanów; `evidence/diary-home.png`. Każdy niepusty posiłek ma odrębny panel „Suma całego posiłku” z czterema wartościami; zrzut `evidence/diary-home.png` potwierdza czytelność panelu przy śniadaniu, drugim śniadaniu i obiedzie.
 - Dodanie ziemniaków z sekcji Obiad zachowuje kontekst sekcji, wraca do dziennika i aktualizuje sumy: 895 → 1047 kcal, białko 28,4 → 30,8 g, tłuszcze 24,2 → 29,3 g, węglowodany 133 → 156 g; `evidence/diary-after-add.png`.
 - Personalizacja: zmiana „Lunch” na „Późny posiłek” i dodanie „Koktajle” zachowują edycje i odświeżają sekcje; `evidence/customize-sections.png`.
 - Poprzednie stany wyszukiwarki, konflikt GTIN, korekty i awarii są odtworzone w revision-001. Ta rewizja pozostaje źródłem dowodów dla zachowań niezmienionych.
