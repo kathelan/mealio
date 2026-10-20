@@ -7,7 +7,7 @@
 
 ## Co się zmieniło względem revision-001
 
-Ekran początkowy przedstawia dziennik dnia zamiast samego wejścia do katalogu. Zawiera sześć domyślnych sekcji, fikcyjne wpisy oraz podsumowanie dnia z kaloriami i sumą białka, tłuszczów oraz węglowodanów. Pod każdym posiłkiem jest teraz osobny, wyróżniony panel „Suma całego posiłku” z kcal, białkiem, tłuszczami i węglowodanami; podsumowanie dnia pokazuje te same cztery wartości dla całego dnia. Dodanie produktu z sekcji zachowuje wybrany posiłek i aktualizuje dzienną sumę w pamięci makiety. Dodano ekran personalizacji nazw/liczby sekcji. Wcześniejsze ręczne dodanie, rozróżnianie produktów, skan, obsługa błędów dostawcy, konflikt GTIN i korekta pozostają dostępne.
+Ekran początkowy przedstawia dziennik dnia zamiast samego wejścia do katalogu. Zawiera sześć domyślnych sekcji, fikcyjne wpisy oraz podsumowanie dnia z kaloriami i sumą białka, tłuszczów oraz węglowodanów. Pod każdym posiłkiem jest teraz osobny, wyróżniony panel „Suma całego posiłku” z kcal, białkiem, tłuszczami i węglowodanami; podsumowanie dnia pokazuje te same cztery wartości dla całego dnia. Dodanie produktu z sekcji zachowuje wybrany posiłek i aktualizuje dzienną sumę w pamięci makiety. Dodano ekran personalizacji nazw/liczby sekcji. Ręczne dodanie produktu przekazuje teraz wpisane wartości odżywcze do karty produktu, pozycji w wybranym posiłku, subtotalu posiłku i sum dnia. Każda pozycja dziennika pokazuje własne kcal i makra, a osobny panel sumuje cały posiłek. Rozróżnianie produktów, skan, obsługa błędów dostawcy, konflikt GTIN i korekta pozostają dostępne.
 
 ## Uczestnik, granice i reguły
 
@@ -25,7 +25,7 @@ Właściciel produktu doprecyzował w rozmowie 2026-10-20, że ekran startowy ap
 
 Włączone: dzień z sześcioma domyślnymi sekcjami, przykładowe wpisy i suma kcal; dodawanie, skanowanie i personalizowanie sekcji; cały poprzedni przepływ katalogu/skanera/korekty. Wartości żywieniowe i nazwy są fikcyjne.
 
-Poza zakresem: prawdziwe zapisywanie posiłków, tygodniowy dziennik, backendowe sumy, cele kaloryczne, kamera, zewnętrzne katalogi i finalny styl. Dziennikowe makra są tylko przykładową prezentacją w makiecie; ich właściwe źródło i obliczanie realizuje późniejszy E02 (#17/#27). Ładowanie nie występuje, ponieważ lokalna symulacja nie wykonuje asynchronicznych odczytów.
+Poza zakresem: prawdziwe zapisywanie posiłków, tygodniowy dziennik, backendowe sumy, cele kaloryczne, kamera, zewnętrzne katalogi i finalny styl. Wpisane ręcznie wartości makr są w tej makiecie używane w symulacji dla produktu i wybranego posiłku. Dane katalogowe pozostałych fikcyjnych produktów także są przykładowe; właściwe źródło i backendowe obliczenia dziennika realizuje późniejszy E02 (#17/#27). Ładowanie nie występuje, ponieważ lokalna symulacja nie wykonuje asynchronicznych odczytów.
 
 ## Założenia i ograniczenia
 
@@ -33,7 +33,7 @@ Poza zakresem: prawdziwe zapisywanie posiłków, tygodniowy dziennik, backendowe
 - **[ASSUMPTION] A2** — ekran potwierdzenia wyboru zapisuje fikcyjną porcję 100 g, aby zademonstrować zmianę kalorii. Właściwe ilości i obliczenia dostarcza późniejsza integracja z #14/#17.
 - **[ASSUMPTION] A3** — przykładowy dzienny widok zaczyna się z trzema wpisami (895 kcal); nie reprezentuje rzeczywistych danych ani nowego stanu konta.
 - **[ASSUMPTION] A4** — usunięcie pustej sekcji jest dozwolone; sekcji z wpisami makieta nie pozwala usunąć, aby nie wymyślać zachowania przenoszącego wpisy. Regułę należy ustalić w SDD #27.
-- **[ASSUMPTION] A5** — wartości kcal i makr fikcyjnie dodanego ziemniaka lub jajka są deterministyczne i służą tylko do pokazania odświeżenia sum. Dla produktu bez danych makr makieta pokazuje „—”, nigdy domyślne zero; suma makra pozostaje nieznana, gdy choć jeden wpis nie ma tej wartości.
+- **[ASSUMPTION] A5** — wybrany produkt jest dodawany jako fikcyjna porcja 100 g; wartości ręcznie wpisane na 100 g stają się wartościami tej pozycji. Dla pozycji bez danych makr makieta pokazuje „—”, nigdy domyślne zero; suma makra pozostaje nieznana, gdy choć jeden wpis nie ma tej wartości.
 
 ## Mapa ekranów i zachowań
 
@@ -41,7 +41,8 @@ Poza zakresem: prawdziwe zapisywanie posiłków, tygodniowy dziennik, backendowe
 |---|---|---|
 | `home` — dziennik | Pokaż sekcje i dzienną sumę; wybierz „Dodaj produkt”/skan w sekcji | sekcje z MVP, #17/#27 |
 | `manage` | Zmień nazwę, dodaj nową lub usuń pustą sekcję; zapis wraca do dziennika | własne sekcje, A4 |
-| `search` | Wybór przypisuje produkt do wybranej sekcji; dodanie własne → `create` | E01-C3, A2/A5 |
+| `search` | Wybór produktu lub rozpoczęcie dodania własnego zachowuje wybraną sekcję | E01-C3, A2/A5 |
+| `create` / `detail` | Wymagaj nazwy oraz kcal i trzech makr na 100 g; pokaż podgląd produktu, a „Dodaj do posiłku” zapisuje go w wybranej sekcji | symulacja E01, A2/A5 |
 | `scan` lokalny | Produkt lokalny wraca bez pytania; osobna akcja rozpoczyna korektę | E01-C2 |
 | `scan` kandydat | Potwierdzenie przypisuje do wybranej sekcji | E01-C1, A2/A5 |
 | `scan` NOT_FOUND | Ręczny formularz → `create` | E01-C1 |
@@ -60,6 +61,7 @@ Sprawdzenie w odizolowanej sesji `agent-browser` na `file://`:
 
 - Dziennik na starcie: sześć sekcji, trzy fikcyjne wpisy, 895 kcal oraz 28,4 g białka, 24,2 g tłuszczów i 133 g węglowodanów; `evidence/diary-home.png`. Każdy niepusty posiłek ma odrębny panel „Suma całego posiłku” z czterema wartościami; zrzut `evidence/diary-home.png` potwierdza czytelność panelu przy śniadaniu, drugim śniadaniu i obiedzie.
 - Dodanie ziemniaków z sekcji Obiad zachowuje kontekst sekcji, wraca do dziennika i aktualizuje sumy: 895 → 1047 kcal, białko 28,4 → 30,8 g, tłuszcze 24,2 → 29,3 g, węglowodany 133 → 156 g; `evidence/diary-after-add.png`.
+- Ręczne dodanie „Moje musli” z 410 kcal, 12,5 g białka, 8 g tłuszczów i 64 g węglowodanów: formularz → karta produktu → dodanie do Śniadania. Wpis pokazuje indywidualne wartości, subtotal śniadania zmienia się na 730 kcal / 22,5 g / 16 g / 114 g, a sumy dnia na 1305 kcal / 40,9 g / 32,2 g / 197 g; `evidence/custom-product-in-breakfast.png`.
 - Personalizacja: zmiana „Lunch” na „Późny posiłek” i dodanie „Koktajle” zachowują edycje i odświeżają sekcje; `evidence/customize-sections.png`.
 - Poprzednie stany wyszukiwarki, konflikt GTIN, korekty i awarii są odtworzone w revision-001. Ta rewizja pozostaje źródłem dowodów dla zachowań niezmienionych.
 - Reset, historia wstecz/dalej, nieznany hash i dostęp klawiaturą pozostają w tej rewizji; widok dziennika przy szerokości 390 px; `evidence/diary-mobile.png`.

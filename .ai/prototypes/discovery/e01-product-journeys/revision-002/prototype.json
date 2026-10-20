@@ -12,7 +12,11 @@
   "files": [
     {
       "path": "README.md",
-      "sha256": "98518b1f7d78c0c01b0fe4b8a55f59e0bd497d2232c3fd44bdba20a5ee1ed070"
+      "sha256": "cf397b51b8f56d2ed3e51c94364a74c35ae5582aa7f7d6840205c308a3631ac8"
+    },
+    {
+      "path": "evidence/custom-product-in-breakfast.png",
+      "sha256": "c4b135f2fac01e86e1cabc032237f75b335a52e4a38840b7cf61470e9c67e7e0"
     },
     {
       "path": "evidence/customize-sections.png",
@@ -36,7 +40,7 @@
     },
     {
       "path": "index.html",
-      "sha256": "e8041d7b844629c4520276a015a5617e19bd6bf6bdfe9f004c262eec4ca18222"
+      "sha256": "b1fb149c768b48f8caf6e1c693fe50a4b41b1f4b14bbf47e0dd98a39a7690b12"
     }
   ]
 }
