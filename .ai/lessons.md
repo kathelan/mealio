@@ -52,3 +52,7 @@ oraz odnośnik do rozwiniętej notatki, jeśli istnieje. Nie zapisuj sekretów a
   Transakcja obejmuje cały przypadek użycia, nie pojedyncze repository; HTTP dostawcy
   pozostaje poza transakcją. Legacy nie refaktoryzujemy przy okazji.
   [Mapa fundamentów](specs/2026-10-20-e01-reusable-foundations.md).
+- 2026-10-20 — Katalog produktów nie utożsamia nazwy z tożsamością: podobne nazwy
+  mogą oznaczać różne marki lub własne pozycje z odrębnym przelicznikiem (np. jajko).
+  Wyniki wyszukiwania rozróżniają je przez markę, pochodzenie, kompletność i konwersję;
+  GTIN pozostaje unikalny. [SDD katalogu](specs/2026-10-20-e01-product-catalog.md).

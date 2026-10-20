@@ -8,7 +8,8 @@ Mapa nadrzędna: [fundamenty](2026-10-20-e01-reusable-foundations.md).
 Zapisać własny produkt raz, wyszukać go ponownie i udostępnić niezmienny snapshot innym
 modułom. Ta dostawa wprowadza fakty żywieniowe, ilości i jawny przelicznik sztuki;
 nie implementuje kalkulatora, dostawcy kodów, przepisów ani dziennika.
-Q1 podziału SDD potwierdzono; brak blokujących decyzji produktowych dla tego zakresu.
+Q1 podziału SDD potwierdzono. Właściciel potwierdził, że podobieństwo nazwy nie blokuje
+utworzenia osobnych produktów; wyszukiwanie ma pokazać dane rozróżniające wariant.
 
 ## 📝 Problem Statement i Proposed Solution
 
@@ -17,6 +18,10 @@ faktów i tożsamości bez zależności od JPA. Publiczny kontrakt product.api i
 wersje zastępują kopiowanie DTO lub wczytywanie tabel innego modułu.
 Nie wykorzystujemy archiwalnej specyfikacji katalogu jako dowodu wdrożenia — kod product
 nie istnieje. Istniejące CategoryLookup i testy PostgreSQL są wzorcem granicy i weryfikacji.
+[Open Food Facts API](https://openfoodfacts.github.io/documentation/docs/Product-Opener/v3/products/get-api-v3-product-code/)
+udostępnia nazwę i marki jako osobne pola; Mealio zachowuje to rozdzielenie, a dodatkowo
+pokazuje źródło danych i przelicznik, by rozróżnić podobne produkty bez sztucznej unikalności
+nazwy. Nie kopiujemy zewnętrznej taksonomii ani jej zasad dopasowania.
 
 ## 📝 Architecture i kontrakty Java
 
@@ -85,7 +90,7 @@ Nie tworzymy relacji do legacy recipe_ingredients: tamte calories nie opisują f
 | Operacja | Kontrakt |
 |---|---|
 | POST /products | nazwa, optional brand/gtin, basis, nutrition, optional pieceConversion; 201 + Location i ProductSnapshot |
-| GET /products?query=&page=0&size=20 | dosłowna fraza nazwy bez case, stabilny sort name/id; size 1–100; wyniki, total, page/size |
+| GET /products?query=&page=0&size=20 | dosłowna fraza nazwy bez case, stabilny sort name/brand/id; size 1–100; wyniki, total, page/size |
 | GET /products/{id} | bieżący snapshot; 404 PRODUCT_NOT_FOUND |
 | GET /products/{id}/versions/{versionId} | historyczny snapshot należący do produktu; 404 VERSION_NOT_FOUND |
 | POST /products/{id}/versions | expectedVersionId i komplet nowych danych; 201; nieaktualna wersja 409 PRODUCT_VERSION_CONFLICT |
@@ -104,7 +109,13 @@ Duplikat kodu: 409 PRODUCT_GTIN_CONFLICT z odwołaniem do istniejącego produktu
 Tworzenie tożsamości, wersji i konwersji jest jedną transakcją. Rewizja blokuje rekord
 produktu na czas sprawdzenia expectedVersionId i zapisu; unikalność numeru chroni też baza.
 Tożsamość i GTIN nie są zmieniane przez nową wersję; request rewizji nie przyjmuje tych pól.
-Samo tworzenie produktu bez GTIN nie ma automatycznej deduplikacji po nazwie.
+Nazwa nie jest kluczem unikalności. Produkty bez GTIN mogą mieć tę samą lub bardzo podobną
+nazwę i zostać zapisane jako osobne pozycje; dotyczy to np. mrożonych ziemniaków różnych
+marek oraz własnego produktu jajka z indywidualnym przelicznikiem. Marka pozostaje osobnym
+polem, a źródło opisuje pochodzenie danych — żadne z nich samo nie definiuje tożsamości.
+Wyniki wyszukiwania z tą samą nazwą pozostają osobnymi wynikami i udostępniają markę,
+źródło/pochodzenie, podstawę, kompletność oraz przelicznik sztuki, gdy występuje, aby klient
+mógł je rozróżnić. Jawny GTIN nadal jest unikalny i jego konflikt zwraca 409.
 UI nie ponawia zapisu automatycznie po utracie odpowiedzi; trwały klucz idempotencji
 potwierdzania jest osobnym zakresem SDD skanera.
 
@@ -135,6 +146,7 @@ Jeden wynik: zapisany i ponownie wyszukiwalny produkt. Etapy: model, persystencj
 3. Publiczny katalog i HTTP/OpenAPI: lookup/revisions/search/paginacja, błędy i requestId.
    Integracje realnego HTTP/PostgreSQL; nazwa z procentem i underscore jest literalna.
 4. Kontrakt fake ProductCatalog i fixtures snapshotu użyte przez test przypadku odczytu;
+   testy wyszukiwania podobnych nazw z różnymi markami/źródłami i własnym przelicznikiem,
    ArchUnit, testy zgodności legacy i pełne mvn clean verify.
 
 Każdy krok kończy się działającym buildem. Pierwszy użytkowy wynik: zapis i wyszukanie
