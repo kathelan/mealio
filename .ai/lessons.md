@@ -60,3 +60,8 @@ oraz odnośnik do rozwiniętej notatki, jeśli istnieje. Nie zapisuj sekretów a
   odrębną od marki i pochodzenia danych. GTIN pozostaje unikalny; korekta tworzy
   niezmienną wersję z pochodzeniem per pole, a błąd dostawcy nie blokuje ręcznego wpisu.
   [Decyzje E01](specs/research/decisions/2026-10-20-e01-product-corrections.md).
+
+- 2026-10-20 — Review E01: makieta też musi zachowywać INCOMPLETE i sumy znanych
+  wartości z PARTIAL; brak pola nie zeruje ani nie ukrywa znanej sumy. Niezmienny snapshot
+  wersji oddzielaj od edytowalnych sklepów; pierwsze potwierdzenie kandydata nie jest
+  rewizją lokalnego produktu. Pochodzenie zmienionych pól ustala serwer.

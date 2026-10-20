@@ -31,6 +31,10 @@ To niemutowalne typy biznesowe, nie HTTP DTO. NutritionFacts zawiera NutritionBa
 i cztery Optional<BigDecimal>;
 ProductSnapshot zawiera productId, versionId, versionNumber, nazwę, opcjonalną markę/GTIN,
 podstawę, fakty, konwersje, kompletność oraz metadane źródła.
+ProductSnapshot obejmuje wyłącznie niezmienne dane ProductVersion; sklepy nie należą do snapshotu.
+HTTP i SearchProducts zwracają projekcję ProductView: dane snapshotu oraz bieżące stores,
+wyraźnie opisane jako metadane tożsamości, także przy odczycie historycznej wersji.
+Obliczenia i historia spożycia korzystają ze snapshotu, nie zmiennej listy sklepów.
 Wynik wyszukiwania zawiera także listę sklepów powiązanych z produktem. To opcjonalne,
 własne nazwy wpisywane przez użytkownika; nie ma centralnego słownika sklepów.
 
@@ -39,7 +43,19 @@ nutrition { energyKcal, proteinGrams, fatGrams, carbohydrateGrams } z czterema
 opcjonalnymi polami oraz opcjonalny pieceConversion { baseAmount, baseUnit }. Pominięcie/null pola
 opcjonalnego oznacza brak wartości w nowym pełnym stanie, nie zachowanie poprzedniej.
 Draft nie zawiera id/versionId/GTIN/source ani statusu potwierdzenia. RegisterProduct command
-łączy draft i opcjonalny GTIN; ReviseProduct łączy draft z id/expectedVersionId.
+łączy draft, opcjonalny GTIN, początkowe stores i opcjonalne sourceReferences;
+ReviseProduct łączy draft z id/expectedVersionId i opcjonalnymi sourceReferences.
+sourceReferences to mapa ścieżek pól draftu do opcjonalnej referencji tekstowej (1–500 znaków
+po trimowaniu), bez typu dostawcy. Nieznana ścieżka jest błędem walidacji.
+Źródło określa wyłącznie serwer. Brak referencji zmienionego pola nie kopiuje referencji
+poprzedniej wartości. Referencja do niezmienionego pola nie może zmienić jego pochodzenia.
+Stores nie należy do ProductDraft/ReviseProduct: osobny port UpdateProductStores przyjmuje
+id produktu i pełną listę nazw. Brak stores przy rejestracji oznacza pustą listę.
+Nazwy sklepów są trimowane, puste/ponad 160 znaków odrzucane; duplikaty bez rozróżniania
+wielkości liter zwijamy do jednej nazwy, zachowując pierwszą pisownię. PUT przyjmuje także
+pustą listę, zwraca 200 z bieżącym ProductView, a nieistniejący produkt daje 404 PRODUCT_NOT_FOUND.
+Aktualizacja całej listy jest atomowa, ponowienie tej samej listy jest bezpieczne; równoległe
+edycje stosują ostatni zakończony zapis, bez dotykania expectedVersionId wersji żywieniowej.
 
 Porty wejściowe: RegisterProduct.handle(command), ReviseProduct.handle(command),
 SearchProducts.search(query), ProductCatalog.findCurrent(id)/findVersion(id, versionId).
@@ -66,6 +82,8 @@ z następnym wolnym ID i include w istniejącym changelogu; zastosowany 001 bez 
 |---|---|
 | Product | UUID PK, opcjonalny kanoniczny GTIN unikalny, createdAt; bieżąca wersja wybierana po największym versionNumber |
 | ProductVersion | UUID PK, productId FK, versionNumber > 0, unique(productId, number), nazwa 1–220, marka do 160, podstawa i cztery nullable numeric(12,6), nieujemne znane wartości |
+| ProductStore | productId FK, własna nazwa; unikalność znormalizowanej nazwy w obrębie produktu; odrębna od ProductVersion |
+| FieldProvenance | versionId FK, ścieżka pola draftu, typ źródła, opcjonalna referencja; unique(versionId, fieldPath); zapis w transakcji wersji |
 | ServingConversion | versionId FK, jednostka PIECE, dodatni baseAmount numeric(12,6), baseUnit g albo ml zgodny z podstawą; unique(versionId, unit) |
 
 Backend nadaje ręcznemu zapisowi USER_LABEL, jeśli ma GTIN, a USER_INPUT bez GTIN.
@@ -78,7 +96,10 @@ referencją podaną przez użytkownika. Klient nie może zadeklarować zewnętrz
 Pochodzenie danych jest częścią ProductVersion i zapisuje się osobno dla każdego pola
 (typ źródła oraz opcjonalna referencja/identyfikator; dozwolone znormalizowane wartości,
 bez pełnej odpowiedzi dostawcy). Dzięki temu np. ręcznie poprawiona marka nie przypisuje
-pochodzenia użytkownika do wartości odżywczych, które nadal pochodzą z etykiety. Rewizja
+pochodzenia użytkownika do wartości odżywczych, które nadal pochodzą z etykiety. Przy zmianie basis również niezmienione liczbowo fakty i konwersja zmieniają znaczenie;
+ich pochodzenie staje się źródłem korekty użytkownika. Usunięte pole pozostaje nieznane,
+a pochodzenie usunięcia nie jest przedstawiane jako źródło wartości. Porównanie liczb jest
+numeryczne (55 i 55.0 są równe). Rewizja
 po zapisie jest niezmienna. Lista sklepów jest odrębnym, edytowalnym metadanym Product;
 jej aktualizacja nie tworzy nowej wersji żywieniowej. Nie ma userId ani technicznego właściciela.
 
@@ -98,7 +119,7 @@ Nie tworzymy relacji do legacy recipe_ingredients: tamte calories nie opisują f
 
 | Operacja | Kontrakt |
 |---|---|
-| POST /products | nazwa, optional brand/gtin, basis, nutrition, optional pieceConversion i stores; 201 + Location i ProductSnapshot |
+| POST /products | nazwa, optional brand/gtin, basis, nutrition, optional pieceConversion i stores; 201 + Location i ProductView |
 | GET /products?query=&page=0&size=20 | dosłowna fraza nazwy bez case, stabilny sort name/brand/id; size 1–100; wyniki, total, page/size |
 | GET /products/{id} | bieżący snapshot; 404 PRODUCT_NOT_FOUND |
 | GET /products/{id}/versions/{versionId} | historyczny snapshot należący do produktu; 404 VERSION_NOT_FOUND |
@@ -162,7 +183,10 @@ Jeden wynik: zapisany i ponownie wyszukiwalny produkt. Etapy: model, persystencj
    błąd w środku zapisu bez częściowej tożsamości i niezmienność poprzedniej wersji.
 3. Publiczny katalog i HTTP/OpenAPI: lookup/revisions/search/paginacja, błędy i requestId.
    Integracje realnego HTTP/PostgreSQL; nazwa z procentem i underscore jest literalna.
-4. Kontrakt fake ProductCatalog i fixtures snapshotu użyte przez test przypadku odczytu;
+4. Testy stores: wiele nazw, pusta lista, walidacja, ponowienie, brak produktu; zmiana
+   sklepów nie tworzy wersji. Testy pochodzenia: zmiana samej marki zachowuje źródła makr,
+   korekta faktu/wyczyszczenie/basis nie zachowuje błędnej referencji, klient nie nadaje dostawcy.
+5. Kontrakt fake ProductCatalog i fixtures snapshotu użyte przez test przypadku odczytu;
    testy wyszukiwania podobnych nazw z różnymi markami/źródłami i własnym przelicznikiem,
    ArchUnit, testy zgodności legacy i pełne mvn clean verify.
 

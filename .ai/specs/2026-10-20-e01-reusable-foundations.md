@@ -34,7 +34,7 @@ Nazwy to docelowe role, nie obowiązek utworzenia osobnej klasy dla każdego wie
 | Element / kontrakt | Właściciel i pierwsza dostawa | Kolejni konsumenci | Korzyść i weryfikacja |
 |---|---|---|---|
 | Quantity, QuantityUnit, NutritionBasis, ServingConversion | product.api, #13 | #14/#15/#17/#21/#22 | Jeden kontrakt ilości i jawnych przeliczników; test 3 szt. po 55 g = 165 g |
-| NutritionFacts, ProductSnapshot | product.api, #13 | #14/#15/#17/#20 | Niezmienny zestaw faktów z rewizją, brak pola pozostaje Optional; wynik wyszukiwania dołącza sklepy i pochodzenie per pole |
+| NutritionFacts, ProductSnapshot | product.api, #13 | #14/#15/#17/#20 | Niezmienny zestaw faktów z rewizją, brak pola pozostaje Optional; ProductView dołącza bieżące sklepy; snapshot zachowuje pochodzenie per pole |
 | ProductCatalog.findCurrent/findVersion i SearchProducts | product.api, #13 | #15/#17/#20/#21; UI #24–#28 | Konsumenci nie importują repository; testy z fake publicznego portu |
 | NormalizeQuantity, lokalna implementacja czysta | product.api, #14 | #15/#17/#22 | Jedno przeliczenie jednostek; brak sieci/bazy; zgodne wymiary i brak konwersji testowane |
 | NutritionCalculator.calculate | nutrition.api, #14 | #15/#17/#21/#22 | Obliczenia niezależne od HTTP/JPA; ten sam snapshot daje ten sam wynik |
@@ -264,3 +264,6 @@ reuse opisują jako planowanych konsumentów; ich implementacja nie jest objęta
 Badania i uzasadnienia: [notatka źródłowa](research/2026-10-20-e01-foundations-research.md).
 [Review i zamknięte ustalenia](research/2026-10-20-e01-foundations-review.md).
 [Ustalenia właściciela po grill-me](research/decisions/2026-10-20-e01-product-corrections.md).
+
+Aktualna makieta po review: [revision-003](../prototypes/discovery/e01-product-journeys/revision-003/README.md).
+Rewizje 001/002 pozostają historią; poprawki zgodności nie oznaczają wdrożenia dziennika w E01.
