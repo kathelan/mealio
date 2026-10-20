@@ -94,23 +94,32 @@ zostaną potwierdzone przez SDD właściciela danych.
 - Braki wartości pozostają jawne; częściowego wyniku nie prezentujemy jako pełnego (R02).
 - Brak przelicznika jednostki nie pozwala zgadywać masy ani objętości (R03/ADR-0005).
 - Zmiana wody nie zmienia kalorii; masa końcowa przepisu jest opcjonalna.
-- Parametr ilości składnika pyta o ilość na jedną porcję; wybrana liczba porcji skaluje
+- Checkbox przy składniku wybiera zmienny input gramatury albo liczby sztuk na jedną porcję; wybrana liczba porcji skaluje
   ilości tylko dla bieżącego dodania i nie zmienia szablonu.
 - Użycie przepisu jako składnika nie może tworzyć cyklu ani odwołania do zmiennej wersji.
 - Zapis wpisów jako przepisu nie dodaje ponownie spożycia ani nie zmienia bilansu dnia.
-- Usunięcie sekcji z wpisami i późniejsza edycja spożycia nie są rozstrzygnięte tą mapą.
-  SDD #16/#17 muszą określić zachowanie bez utraty historii; ograniczenie makiety do pustych
-  sekcji jest założeniem, nie zatwierdzoną regułą. Zmiana nazwy nie zmienia tożsamości sekcji.
+- D18/R12: można edytować ilość, porcje i skład konkretnego spożycia także w starszym dniu,
+  przenosić wpis między dniami/sekcjami bez przeliczenia wartości i usuwać z Cofnij.
+  SDD #17 określi politykę wersji danych przy świadomej korekcie (Q05); automatyczna
+  zmiana innych wpisów lub szablonu jest zabroniona.
+- D19/R13: zmiana nazwy sekcji jest globalna, także w historii. Usuń zachowuje dawne wpisy
+  pod ostatnią nazwą i usuwa sekcję z wyboru. UI nie ma archiwum/przywracania.
+  Nowa sekcja o tej samej nazwie jest osobna. Kolejność pozostaje propozycją Q07.
+- D21/R15: wiele opcjonalnych etykiet, edytowalna lista początkowa i filtrowanie biblioteki
+  oraz pickera, z możliwością wszystkich przepisów niezależnie od sekcji.
+- D23/R17: bazy sosów pozostają w MVP, bulion później. Zmiana/usunięcie bazy nie zmienia
+  użytej wersji w istniejącym przepisie. Nie ma obowiązku mierzenia gotowej potrawy;
+  Q06 wymaga źródła jawnego przelicznika g/ml i ścieżki przy jego braku.
 - Sumy dnia/sekcji/tygodnia obejmują znane wartości i metadane braków; PARTIAL nie usuwa
   znanych sum ani nie zmienia null w zero.
-- Tydzień obejmuje jawne dni kalendarzowe; strefa serwera nie przesuwa `LocalDate`.
+- D22/R16: start w dniu, przełączenie na tydzień pokazuje wykres dziennych kcal. Brak wpisów nie dowodzi braku spożycia. Tydzień obejmuje jawne dni kalendarzowe; strefa serwera nie przesuwa `LocalDate`. Układ dodatkowych sum/makr wymaga SDD.
 
 ## 📝 Decisions in play
 
 - D09, R06: liczba porcji przepisu jest wymagana; parametr składnika podaje ilość na jedną
   porcję; zmiany przy dodawaniu nie zmieniają szablonu.
 - D10, R08: własne sekcje i płaskie etykiety są niezależne.
-- D11: przepis może być składnikiem innego przepisu.
+- D23 zastępuje D11: baza sosu może być składnikiem innego przepisu; bulion jest późniejszy. D18–D24 i R12–R18 doprecyzowują zakres zgodnie z [sesją](research/decisions/2026-10-20-diary-and-recipe-details.md).
 - R02/ADR-0006 i R03/ADR-0005: zachowujemy jawne braki i jawne konwersje.
 - ADR-0004 uzgodniono z potwierdzonym zestawem domyślnym: śniadanie, drugie śniadanie,
   obiad, lunch, kolacja, przekąski; nazwy i liczba sekcji są konfigurowalne.
@@ -122,9 +131,9 @@ zostaną potwierdzone przez SDD właściciela danych.
 |---|---|---|
 | #15 | Biblioteka i zapis przepisów, porcje, składniki, płaskie etykiety | E01 #13 i #14 |
 | #16 | Własne sekcje dnia z powyższymi domyślnymi wartościami | brak |
-| #17 | Wpis produktu/przepisu, porcje, bilans dnia i tygodnia | #15, #16 |
+| #17 | Wpis produktu/przepisu, edycja/przenoszenie/usuwanie, dzień i wykres tygodnia (Q05) | #15, #16 |
 | #21 | Pytanie o ilości wybranych składników przy dodaniu przepisu | #15, #17 |
-| #22 | Własny przepis jako składnik, wersjonowanie i kontrola cykli | #15, #14 |
+| #22 | Baza sosu jako składnik w g/ml (Q06), wersjonowanie, usuwanie i kontrola cykli; bulion później | #15, #14 |
 | #23 | Utworzenie przepisu z wybranych wpisów bez ponownego spożycia | #15, #17 |
 
 Każda pozycja jest osobno wdrażalna po swoich zależnościach; mapa nie przesądza kolejności
@@ -156,3 +165,10 @@ Każdy krok wdrożenia ma zostawić aplikację uruchamialną. Mapa nie autoryzuj
   określi addytywną migrację, kompatybilność istniejących klientów i plan cofnięcia.
 - Dokument sprawdzamy przez odnośniki, zgodność z decyzjami i diagramy. Build/testy przyszłej
   funkcji nie są wykonane; testy `mvn clean verify` i iOS dotyczą implementacyjnych PR-ów.
+
+## Cel kalorii — analiza przed implementacją
+
+D24/R18 dodają aktualizację masy i propozycji celu do MVP jednego dziennika. Q02 nadal
+wymaga wyboru wzoru, danych i aktywności; nie wdrażamy domyślnego algorytmu z założenia.
+Osobny task [E02-T01 #37](https://github.com/kathelan/mealio/issues/37) obejmuje analizę i SDD, nie funkcję kalkulatora. Po zatwierdzeniu
+projektu powstaną właściwe stories backendu/iOS. Dane przyszłych kont nie są obecnym auth.

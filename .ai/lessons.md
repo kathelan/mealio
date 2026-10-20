@@ -69,3 +69,11 @@ oraz odnośnik do rozwiniętej notatki, jeśli istnieje. Nie zapisuj sekretów a
   kolacja i przekąski; użytkownik może zmieniać ich nazwy i liczbę. Sekcje należą do
   dziennika i pozostają niezależne od płaskich etykiet przepisów.
   [Mapa E02](specs/2026-10-20-e02-recipes-and-diary.md).
+
+- 2026-10-20 — Doprecyzowanie po korektach właściciela: zmienny input zaznacza się
+  checkboxem przy składniku i wybiera gramaturę albo liczbę sztuk na porcję; nie narzucaj
+  pary liczba i masa sztuki. Nie dokładaj obowiązkowego pomiaru gotowego dania ani UI
+  archiwizacji/przywracania sekcji. Usuń zachowuje historię; wycofanie wewnętrzne to
+  szczegół implementacji. Bulion odłożony; przelicznik bazy sosu w g/ml pozostaje Q06.
+  Ostrożne może tak zachowuj jako propozycję, nie potwierdzony wymóg.
+  [Decyzje sesji](specs/research/decisions/2026-10-20-diary-and-recipe-details.md).
